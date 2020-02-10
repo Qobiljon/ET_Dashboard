@@ -10,26 +10,15 @@
         {% if campaigns.exists %}
             {% for campaign in campaigns %}
                 <tr data-href="{% url 'campaign' %}?id={{ campaign.id }}">
-                    <td title="{{ campaign.title }}">
-                        {% if campaigns.title_length <= 40 %}
-                            {{ campaign.title }}
-                        {% else %}
-                            {{ campaign.title|slice:"0:40" }}...
-                        {% endif %}
-                    </td>
-                    <td title="{{ campaign.notes }}">
-                        {% if campaigns.notes_length <= 20 %}
-                            {{ campaign.notes }}
-                        {% else %}
-                            {{ campaign.notes|slice:"0:20" }}...
-                        {% endif %}
-                    </td>
+                    <td title="{{ campaign.title }}">{{ campaign.title|truncatechars:40 }}</td>
+                    <td title="{{ campaign.notes }}">{{ campaign.notes|truncatechars:20 }}</td>
                     <td>{{ campaign.creatorEmail }}</td>
-                    <td title="{{ campaign.participants|slice:"0:100" }}...">{{ campaign.participants|wordcount }}</td>
+                    <td title="{{ campaign.participants|truncatechars:100 }}">{{ campaign.participants|wordcount }}</td>
                 </tr>
             {% endfor %}
         {% endif %}
     </table>
+    <a id="add_campaign_button" href="{% url 'create_campaign' %}">Create a new campaign</a>
 
     <script>
         {# for handling campaign row clicks #}
@@ -61,12 +50,15 @@
             background: #4285F4; /* #F1F1F1; /* Darken header a bit */
             color: white;
             font-weight: bold;
+            padding: 10px 0;
+            font-size: large;
         }
 
         td {
             background: white;
             text-align: center;
             cursor: pointer;
+            padding: 5px 0;
         }
 
         /* Cells in even rows (2,4,6...) are one color */
@@ -84,6 +76,25 @@
             color: black;
         }
 
-        /* Hover cell effect! */
+        #add_campaign_button {
+            background: #2ecc71;
+            padding: 20px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            float: right;
+            font-weight: 800;
+            font-size: larger;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        #add_campaign_button:hover {
+            background: #666;
+            color: #FFF;
+        }
     </style>
 {% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+    <form action="{% url 'create_campaign' %}" method="post">
+        {% csrf_token %}
+        <table id="inputTable">
+            <tr>
+                <td><label for="name">Name</label>
+                <td><input id="name" type="text" name="name" placeholder="e.g., My First Data Collection Campaign"></td>
+            </tr>
+            <tr>
+                <td><label for="notes">Notes on<br>the campaign</label>
+                <td><textarea name="notes" id="notes" cols="85" rows="10" placeholder="Notes on the campaign"></textarea></td>
+            </tr>
+        </table>
+
+        <table id="dataSourceTable">
+            {% for elem in others %}
+                {% if forloop.counter0|divisibleby:3 %}
+                    <tr>
+                {% endif %}
+            <td>
+                <label>
+                    {{ elem.name }}
+                    <input type="checkbox" name=""><br>
+                    <img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt="">
+                </label>
+            </td>
+            {% if forloop.counter|divisibleby:3 %}
+                </tr>
+            {% endif %}
+            {% endfor %}
+
+            {% for elem in tizen %}
+                {% if forloop.counter0|divisibleby:3 %}
+                    <tr>
+                {% endif %}
+            <td>
+                <label>
+                    {{ elem.name }}
+                    <input type="checkbox" name=""><br>
+                    <img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt="">
+                </label>
+            </td>
+            {% if forloop.counter|divisibleby:3 %}
+                </tr>
+            {% endif %}
+            {% endfor %}
+
+            {% for elem in android %}
+                {% if forloop.counter0|divisibleby:3 %}
+                    <tr>
+                {% endif %}
+            <td>
+                <label>
+                    {{ elem.name }}
+                    <input type="checkbox" name=""><br>
+                    <img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt="">
+                </label>
+            </td>
+            {% if forloop.counter|divisibleby:3 %}
+                </tr>
+            {% endif %}
+            {% endfor %}
+        </table>
+    </form>
+
+    <style>
+        footer {
+            position: static;
+        }
+
+        body {
+            text-align: center;
+        }
+
+        table {
+            width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        table#inputTable tr td:nth-child(odd) {
+            padding-right: 20px;
+        }
+
+        #name {
+            background: white;
+            border: #ccc 1px solid;
+            border-bottom: #ccc 2px solid;
+            padding: 8px;
+            width: 600px;
+            color: black;
+            font-size: 1em;
+        }
+
+        table#dataSourceTable
+    </style>
+{% endblock %}

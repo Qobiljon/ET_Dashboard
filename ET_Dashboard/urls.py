@@ -22,8 +22,9 @@ urlpatterns = [
     # path('accounts/', include('allauth.urls')),
 
     path('', views.handle_index, name='index'),
-    path('login/', views.handle_authenticate, name='login'),
+    path('login/', views.handle_login, name='login'),
     path('register/', views.handle_register, name='register'),
     path('logout/', views.handle_logout, name='logout'),
     path('campaign/', views.handle_campaign, name='campaign'),
+    path('new_campaign/', views.handle_create_campaign, name='create_campaign'),
 ]
