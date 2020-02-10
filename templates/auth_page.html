@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+    <form id="form" method="post" action="{% url 'login' %}" style="display: block">
+        <div class="box">
+            {% csrf_token %}
+            <h1 class="form_title">{{ title }}</h1>
+            <input class="username" type="email" name="email" placeholder="Email" required>
+            <input class="username" type="password" name="password" placeholder="Password" required>
+            <input id="rePasswordInput" class="username" type="password" name="re_password" placeholder="Repeat Password">
+            <br><input id="newUserCheckBox" type="checkbox" onclick="newUserCheckBoxClick();">
+            <label for="newUserCheckBox">I am a new user</label>
+            <input id="submitButton" class="button" type="submit" value="AUTHENTICATE">
+        </div>
+    </form>
+
+    <script>
+        let checkBox, form, rePasswordInput, submitButton;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            checkBox = document.getElementById("newUserCheckBox");
+            form = document.getElementById("form");
+            rePasswordInput = document.getElementById("rePasswordInput");
+            submitButton = document.getElementById("submitButton");
+
+            rePasswordInput.style.display = "none";
+            submitButton.value = "LOGIN";
+        });
+
+        function newUserCheckBoxClick() {
+            if (checkBox.checked) {
+                form.action = "{% url 'register' %}";
+                rePasswordInput.style.display = "inline-block";
+                submitButton.value = "REGISTER";
+            } else {
+                form.action = "{% url 'login' %}";
+                rePasswordInput.style.display = "none";
+                submitButton.value = "LOGIN";
+            }
+        }
+    </script>
+
+    <style>
+        #title_h1 {
+            display: none;
+        }
+
+        #content_div {
+            text-align: center;
+        }
+
+        h1.form_title {
+            font-size: 1.5em;
+        }
+
+        .box {
+            background: white;
+            width: 400px;
+            margin: 0 auto 0 auto;
+            padding: 0 0 70px 0;
+            border: #2980b9 4px solid;
+        }
+
+        label {
+            cursor: pointer;
+        }
+
+        #newUserCheckBox {
+            margin: 10px 0;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+
+        .username {
+            background: #ecf0f1;
+            border: #ccc 1px solid;
+            border-bottom: #ccc 2px solid;
+            padding: 8px;
+            width: 350px;
+            color: black;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+
+        .button {
+            background: #2ecc71;
+            width: 250px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            color: white;
+            border: none;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            float: left;
+            margin-left: 88px;
+            font-weight: 800;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .button:hover {
+            background: #666;
+            color: #FFF;
+        }
+    </style>
+{% endblock %}
