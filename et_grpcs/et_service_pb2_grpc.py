@@ -16,8 +16,23 @@ class ETServiceStub(object):
         """
         self.loginWithGoogleId = channel.unary_unary(
             '/ETService/loginWithGoogleId',
-            request_serializer=et__service__pb2.LoginWithGoogleIdRequestMessage.SerializeToString,
-            response_deserializer=et__service__pb2.LoginWithGoogleIdResponseMessage.FromString,
+            request_serializer=et__service__pb2.LoginWithGoogleIdTokenRequestMessage.SerializeToString,
+            response_deserializer=et__service__pb2.LoginResponseMessage.FromString,
+        )
+        self.dashboardLoginWithEmail = channel.unary_unary(
+            '/ETService/dashboardLoginWithEmail',
+            request_serializer=et__service__pb2.DashboardLoginWithEmailRequestMessage.SerializeToString,
+            response_deserializer=et__service__pb2.LoginResponseMessage.FromString,
+        )
+        self.registerCampaign = channel.unary_unary(
+            '/ETService/registerCampaign',
+            request_serializer=et__service__pb2.RegisterCampaignRequestMessage.SerializeToString,
+            response_deserializer=et__service__pb2.RegisterCampaignResponseMessage.FromString,
+        )
+        self.retrieveCampaigns = channel.unary_unary(
+            '/ETService/retrieveCampaigns',
+            request_serializer=et__service__pb2.RetrieveCampaignsRequestMessage.SerializeToString,
+            response_deserializer=et__service__pb2.RetrieveCampaignsResponseMessage.FromString,
         )
         self.submitData = channel.unary_unary(
             '/ETService/submitData',
@@ -76,6 +91,27 @@ class ETServiceServicer(object):
     pass
 
     def loginWithGoogleId(self, request, context):
+        # missing associated documentation comment in .proto file
+        pass
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def dashboardLoginWithEmail(self, request, context):
+        # missing associated documentation comment in .proto file
+        pass
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def registerCampaign(self, request, context):
+        # missing associated documentation comment in .proto file
+        pass
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def retrieveCampaigns(self, request, context):
         # missing associated documentation comment in .proto file
         pass
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -157,8 +193,23 @@ def add_ETServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
         'loginWithGoogleId': grpc.unary_unary_rpc_method_handler(
             servicer.loginWithGoogleId,
-            request_deserializer=et__service__pb2.LoginWithGoogleIdRequestMessage.FromString,
-            response_serializer=et__service__pb2.LoginWithGoogleIdResponseMessage.SerializeToString,
+            request_deserializer=et__service__pb2.LoginWithGoogleIdTokenRequestMessage.FromString,
+            response_serializer=et__service__pb2.LoginResponseMessage.SerializeToString,
+        ),
+        'dashboardLoginWithEmail': grpc.unary_unary_rpc_method_handler(
+            servicer.dashboardLoginWithEmail,
+            request_deserializer=et__service__pb2.DashboardLoginWithEmailRequestMessage.FromString,
+            response_serializer=et__service__pb2.LoginResponseMessage.SerializeToString,
+        ),
+        'registerCampaign': grpc.unary_unary_rpc_method_handler(
+            servicer.registerCampaign,
+            request_deserializer=et__service__pb2.RegisterCampaignRequestMessage.FromString,
+            response_serializer=et__service__pb2.RegisterCampaignResponseMessage.SerializeToString,
+        ),
+        'retrieveCampaigns': grpc.unary_unary_rpc_method_handler(
+            servicer.retrieveCampaigns,
+            request_deserializer=et__service__pb2.RetrieveCampaignsRequestMessage.FromString,
+            response_serializer=et__service__pb2.RetrieveCampaignsResponseMessage.SerializeToString,
         ),
         'submitData': grpc.unary_unary_rpc_method_handler(
             servicer.submitData,

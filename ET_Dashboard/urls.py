@@ -20,7 +20,7 @@ from ET_Dashboard import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('google43e44b3701ba10c8.html', views.handle_google_verification),
-    path('accounts/', include('allauth.urls')),
+    path('google-auth/', include('social_django.urls', namespace='social')),
 
     path('', views.handle_index, name='index'),
     path('login/', views.handle_login, name='login'),

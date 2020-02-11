@@ -1,22 +1,38 @@
-from django.contrib.auth import authenticate as dj_auth
-from django.contrib.auth import login as dj_login
 from django.contrib.auth import logout as dj_logout
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
-from ET_Dashboard.models import Campaigns, PresetDataSources
+# gRPC
+import grpc
+from et_grpcs import et_service_pb2
+from et_grpcs import et_service_pb2_grpc
+
+from ET_Dashboard.models import PresetDataSources, GrpcUserIds
+
+GRPC_HOST = '165.246.43.162:50051'
 
 
 @require_http_methods(['GET'])
 def handle_index(request):
-    if request.user.is_authenticated:
+    grpc_user_id = GrpcUserIds.get_id(email=request.user.email)
+    if request.user.is_authenticated and grpc_user_id is not None:
+        channel = grpc.insecure_channel(GRPC_HOST)
+        stub = et_service_pb2_grpc.ETServiceStub(channel)
+        grpc_req = et_service_pb2.RetrieveCampaignsRequestMessage(userId=grpc_user_id, email=request.user.email, myCampaignsOnly=True)
+        grpc_res: et_service_pb2.RetrieveCampaignsResponseMessage = stub.retrieveCampaigns(grpc_req)
+        channel.close()
+        campaigns = []
+        if grpc_res.doneSuccessfully:
+            grpc_res.name
+            grpc_res.note
+            grpc_res.configJson
         return render(
             request=request,
             template_name='dashboard_page.html',
             context={
                 'title': 'My Campaigns',
-                'campaigns': Campaigns.objects.filter(creatorEmail=request.user.email)
+                'campaigns': campaigns
             }
         )
     else:
@@ -26,24 +42,21 @@ def handle_index(request):
 @require_http_methods(['GET', 'POST'])
 def handle_login(request):
     if request.user.is_authenticated:
-        return redirect(to='/')
-    elif request.method == 'POST':
-        if 'email' in request.POST and 'password' in request.POST:
-            user = dj_auth(request=request, username=request.POST['email'], password=request.POST['password'])
-            if user is None:
-                return redirect(to='login')
-            else:
-                dj_login(request=request, user=user)
-        if request.user.is_authenticated:
+        channel = grpc.insecure_channel(GRPC_HOST)
+        stub = et_service_pb2_grpc.ETServiceStub(channel)
+        grpc_req = et_service_pb2.DashboardLoginWithEmailRequestMessage(email=request.user.email, name=request.user.get_full_name(), dashboardKey='ETd@$#b0@rd')
+        grpc_res: et_service_pb2.LoginResponseMessage = stub.dashboardLoginWithEmail(grpc_req)
+        channel.close()
+        if grpc_res.doneSuccessfully:
+            GrpcUserIds.create_or_update(email=request.user.email, user_id=grpc_res.userId)
             return redirect(to='index')
         else:
-            return redirect(to='login')
-    else:
-        return render(
-            request=request,
-            template_name='auth_page.html',
-            context={'title': 'Authentication'}
-        )
+            dj_logout(request=request)
+    return render(
+        request=request,
+        template_name='auth_page.html',
+        context={'title': 'Authentication'}
+    )
 
 
 @require_http_methods(['POST'])
@@ -69,16 +82,17 @@ def handle_logout(request):
 def handle_campaign(request):
     if not request.user.is_authenticated:
         return redirect(to='login')
-    if 'id' not in request.GET or not Campaigns.objects.filter(id=request.GET['id']).exists():
+    if 'id' not in request.GET:
         return redirect(to='index')
     else:
-        campaign = Campaigns.objects.get(id=request.GET['id'])
+        # TODO: fill this part
+        # campaigns = from gRPC
         return render(
             request=request,
             template_name='campaign_details.html',
             context={
-                'title': campaign.title,
-                'campaign': campaign
+                'title': 'Dummy',
+                'campaign': 'Dummy'
             }
         )
 

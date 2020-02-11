@@ -63,17 +63,17 @@
 
         /* Cells in even rows (2,4,6...) are one color */
         tr:nth-child(even) td {
-            background: #FEFEFE;
+            background: white;
         }
 
         /* Cells in odd rows (1,3,5...) are another (excludes header cells)  */
         tr:nth-child(odd) td {
-            background: white;
+            background: #DFDFDF;
         }
 
         tr:not(:first-child):hover td {
-            background: #DFDFDF;
-            color: black;
+            background: #666;
+            color: white;
         }
 
         #add_campaign_button {

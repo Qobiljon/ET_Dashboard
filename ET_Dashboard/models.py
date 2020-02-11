@@ -2,17 +2,25 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
-class Campaigns(models.Model):
-    id = models.AutoField(primary_key=True)
-    creatorEmail = models.EmailField(null=False)
-    title = models.CharField(max_length=256)
-    notes = models.TextField(default='', null=False)
-    participants = models.TextField(default='', null=False)
+class GrpcUserIds(models.Model):
+    email = models.CharField(max_length=256, unique=True)
+    user_id = models.IntegerField()
 
+    @staticmethod
+    def get_id(email):
+        if GrpcUserIds.objects.filter(email=email).exists():
+            return GrpcUserIds.objects.get(email=email).user_id
+        else:
+            return None
 
-class DataSourceByCampaigns(models.Model):
-    campaign = models.ForeignKey(to=Campaigns, on_delete=models.CASCADE)
-    dataSourceName = models.CharField(max_length=256, null=False)
+    @staticmethod
+    def create_or_update(email, user_id):
+        if GrpcUserIds.objects.filter(email=email).exists():
+            row = GrpcUserIds.objects.get(email=email)
+            row.user_id = user_id
+            row.save()
+        else:
+            GrpcUserIds.objects.create(email=email, user_id=user_id)
 
 
 class PresetDataSources:

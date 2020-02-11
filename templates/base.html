@@ -82,7 +82,7 @@
     </ul>
     {% if user.is_authenticated %}
         <ul id="right_nav">
-            <li><a href="{% url 'logout' %}"> {{ request.user }} - {{ request.user.email }} (LOGOUT)</a></li>
+            <li><a href="{% url 'logout' %}"> {{ request.user.email }} (LOGOUT)</a></li>
         </ul>
     {% endif %}
 </header>
