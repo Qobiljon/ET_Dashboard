@@ -1,30 +1,34 @@
 {% extends 'base.html' %}
 {% block content %}
-    <form id="form" method="post" action="{% url 'login' %}" style="display: block">
-        <div class="box">
-            {% csrf_token %}
-            <h1 class="form_title">{{ title }}</h1>
-            <input class="username" type="email" name="email" placeholder="Email" required>
-            <input class="username" type="password" name="password" placeholder="Password" required>
-            <input id="rePasswordInput" class="username" type="password" name="re_password" placeholder="Repeat Password">
-            <br><input id="newUserCheckBox" type="checkbox" onclick="newUserCheckBoxClick();">
-            <label for="newUserCheckBox">I am a new user</label>
-            <input id="submitButton" class="button" type="submit" value="AUTHENTICATE">
-        </div>
-    </form>
+    {#    <form id="form" method="post" action="{% url 'login' %}" style="display: block">#}
+    {#        <div class="box">#}
+    {#            {% csrf_token %}#}
+    {#            <h1 class="form_title">{{ title }}</h1>#}
+    {#            <input class="username" type="email" name="email" placeholder="Email" required>#}
+    {#            <input class="username" type="password" name="password" placeholder="Password" required>#}
+    {#            <input id="rePasswordInput" class="username" type="password" name="re_password" placeholder="Repeat Password">#}
+    {#            <br><input id="newUserCheckBox" type="checkbox" onclick="newUserCheckBoxClick();">#}
+    {#            <label for="newUserCheckBox">I am a new user</label>#}
+    {#            <input id="submitButton" class="button" type="submit" value="AUTHENTICATE">#}
+    {#        </div>#}
+    {#    </form>#}
+
+    {% load socialaccount %}
+    {% providers_media_js %}
+    <a href="{% provider_login_url "google" %}">Connect with Google</a>
 
     <script>
         let checkBox, form, rePasswordInput, submitButton;
 
-        document.addEventListener("DOMContentLoaded", () => {
-            checkBox = document.getElementById("newUserCheckBox");
-            form = document.getElementById("form");
-            rePasswordInput = document.getElementById("rePasswordInput");
-            submitButton = document.getElementById("submitButton");
-
-            rePasswordInput.style.display = "none";
-            submitButton.value = "LOGIN";
-        });
+        {#document.addEventListener("DOMContentLoaded", () => {#}
+        {#    checkBox = document.getElementById("newUserCheckBox");#}
+        {#    form = document.getElementById("form");#}
+        {#    rePasswordInput = document.getElementById("rePasswordInput");#}
+        {#    submitButton = document.getElementById("submitButton");#}
+        {##}
+        {#    rePasswordInput.style.display = "none";#}
+        {#    submitButton.value = "LOGIN";#}
+        {#\});#}
 
         function newUserCheckBoxClick() {
             if (checkBox.checked) {

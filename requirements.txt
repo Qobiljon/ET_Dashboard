@@ -3,6 +3,7 @@ certifi==2019.11.28
 chardet==3.0.4
 defusedxml==0.6.0
 Django==3.0.3
+django-allauth==0.41.0
 grpcio==1.27.1
 grpcio-tools==1.27.1
 idna==2.8

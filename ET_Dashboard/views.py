@@ -6,10 +6,6 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
 from ET_Dashboard.models import Campaigns, PresetDataSources
-from ET_Dashboard.models import UserToGrpcIdMap
-
-import time
-import psycopg2
 
 
 @require_http_methods(['GET'])
@@ -56,39 +52,8 @@ def handle_register(request):
         return redirect('index')
     elif 'email' in request.POST and 'password' in request.POST and 're_password' in request.POST and \
             request.POST['password'] == request.POST['re_password'] and not User.objects.filter(email=request.POST['email']).exists():
-        conn = psycopg2.connect(
-            host='165.246.43.97',
-            database='easytrack_db',
-            user='postgres',
-            password='postgres'
-        )
-        cur = conn.cursor()
-        cur.execute('select * from et_users where email=%s;', (request.POST['email'],))
-        row = cur.fetchone()
-        if row is None:
-            timestamp_ms = int(round(time.time() * 1000))
-            cur.execute(
-                'insert into et_users(id_token, is_participant, name, email, last_sync_timestamp, last_heartbeat_timestamp) values (%s,%s,%s,%s,%s,%s);',
-                (
-                    '',
-                    False,
-                    request.POST['email'],
-                    request.POST['email'],
-                    timestamp_ms,
-                    timestamp_ms
-                )
-            )
-            conn.commit()
-            user = User.objects.create_user(username=request.POST['email'], email=request.POST['email'], password=request.POST['password'])
-            cur.execute('select id from et_users where email=%s;', (request.POST['email'],))
-            UserToGrpcIdMap.objects.create(user=user, gRPCId=cur.fetchone()[0])
-            cur.close()
-            conn.close()
-            return redirect(to='index')
-        else:
-            cur.close()
-            conn.close()
-            return redirect(to='login')
+        user = User.objects.create_user(username=request.POST['email'], email=request.POST['email'], password=request.POST['password'])
+        return redirect(to='index')
     else:
         return redirect(to='login')
 
@@ -132,3 +97,7 @@ def handle_create_campaign(request):
                 'others': PresetDataSources.others
             }
         )
+
+
+def handle_google_verification(request):
+    return render(request=request, template_name='google43e44b3701ba10c8.html')

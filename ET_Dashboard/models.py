@@ -10,11 +10,6 @@ class Campaigns(models.Model):
     participants = models.TextField(default='', null=False)
 
 
-class UserToGrpcIdMap(models.Model):
-    user = models.OneToOneField(to=User, primary_key=True, on_delete=models.CASCADE)
-    gRPCId = models.IntegerField(null=False)
-
-
 class DataSourceByCampaigns(models.Model):
     campaign = models.ForeignKey(to=Campaigns, on_delete=models.CASCADE)
     dataSourceName = models.CharField(max_length=256, null=False)

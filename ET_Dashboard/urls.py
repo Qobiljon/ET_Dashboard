@@ -18,8 +18,9 @@ from django.urls import path, re_path, include
 from ET_Dashboard import views
 
 urlpatterns = [
-    # path('admin/', admin.site.urls),
-    # path('accounts/', include('allauth.urls')),
+    path('admin/', admin.site.urls),
+    path('google43e44b3701ba10c8.html', views.handle_google_verification),
+    path('accounts/', include('allauth.urls')),
 
     path('', views.handle_index, name='index'),
     path('login/', views.handle_login, name='login'),
