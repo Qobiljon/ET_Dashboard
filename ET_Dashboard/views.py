@@ -29,16 +29,15 @@ def handle_index_page(request):
         grpc_req = et_service_pb2.RetrieveCampaignsRequestMessage(userId=grpc_user_id, email=request.user.email, myCampaignsOnly=True)
         grpc_res: et_service_pb2.RetrieveCampaignsResponseMessage = stub.retrieveCampaigns(grpc_req)
         channel.close()
-        campaigns = []
         if grpc_res.doneSuccessfully:
             for campaign_id, name, notes, creator_email, config_json, participant_count in zip(grpc_res.campaignId, grpc_res.name, grpc_res.notes, grpc_res.creatorEmail, grpc_res.configJson, grpc_res.participantCount):
-                campaigns += [Campaign(campaign_id=campaign_id, name=name, notes=notes, creator_email=creator_email, config_json=config_json, participant_count=participant_count)]
+                Campaign.create_or_update(campaign_id=campaign_id, requester_email=request.user.email, name=name, notes=notes, creator_email=creator_email, config_json=config_json, participant_count=participant_count)
         return render(
             request=request,
             template_name='campaigns_page.html',
             context={
                 'title': 'My Campaigns',
-                'campaigns': campaigns
+                'campaigns': Campaign.objects.filter(requester_email=request.user.email)
             }
         )
     else:
@@ -155,17 +154,31 @@ def handle_create_campaign(request):
 @login_required
 @require_http_methods(['GET'])
 def handle_campaign_details_page(request):
-    # dashboard
-    if 'id' not in request.GET:
+    grpc_user_id = GrpcUserIds.get_id(email=request.user.email)
+    if grpc_user_id is None:
+        return redirect(to='login')
+    elif 'id' not in request.GET or not str(request.GET['id']).isdigit() or not Campaign.objects.filter(campaign_id=request.GET['id'], requester_email=request.user.email).exists():
         return redirect(to='index')
     else:
-        # TODO: fill this part
-        # campaigns = from gRPC
-        return render(
-            request=request,
-            template_name='campaign_details.html',
-            context={
-                'title': 'Dummy',
-                'campaign': 'Dummy'
-            }
+        # campaign dashboard page
+        campaign = Campaign.objects.get(campaign_id=request.GET['id'], requester_email=request.user.email)
+        channel = grpc.insecure_channel(GRPC_HOST)
+        stub = et_service_pb2_grpc.ETServiceStub(channel)
+        grpc_req = et_service_pb2.RetrieveParticipantsRequestMessage(
+            userId=grpc_user_id,
+            email=request.user.email,
+            campaignId=campaign.campaign_id
         )
+        grpc_res: et_service_pb2.RetrieveParticipantsResponseMessage = stub.retrieveParticipants(grpc_req)
+        channel.close()
+        if grpc_res.doneSuccessfully:
+            return render(
+                request=request,
+                template_name='campaign_details.html',
+                context={
+                    'title': '"%s" Dashboard' % campaign.name,
+                    'campaign': campaign
+                }
+            )
+        else:
+            return redirect(to='index')

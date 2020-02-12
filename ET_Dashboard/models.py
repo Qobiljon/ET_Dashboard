@@ -81,11 +81,28 @@ class PresetDataSources:
         return PresetDataSources.others + PresetDataSources.android_sensors + PresetDataSources.tizen_sensors
 
 
-class Campaign:
-    def __init__(self, campaign_id, name, notes, creator_email, config_json, participant_count):
-        self.campaign_id: int = campaign_id
-        self.name: str = name
-        self.notes: str = notes
-        self.creator_email: str = creator_email
-        self.config_json: str = config_json
-        self.participant_count: int = participant_count
+class Campaign(models.Model):
+    campaign_id = models.IntegerField()
+    requester_email = models.CharField(max_length=128)
+    name = models.CharField(max_length=256)
+    notes = models.TextField()
+    creator_email = models.CharField(max_length=128)
+    config_json = models.TextField()
+    participant_count = models.IntegerField()
+
+    class Meta:
+        unique_together = ['campaign_id', 'requester_email']
+
+    @classmethod
+    def create_or_update(cls, campaign_id, requester_email, name, notes, creator_email, config_json, participant_count):
+        if Campaign.objects.filter(campaign_id=campaign_id, requester_email=requester_email).exists():
+            campaign = Campaign.objects.get(campaign_id=campaign_id, requester_email=requester_email)
+            campaign.requester_email = requester_email
+            campaign.name = name
+            campaign.notes = notes
+            campaign.creator_email = creator_email
+            campaign.config_json = config_json
+            campaign.participant_count = participant_count
+            campaign.save()
+        else:
+            Campaign.objects.create(campaign_id=campaign_id, requester_email=requester_email, name=name, notes=notes, creator_email=creator_email, config_json=config_json, participant_count=participant_count)
