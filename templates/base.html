@@ -7,75 +7,6 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
     {% load static %}
     <link rel="shortcut icon" href="{% static 'favicon.ico' %}">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: azure;
-            margin: 0;
-        }
-
-        body #content_div {
-            padding: 0 20px;
-        }
-
-        /*region header*/
-        header {
-            height: 60px;
-            background-color: #4285F4;
-            position: relative;
-            display: block;
-            text-align: center;
-        }
-
-        header a {
-            color: white;
-            text-decoration: none;
-        }
-
-        header ul {
-            padding-inline-start: 0;
-        }
-
-        header ul li {
-            list-style-type: none;
-        }
-
-        #left_nav {
-            float: left;
-            margin-left: 20px;
-        }
-
-        #app_title {
-            font-size: 150%;
-        }
-
-        #right_nav {
-            float: right;
-            margin-right: 20px;
-        }
-
-        #right_nav li {
-            display: inline-block;
-        }
-
-        /*endregion*/
-
-        footer {
-            clear: both;
-            background: #4285F4;
-            text-align: center;
-            margin-top: 50px;
-            padding: 10px;
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-        }
-
-        footer a {
-            color: white;
-            text-decoration: none;
-        }
-    </style>
 </head>
 <body>
 <header>
@@ -98,4 +29,71 @@
     <a href="{% url 'index' %}">EasyTrack</a>
 </footer>
 </body>
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background: azure;
+        margin: 0;
+    }
+
+    body #content_div {
+        padding: 0 20px;
+    }
+
+    header {
+        height: 60px;
+        background-color: #4285F4;
+        position: relative;
+        display: block;
+    }
+
+    header a {
+        color: white;
+        text-decoration: none;
+    }
+
+    header ul {
+        padding-inline-start: 0;
+    }
+
+    header ul li {
+        list-style-type: none;
+    }
+
+    #left_nav {
+        float: left;
+        margin-left: 20px;
+    }
+
+    #app_title {
+        font-size: 150%;
+    }
+
+    #right_nav {
+        float: right;
+        margin-right: 20px;
+    }
+
+    #right_nav li {
+        display: inline-block;
+    }
+
+    footer {
+        clear: both;
+
+        height: 30px;
+        background-color: #4285F4;
+        position: relative;
+        display: block;
+        text-align: center;
+        padding-top: 10px;
+        margin-top: 20px;
+        bottom: 0;
+    }
+
+    footer a {
+        color: white;
+        text-decoration: none;
+    }
+</style>
 </html>
