@@ -27,6 +27,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
+    'kevin-nsl-pc',
     '165.246.43.162',
     'etdb.myvnc.com'
 ]

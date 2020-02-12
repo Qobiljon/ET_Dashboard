@@ -41,9 +41,12 @@ message RetrieveCampaignsRequestMessage {
 
 message RetrieveCampaignsResponseMessage {
     bool doneSuccessfully = 1;
-    repeated string name = 2;
-    repeated string note = 3;
-    repeated string configJson = 4;
+    repeated int32 campaignId = 2;
+    repeated string name = 3;
+    repeated string notes = 4;
+    repeated string creatorEmail = 5;
+    repeated string configJson = 6;
+    repeated int32 participantCount = 7;
 }
 
 message SubmitDataRequestMessage {

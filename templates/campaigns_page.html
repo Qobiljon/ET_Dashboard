@@ -7,16 +7,14 @@
             <th>Created by</th>
             <th>Participants</th>
         </tr>
-        {% if campaigns.exists %}
-            {% for campaign in campaigns %}
-                <tr data-href="{% url 'campaign' %}?id={{ campaign.id }}">
-                    <td title="{{ campaign.title }}">{{ campaign.title|truncatechars:40 }}</td>
-                    <td title="{{ campaign.notes }}">{{ campaign.notes|truncatechars:20 }}</td>
-                    <td>{{ campaign.creatorEmail }}</td>
-                    <td title="{{ campaign.participants|truncatechars:100 }}">{{ campaign.participants|wordcount }}</td>
-                </tr>
-            {% endfor %}
-        {% endif %}
+        {% for campaign in campaigns %}
+            <tr data-href="{% url 'campaign' %}?id={{ campaign.campaign_id }}">
+                <td title="{{ campaign.name }}">{{ campaign.name|truncatechars:40 }}</td>
+                <td title="{{ campaign.notes }}">{% if campaign.notes|length == 0 %}-{% else %}{{ campaign.notes|truncatechars:20 }}{% endif %}</td>
+                <td>{{ campaign.creator_email }}</td>
+                <td>{{ campaign.participant_count }}</td>
+            </tr>
+        {% endfor %}
     </table>
     <a id="add_campaign_button" href="{% url 'create_campaign' %}">Create a new campaign</a>
 

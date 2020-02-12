@@ -1,56 +1,98 @@
 {% extends 'base.html' %}
 {% block content %}
+    {% if error %}
+        <h2 id="errorMessage">Failed to create the campaign, please try again!</h2>
+    {% endif %}
+
     <form action="{% url 'create_campaign' %}" method="post">
         {% csrf_token %}
         <table id="inputTable">
             <tr>
                 <td><label for="name">Name</label>
-                <td><input id="name" type="text" name="name" placeholder="e.g., My First Data Collection Campaign"></td>
+                <td><input id="name" type="text" name="name" placeholder="e.g., My First Data Collection Campaign" required></td>
             </tr>
             <tr>
                 <td><label for="notes">Notes on<br>the campaign</label>
-                <td><textarea name="notes" id="notes" cols="85" rows="10" placeholder="Notes on the campaign"></textarea></td>
+                <td><textarea name="notes" id="notes" class="autoExpand" cols="100" rows="10" placeholder="Notes on the campaign"></textarea></td>
             </tr>
         </table>
 
         <table id="dataSourceTable">
+            <tr>
+                <th>Selected</th>
+                <th>Icon</th>
+                <th>Data source name</th>
+                <th>Data rate (ms) / Config JSON</th>
+            </tr>
             {% for elem in others %}
-                {% if forloop.counter0|divisibleby:4 %}<tr>{% endif %}
-                    <td>
-                        <label>
-                            {{ elem.name|truncatechars:20 }}
-                            <input type="checkbox" name=""><br>
-                            <img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt="">
-                        </label>
-                    </td>
-                {% if forloop.counter|divisibleby:3 %}</tr>{% endif %}
+                <tr data-source="{{ elem.name }}" class="data_source">
+                    <td><input type="checkbox" name="{{ elem.name }}"></td>
+                    <td><img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt=""></td>
+                    <td>{{ elem.name }}</td>
+                    {% if elem.type == 'rate' %}
+                        <td><label>Rate (ms) <input type="number" value="1000" name="rate_{{ elem.name }}" disabled></label></td>
+                    {% elif elem.type == 'json' %}
+                        <td><label>Config JSON <input type="text" value="{}" name="json_{{ elem.name }}" disabled></label></td>
+                    {% endif %}
+                </tr>
             {% endfor %}
-
-            {% for elem in tizen %}
-                {% if forloop.counter0|divisibleby:3 %}<tr>{% endif %}
-                    <td>
-                        <label>
-                            {{ elem.name|truncatechars:20 }}
-                            <input type="checkbox" name=""><br>
-                            <img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt="">
-                        </label>
-                    </td>
-                {% if forloop.counter|divisibleby:3 %}</tr>{% endif %}
-            {% endfor %}
-
             {% for elem in android %}
-                {% if forloop.counter0|divisibleby:3 %}<tr>{% endif %}
-                    <td>
-                        <label>
-                            {{ elem.name|truncatechars:20 }}
-                            <input type="checkbox" name=""><br>
-                            <img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt="">
-                        </label>
-                    </td>
-                {% if forloop.counter|divisibleby:3 %}</tr>{% endif %}
+                <tr data-source="{{ elem.name }}" class="data_source">
+                    <td><input type="checkbox" name="{{ elem.name }}"></td>
+                    <td><img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt=""></td>
+                    <td>{{ elem.name }}</td>
+                    {% if elem.type == 'rate' %}
+                        <td><label>Rate (ms) <input type="number" value="1000" name="rate_{{ elem.name }}" disabled></label></td>
+                    {% elif elem.type == 'json' %}
+                        <td><label>Config JSON <input type="text" value="{}" name="json_{{ elem.name }}" disabled></label></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            {% for elem in tizen %}
+                <tr data-source="{{ elem.name }}" class="data_source">
+                    <td><input type="checkbox" name="{{ elem.name }}"></td>
+                    <td><img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt=""></td>
+                    <td>{{ elem.name }}</td>
+                    {% if elem.type == 'rate' %}
+                        <td><label>Rate (ms) <input type="number" value="1000" name="rate_{{ elem.name }}" disabled></label></td>
+                    {% elif elem.type == 'json' %}
+                        <td><label>Config JSON <input type="text" value="{}" name="json_{{ elem.name }}" disabled></label></td>
+                    {% endif %}
+                </tr>
             {% endfor %}
         </table>
+
+        <div>
+            <a href="{% url 'index' %}" id="cancel_campaign_creation_button">Cancel</a>
+            <input type="submit" value="Create" id="create_campaign_button">
+        </div>
     </form>
+
+    <script>
+        {# for handling data source row clicks #}
+        document.addEventListener("DOMContentLoaded", () => {
+            const rows = document.querySelectorAll("tr[data-source]");
+            rows.forEach(row => {
+                row.style.cursor = "pointer";
+                let checkBox = row.firstElementChild.firstElementChild;
+                let input = row.lastElementChild.firstElementChild.firstElementChild;
+                input.style.textAlign = "center";
+                row.addEventListener("click", () => {
+                    checkBox.checked = !checkBox.checked;
+                    row.className = checkBox.checked ? "selected_data_source" : "data_source";
+                    if (checkBox.checked) {
+                        input.removeAttribute("disabled");
+                        input.setAttribute("required", "");
+                        input.focus();
+                        input.select();
+                    } else {
+                        input.setAttribute("disabled", "");
+                        input.removeAttribute("required");
+                    }
+                });
+            });
+        });
+    </script>
 
     <style>
         footer {
@@ -61,30 +103,96 @@
             text-align: center;
         }
 
+        #errorMessage {
+            color: orangered;
+        }
+
         table {
-            width: 700px;
+            width: 100%;
             margin-left: auto;
             margin-right: auto;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-bottom: 20px;
         }
 
-        table#inputTable tr td:nth-child(odd) {
-            padding-right: 20px;
-        }
-
-        #name {
+        #inputTable tr td input {
             background: white;
             border: #ccc 1px solid;
             border-bottom: #ccc 2px solid;
             padding: 8px;
-            width: 600px;
             color: black;
             font-size: 1em;
+            width: 100%;
         }
 
-        table#dataSourceTable tr td {
-            padding: 5px;
-            border: #2980b9 1px solid;
-            border-radius: 4px;
+        /* Cells in even rows (2,4,6...) are one color */
+        #dataSourceTable tr:first-child {
+            background: #4285F4; /* #F1F1F1; /* Darken header a bit */
+            color: white;
+            font-weight: bold;
+            padding: 10px 0;
+            font-size: large;
+        }
+
+        #dataSourceTable tr.data_source:nth-child(even) td {
+            background: white;
+        }
+
+        #dataSourceTable tr.data_source:nth-child(even) td {
+            background: white;
+        }
+
+        /* Cells in odd rows (1,3,5...) are another (excludes header cells)  */
+        #dataSourceTable tr.data_source:nth-child(odd) td {
+            background: #DFDFDF;
+        }
+
+        #dataSourceTable tr.data_source:not(:first-child):hover td {
+            background: #666;
+            color: white;
+        }
+
+        #dataSourceTable tr.selected_data_source td {
+            background: lightgreen;
+        }
+
+        #create_campaign_button {
+            background: #2ecc71;
+            padding: 20px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            float: right;
+            font-size: larger;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        #create_campaign_button:hover {
+            background: #666;
+            color: #FFF;
+        }
+
+        #cancel_campaign_creation_button {
+            background: orangered;
+            padding: 20px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            float: left;
+            font-size: larger;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        #cancel_campaign_creation_button:hover {
+            background: #666;
+            color: #FFF;
         }
     </style>
 {% endblock %}

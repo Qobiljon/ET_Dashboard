@@ -8,7 +8,9 @@ import grpc
 from et_grpcs import et_service_pb2
 from et_grpcs import et_service_pb2_grpc
 
-from ET_Dashboard.models import PresetDataSources, GrpcUserIds
+from ET_Dashboard.models import PresetDataSources, GrpcUserIds, Campaign
+
+import json
 
 GRPC_HOST = '165.246.43.162:50051'
 
@@ -24,12 +26,11 @@ def handle_index(request):
         channel.close()
         campaigns = []
         if grpc_res.doneSuccessfully:
-            grpc_res.name
-            grpc_res.note
-            grpc_res.configJson
+            for campaign_id, name, notes, creator_email, config_json, participant_count in zip(grpc_res.campaignId, grpc_res.name, grpc_res.notes, grpc_res.creatorEmail, grpc_res.configJson, grpc_res.participantCount):
+                campaigns += [Campaign(campaign_id=campaign_id, name=name, notes=notes, creator_email=creator_email, config_json=config_json, participant_count=participant_count)]
         return render(
             request=request,
-            template_name='dashboard_page.html',
+            template_name='campaigns_page.html',
             context={
                 'title': 'My Campaigns',
                 'campaigns': campaigns
@@ -99,18 +100,67 @@ def handle_campaign(request):
 
 @require_http_methods(['GET', 'POST'])
 def handle_create_campaign(request):
-    if request.method == 'POST':
-        return redirect(to='index')
+    grpc_user_id = GrpcUserIds.get_id(email=request.user.email)
+    if request.user.is_authenticated and grpc_user_id is not None:
+        if request.method == 'POST':
+            config_json = {}
+            counter = 0
+            for elem in PresetDataSources.all_preset_data_sources():
+                if elem['name'] in request.POST:
+                    data_source = {'name': elem['name']}
+                    if 'rate_%s' % elem['name'] in request.POST:
+                        data_source['rate'] = request.POST['rate_%s' % elem['name']]
+                    elif 'json_%s' % elem['name'] in request.POST:
+                        data_source['json'] = request.POST['json_%s' % elem['name']]
+                    else:
+                        return render(
+                            request=request,
+                            template_name='create_campaign_page.html',
+                            context={
+                                'error': True,
+                                'android': PresetDataSources.android_sensors,
+                                'tizen': PresetDataSources.tizen_sensors,
+                                'others': PresetDataSources.others
+                            }
+                        )
+                    config_json[counter] = data_source
+                    counter += 1
+            channel = grpc.insecure_channel(GRPC_HOST)
+            stub = et_service_pb2_grpc.ETServiceStub(channel)
+            grpc_req = et_service_pb2.RegisterCampaignRequestMessage(
+                userId=grpc_user_id,
+                email=request.user.email,
+                name=request.POST['name'],
+                notes=request.POST['notes'],
+                configJson=json.dumps(obj=config_json)
+            )
+            grpc_res: et_service_pb2.RegisterCampaignResponseMessage = stub.registerCampaign(grpc_req)
+            channel.close()
+            if grpc_res.doneSuccessfully:
+                return redirect(to='index')
+            else:
+                return render(
+                    request=request,
+                    template_name='create_campaign_page.html',
+                    context={
+                        'error': True,
+                        'android': PresetDataSources.android_sensors,
+                        'tizen': PresetDataSources.tizen_sensors,
+                        'others': PresetDataSources.others
+                    }
+                )
+        else:
+            return render(
+                request=request,
+                template_name='create_campaign_page.html',
+                context={
+                    'android': PresetDataSources.android_sensors,
+                    'tizen': PresetDataSources.tizen_sensors,
+                    'others': PresetDataSources.others
+                }
+            )
     else:
-        return render(
-            request=request,
-            template_name='create_campaign_page.html',
-            context={
-                'android': PresetDataSources.android_sensors,
-                'tizen': PresetDataSources.tizen_sensors,
-                'others': PresetDataSources.others
-            }
-        )
+        return redirect(to='login')
 
 
 def handle_google_verification(request):
