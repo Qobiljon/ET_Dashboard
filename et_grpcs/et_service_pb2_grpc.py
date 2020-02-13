@@ -39,9 +39,9 @@ class ETServiceStub(object):
             request_serializer=et__service__pb2.RetrieveCampaignsRequestMessage.SerializeToString,
             response_deserializer=et__service__pb2.RetrieveCampaignsResponseMessage.FromString,
         )
-        self.submitData = channel.unary_unary(
-            '/ETService/submitData',
-            request_serializer=et__service__pb2.SubmitDataRequestMessage.SerializeToString,
+        self.submitDataRecord = channel.unary_unary(
+            '/ETService/submitDataRecord',
+            request_serializer=et__service__pb2.SubmitDataRecordRequestMessage.SerializeToString,
             response_deserializer=et__service__pb2.DefaultResponseMessage.FromString,
         )
         self.submitHeartbeat = channel.unary_unary(
@@ -130,7 +130,7 @@ class ETServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def submitData(self, request, context):
+    def submitDataRecord(self, request, context):
         # missing associated documentation comment in .proto file
         pass
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -228,9 +228,9 @@ def add_ETServiceServicer_to_server(servicer, server):
             request_deserializer=et__service__pb2.RetrieveCampaignsRequestMessage.FromString,
             response_serializer=et__service__pb2.RetrieveCampaignsResponseMessage.SerializeToString,
         ),
-        'submitData': grpc.unary_unary_rpc_method_handler(
-            servicer.submitData,
-            request_deserializer=et__service__pb2.SubmitDataRequestMessage.FromString,
+        'submitDataRecord': grpc.unary_unary_rpc_method_handler(
+            servicer.submitDataRecord,
+            request_deserializer=et__service__pb2.SubmitDataRecordRequestMessage.FromString,
             response_serializer=et__service__pb2.DefaultResponseMessage.SerializeToString,
         ),
         'submitHeartbeat': grpc.unary_unary_rpc_method_handler(
