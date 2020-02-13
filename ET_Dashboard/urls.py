@@ -24,7 +24,6 @@ urlpatterns = [
 
     path('', views.handle_index_page, name='index'),
     path('login/', views.handle_login_api, name='login'),
-    path('register/', views.handle_register_api, name='register'),
     path('logout/', views.handle_logout_api, name='logout'),
     path('campaign/', views.handle_campaign_details_page, name='campaign'),
     path('new_campaign/', views.handle_create_campaign, name='create_campaign'),

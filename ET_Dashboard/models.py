@@ -86,6 +86,8 @@ class Campaign(models.Model):
     requester_email = models.CharField(max_length=128)
     name = models.CharField(max_length=256)
     notes = models.TextField()
+    start_timestamp = models.BigIntegerField()
+    end_timestamp = models.BigIntegerField()
     creator_email = models.CharField(max_length=128)
     config_json = models.TextField()
     participant_count = models.IntegerField()
@@ -94,15 +96,26 @@ class Campaign(models.Model):
         unique_together = ['campaign_id', 'requester_email']
 
     @classmethod
-    def create_or_update(cls, campaign_id, requester_email, name, notes, creator_email, config_json, participant_count):
+    def create_or_update(cls, campaign_id, requester_email, name, notes, start_timestamp, end_timestamp, creator_email, config_json, participant_count):
         if Campaign.objects.filter(campaign_id=campaign_id, requester_email=requester_email).exists():
             campaign = Campaign.objects.get(campaign_id=campaign_id, requester_email=requester_email)
             campaign.requester_email = requester_email
             campaign.name = name
             campaign.notes = notes
+            campaign.start_timestamp = start_timestamp
+            campaign.end_timestamp = end_timestamp
             campaign.creator_email = creator_email
             campaign.config_json = config_json
             campaign.participant_count = participant_count
             campaign.save()
         else:
-            Campaign.objects.create(campaign_id=campaign_id, requester_email=requester_email, name=name, notes=notes, creator_email=creator_email, config_json=config_json, participant_count=participant_count)
+            Campaign.objects.create(
+                campaign_id=campaign_id,
+                requester_email=requester_email,
+                name=name, notes=notes,
+                start_timestamp=start_timestamp,
+                end_timestamp=end_timestamp,
+                creator_email=creator_email,
+                config_json=config_json,
+                participant_count=participant_count
+            )

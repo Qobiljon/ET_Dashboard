@@ -19,6 +19,11 @@ class ETServiceStub(object):
             request_serializer=et__service__pb2.LoginWithGoogleIdTokenRequestMessage.SerializeToString,
             response_deserializer=et__service__pb2.LoginResponseMessage.FromString,
         )
+        self.bindUserToCampaign = channel.unary_unary(
+            '/ETService/bindUserToCampaign',
+            request_serializer=et__service__pb2.BindUserToCampaignRequestMessage.SerializeToString,
+            response_deserializer=et__service__pb2.BindUserToCampaignResponseMessage.FromString,
+        )
         self.dashboardLoginWithEmail = channel.unary_unary(
             '/ETService/dashboardLoginWithEmail',
             request_serializer=et__service__pb2.DashboardLoginWithEmailRequestMessage.SerializeToString,
@@ -91,6 +96,13 @@ class ETServiceServicer(object):
     pass
 
     def loginWithGoogleId(self, request, context):
+        # missing associated documentation comment in .proto file
+        pass
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def bindUserToCampaign(self, request, context):
         # missing associated documentation comment in .proto file
         pass
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -195,6 +207,11 @@ def add_ETServiceServicer_to_server(servicer, server):
             servicer.loginWithGoogleId,
             request_deserializer=et__service__pb2.LoginWithGoogleIdTokenRequestMessage.FromString,
             response_serializer=et__service__pb2.LoginResponseMessage.SerializeToString,
+        ),
+        'bindUserToCampaign': grpc.unary_unary_rpc_method_handler(
+            servicer.bindUserToCampaign,
+            request_deserializer=et__service__pb2.BindUserToCampaignRequestMessage.FromString,
+            response_serializer=et__service__pb2.BindUserToCampaignResponseMessage.SerializeToString,
         ),
         'dashboardLoginWithEmail': grpc.unary_unary_rpc_method_handler(
             servicer.dashboardLoginWithEmail,
