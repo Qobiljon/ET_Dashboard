@@ -85,7 +85,7 @@ DATABASES = {
         'NAME': 'easytrack_db',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': '165.246.43.97',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
     # 'default': {

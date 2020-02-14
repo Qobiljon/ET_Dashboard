@@ -39,6 +39,11 @@ class ETServiceStub(object):
             request_serializer=et__service__pb2.RetrieveCampaignsRequestMessage.SerializeToString,
             response_deserializer=et__service__pb2.RetrieveCampaignsResponseMessage.FromString,
         )
+        self.retrieveCampaign = channel.unary_unary(
+            '/ETService/retrieveCampaign',
+            request_serializer=et__service__pb2.RetrieveCampaignRequestMessage.SerializeToString,
+            response_deserializer=et__service__pb2.RetrieveCampaignResponseMessage.FromString,
+        )
         self.submitDataRecord = channel.unary_unary(
             '/ETService/submitDataRecord',
             request_serializer=et__service__pb2.SubmitDataRecordRequestMessage.SerializeToString,
@@ -124,6 +129,13 @@ class ETServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def retrieveCampaigns(self, request, context):
+        # missing associated documentation comment in .proto file
+        pass
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def retrieveCampaign(self, request, context):
         # missing associated documentation comment in .proto file
         pass
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -227,6 +239,11 @@ def add_ETServiceServicer_to_server(servicer, server):
             servicer.retrieveCampaigns,
             request_deserializer=et__service__pb2.RetrieveCampaignsRequestMessage.FromString,
             response_serializer=et__service__pb2.RetrieveCampaignsResponseMessage.SerializeToString,
+        ),
+        'retrieveCampaign': grpc.unary_unary_rpc_method_handler(
+            servicer.retrieveCampaign,
+            request_deserializer=et__service__pb2.RetrieveCampaignRequestMessage.FromString,
+            response_serializer=et__service__pb2.RetrieveCampaignResponseMessage.SerializeToString,
         ),
         'submitDataRecord': grpc.unary_unary_rpc_method_handler(
             servicer.submitDataRecord,
