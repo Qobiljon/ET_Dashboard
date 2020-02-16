@@ -8,12 +8,12 @@ import grpc
 from et_grpcs import et_service_pb2
 from et_grpcs import et_service_pb2_grpc
 
-from ET_Dashboard.models import PresetDataSources, GrpcUserIds, Campaign
+from ET_Dashboard.models import PresetDataSources, GrpcUserIds, Campaign, Participant
 
 import json
 import datetime
 
-from utils.utils import datetime_to_timestamp_ms
+from utils import utils
 
 GRPC_HOST = '165.246.43.162:50051'
 
@@ -102,8 +102,8 @@ def handle_create_campaign(request):
                     )
                     grpc_res: et_service_pb2.BindDataSourceResponseMessage = stub.bindDataSource(grpc_req)
                     data_source = {'name': elem['name'], 'data_source_id': grpc_res.dataSourceId}
-                    if 'rate_%s' % elem['name'] in request.POST:
-                        data_source['rate'] = request.POST['rate_%s' % elem['name']]
+                    if 'delay_%s' % elem['name'] in request.POST:
+                        data_source['delay'] = request.POST['delay_%s' % elem['name']]
                     elif 'json_%s' % elem['name'] in request.POST:
                         data_source['json'] = request.POST['json_%s' % elem['name']]
                     else:
@@ -124,8 +124,8 @@ def handle_create_campaign(request):
                 email=request.user.email,
                 name=request.POST['name'],
                 notes=request.POST['notes'],
-                startTimestamp=datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['startTime'], "%Y-%m-%dT%H:%M")),
-                endTimestamp=datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['endTime'], "%Y-%m-%dT%H:%M")),
+                startTimestamp=utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['startTime'], "%Y-%m-%dT%H:%M")),
+                endTimestamp=utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['endTime'], "%Y-%m-%dT%H:%M")),
                 configJson=json.dumps(obj=config_json)
             )
             grpc_res: et_service_pb2.RegisterCampaignResponseMessage = stub.registerCampaign(grpc_req)
@@ -178,15 +178,44 @@ def handle_campaign_details_page(request):
             campaignId=campaign.campaign_id
         )
         grpc_res: et_service_pb2.RetrieveParticipantsResponseMessage = stub.retrieveParticipants(grpc_req)
-        channel.close()
         if grpc_res.doneSuccessfully:
-            return render(
-                request=request,
-                template_name='campaign_details.html',
-                context={
-                    'title': '"%s" Dashboard' % campaign.name,
-                    'campaign': campaign
-                }
+            grpc_req = et_service_pb2.RetrieveParticipantsRequestMessage(
+                userId=grpc_user_id,
+                email=request.user.email,
+                campaignId=campaign.campaign_id
             )
-        else:
-            return redirect(to='index')
+            grpc_res = stub.retrieveParticipants(grpc_req)
+            if grpc_res.doneSuccessfully:
+                success = len(grpc_res.name) == 0
+                for name, email in zip(grpc_res.name, grpc_res.email):
+                    sub_grpc_req = et_service_pb2.RetrieveParticipantStatisticsRequestMessage(
+                        userId=grpc_user_id,
+                        email=request.user.email,
+                        targetEmail=email,
+                        targetCampaignId=campaign.campaign_id
+                    )
+                    sub_grpc_res = stub.retrieveParticipantStatistics(sub_grpc_req)
+                    success |= sub_grpc_res.doneSuccessfully
+                    if sub_grpc_res.doneSuccessfully:
+                        Participant.create_or_update(
+                            email=email,
+                            campaign=campaign,
+                            full_name=name,
+                            day_no=utils.timestamp_diff_in_days(a=utils.timestamp_now_ms(), b=sub_grpc_res.campaignJoinTimestamp),
+                            amount_of_data=sub_grpc_res.amountOfSubmittedDataSamples,
+                            last_heartbeat_time=utils.timestamp_to_readable_string(sub_grpc_res.lastHeartbeatTimestamp),
+                            last_sync_time=utils.timestamp_to_readable_string(sub_grpc_res.lastSyncTimestamp)
+                        )
+                if success:
+                    channel.close()
+                    return render(
+                        request=request,
+                        template_name='campaign_details.html',
+                        context={
+                            'title': '"%s" Dashboard' % campaign.name,
+                            'campaign': campaign,
+                            'participants': Participant.objects.filter(campaign=campaign)
+                        }
+                    )
+        channel.close()
+        return redirect(to='index')

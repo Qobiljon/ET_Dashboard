@@ -25,50 +25,50 @@ class GrpcUserIds(models.Model):
 
 class PresetDataSources:
     android_sensors = [
-        {'name': 'ANDROID_ACCELEROMETER', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_ACCELEROMETER_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_GAME_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_AMBIENT_TEMPERATURE', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_GEOMAGNETIC_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_GRAVITY', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_GYROSCOPE', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_GYROSCOPE_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_HEART_BEAT', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_HEART_RATE', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_LIGHT', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_LINEAR_ACCELERATION', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_LOW_LATENCY_OFFBODY_DETECT', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_MAGNETIC_FIELD', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_MAGNETIC_FIELD_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_MOTION_DETECTION', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_ORIENTATION', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_POSE_6DOF', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_PRESSURE', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_PROXIMITY', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_RELATIVE_HUMIDITY', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_SIGNIFICANT_MOTION', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_STATIONARY_DETECT', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_STEP_COUNTER', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_STEP_DETECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_TEMPERATURE', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
-        {'name': 'ANDROID_GPS', 'icon': 'smartphone-android-data-source.png', 'type': 'rate'},
+        {'name': 'ANDROID_ACCELEROMETER', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_ACCELEROMETER_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_GAME_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_AMBIENT_TEMPERATURE', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_GEOMAGNETIC_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_GRAVITY', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_GYROSCOPE', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_GYROSCOPE_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_HEART_BEAT', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_HEART_RATE', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_LIGHT', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_LINEAR_ACCELERATION', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_LOW_LATENCY_OFFBODY_DETECT', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_MAGNETIC_FIELD', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_MAGNETIC_FIELD_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_MOTION_DETECTION', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_ORIENTATION', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_POSE_6DOF', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_PRESSURE', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_PROXIMITY', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_RELATIVE_HUMIDITY', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_SIGNIFICANT_MOTION', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_STATIONARY_DETECT', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_STEP_COUNTER', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_STEP_DETECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_TEMPERATURE', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
+        {'name': 'ANDROID_GPS', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
     ]
     tizen_sensors = [
-        {'name': 'TIZEN_ACCELEROMETER', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_GRAVITY', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_GYROSCOPE', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_HRM', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_HUMIDITY', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_LIGHT', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_LINEARACCELERATION', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_MAGNETOMETER', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_ORIENTATION', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_PRESSURE', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_PROXIMITY', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_TEMPERATURE', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_ULTRAVIOLET', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
-        {'name': 'TIZEN_GPS', 'icon': 'wearable-tizen-data-source.png', 'type': 'rate'},
+        {'name': 'TIZEN_ACCELEROMETER', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_GRAVITY', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_GYROSCOPE', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_HRM', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_HUMIDITY', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_LIGHT', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_LINEARACCELERATION', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_MAGNETOMETER', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_ORIENTATION', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_PRESSURE', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_PROXIMITY', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_TEMPERATURE', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_ULTRAVIOLET', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
+        {'name': 'TIZEN_GPS', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
     ]
     others = [
         {'name': 'SURVEY_EMA', 'icon': 'survey-data-source.png', 'type': 'json'},
@@ -119,3 +119,37 @@ class Campaign(models.Model):
                 config_json=config_json,
                 participant_count=participant_count
             )
+
+
+class Participant(models.Model):
+    email = models.CharField(max_length=256)
+    campaign = models.ForeignKey(to=Campaign, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=256)
+    day_no = models.IntegerField(default=None)
+    amount_of_data = models.IntegerField(default=None)
+    last_heartbeat_time = models.CharField(max_length=64, default=None)
+    last_sync_time = models.CharField(max_length=64, default=None)
+
+    class Meta:
+        unique_together = ['email', 'campaign_id']
+
+    @staticmethod
+    def create_or_update(email, campaign, full_name, day_no, amount_of_data, last_heartbeat_time, last_sync_time):
+        if Participant.objects.filter(email=email, campaign=campaign).exists():
+            participant = Participant.objects.get(email=email, campaign=campaign)
+            participant.full_name = full_name
+            participant.day_no = day_no
+            participant.amount_of_data = amount_of_data
+            participant.last_heartbeat_time = last_heartbeat_time
+            participant.last_sync_time = last_sync_time
+            participant.save()
+        else:
+            Participant.objects.create(
+                email=email,
+                campaign=campaign,
+                full_name=full_name,
+                day_no=day_no,
+                amount_of_data=amount_of_data,
+                last_heartbeat_time=last_heartbeat_time,
+                last_sync_time=last_sync_time
+            ).save()

@@ -30,15 +30,15 @@
                 <th>Selected</th>
                 <th>Icon</th>
                 <th>Data source name</th>
-                <th>Data rate (ms) / Config JSON</th>
+                <th>Sensor delay (ms) / Config JSON</th>
             </tr>
             {% for elem in others %}
                 <tr data-source="{{ elem.name }}" class="data_source">
                     <td><input type="checkbox" name="{{ elem.name }}"></td>
                     <td><img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt=""></td>
                     <td>{{ elem.name }}</td>
-                    {% if elem.type == 'rate' %}
-                        <td><label>Rate (ms) <input type="number" value="1000" name="rate_{{ elem.name }}" disabled></label></td>
+                    {% if elem.type == 'delay' %}
+                        <td><label>Delay (ms) <input type="number" value="1000" name="delay_{{ elem.name }}" disabled></label></td>
                     {% elif elem.type == 'json' %}
                         <td><label>Config JSON <input type="text" value="{}" name="json_{{ elem.name }}" disabled></label></td>
                     {% endif %}
@@ -49,8 +49,8 @@
                     <td><input type="checkbox" name="{{ elem.name }}"></td>
                     <td><img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt=""></td>
                     <td>{{ elem.name }}</td>
-                    {% if elem.type == 'rate' %}
-                        <td><label>Rate (ms) <input type="number" value="1000" name="rate_{{ elem.name }}" disabled></label></td>
+                    {% if elem.type == 'delay' %}
+                        <td><label>Delay (ms) <input type="number" value="1000" name="delay_{{ elem.name }}" disabled></label></td>
                     {% elif elem.type == 'json' %}
                         <td><label>Config JSON <input type="text" value="{}" name="json_{{ elem.name }}" disabled></label></td>
                     {% endif %}
@@ -61,8 +61,8 @@
                     <td><input type="checkbox" name="{{ elem.name }}"></td>
                     <td><img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt=""></td>
                     <td>{{ elem.name }}</td>
-                    {% if elem.type == 'rate' %}
-                        <td><label>Rate (ms) <input type="number" value="1000" name="rate_{{ elem.name }}" disabled></label></td>
+                    {% if elem.type == 'delay' %}
+                        <td><label>Delay (ms) <input type="number" value="1000" name="delay_{{ elem.name }}" disabled></label></td>
                     {% elif elem.type == 'json' %}
                         <td><label>Config JSON <input type="text" value="{}" name="json_{{ elem.name }}" disabled></label></td>
                     {% endif %}
