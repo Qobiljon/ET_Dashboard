@@ -1,6 +1,10 @@
 import time
 import datetime
 
+channel = None
+stub = None
+channel_is_open = False
+
 
 def datetime_to_timestamp_ms(value: datetime):
     return int(round(value.timestamp() * 1000))

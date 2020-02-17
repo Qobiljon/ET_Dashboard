@@ -1,21 +1,20 @@
+import json
+import datetime
+import csv
+
+# Django
 from django.contrib.auth import logout as dj_logout
 from django.contrib.auth.decorators import login_required
+from django.http import StreamingHttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
 # gRPC
-import grpc
 from et_grpcs import et_service_pb2
-from et_grpcs import et_service_pb2_grpc
 
+# EasyTrack
 from ET_Dashboard import models as et_models
-
-import json
-import datetime
-
 from utils import utils
-
-GRPC_HOST = '165.246.43.162:50051'
 
 
 def handle_google_verification(request):
@@ -27,11 +26,8 @@ def handle_google_verification(request):
 def handle_index_page(request):
     grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
     if grpc_user_id is not None:
-        channel = grpc.insecure_channel(GRPC_HOST)
-        stub = et_service_pb2_grpc.ETServiceStub(channel)
         grpc_req = et_service_pb2.RetrieveCampaignsRequestMessage(userId=grpc_user_id, email=request.user.email, myCampaignsOnly=True)
-        grpc_res: et_service_pb2.RetrieveCampaignsResponseMessage = stub.retrieveCampaigns(grpc_req)
-        channel.close()
+        grpc_res: et_service_pb2.RetrieveCampaignsResponseMessage = utils.stub.retrieveCampaigns(grpc_req)
         if grpc_res.doneSuccessfully:
             for campaign_id, name, notes, start_timestamp, end_timestamp, creator_email, config_json, participant_count in zip(grpc_res.campaignId, grpc_res.name, grpc_res.notes, grpc_res.startTimestamp, grpc_res.endTimestamp, grpc_res.creatorEmail, grpc_res.configJson, grpc_res.participantCount):
                 et_models.Campaign.create_or_update(
@@ -60,11 +56,8 @@ def handle_index_page(request):
 @require_http_methods(['GET', 'POST'])
 def handle_login_api(request):
     if request.user.is_authenticated:
-        channel = grpc.insecure_channel(GRPC_HOST)
-        stub = et_service_pb2_grpc.ETServiceStub(channel)
         grpc_req = et_service_pb2.DashboardLoginWithEmailRequestMessage(email=request.user.email, name=request.user.get_full_name(), dashboardKey='ETd@$#b0@rd')
-        grpc_res: et_service_pb2.LoginResponseMessage = stub.dashboardLoginWithEmail(grpc_req)
-        channel.close()
+        grpc_res: et_service_pb2.LoginResponseMessage = utils.stub.dashboardLoginWithEmail(grpc_req)
         if grpc_res.doneSuccessfully:
             et_models.GrpcUserIds.create_or_update(email=request.user.email, user_id=grpc_res.userId)
             return redirect(to='index')
@@ -91,8 +84,6 @@ def handle_create_campaign(request):
     grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
     if request.user.is_authenticated and grpc_user_id is not None:
         if request.method == 'POST':
-            channel = grpc.insecure_channel(GRPC_HOST)
-            stub = et_service_pb2_grpc.ETServiceStub(channel)
             config_json = {}
             counter = 0
             for elem in et_models.PresetDataSources.all_preset_data_sources():
@@ -103,7 +94,7 @@ def handle_create_campaign(request):
                         name=elem['name'],
                         iconName=elem['icon']
                     )
-                    grpc_res: et_service_pb2.BindDataSourceResponseMessage = stub.bindDataSource(grpc_req)
+                    grpc_res: et_service_pb2.BindDataSourceResponseMessage = utils.stub.bindDataSource(grpc_req)
                     data_source = {'name': elem['name'], 'data_source_id': grpc_res.dataSourceId, 'icon_name': grpc_res.iconName}
                     if 'delay_%s' % elem['name'] in request.POST:
                         data_source['delay'] = request.POST['delay_%s' % elem['name']]
@@ -131,8 +122,7 @@ def handle_create_campaign(request):
                 endTimestamp=utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['endTime'], "%Y-%m-%dT%H:%M")),
                 configJson=json.dumps(obj=config_json)
             )
-            grpc_res: et_service_pb2.RegisterCampaignResponseMessage = stub.registerCampaign(grpc_req)
-            channel.close()
+            grpc_res: et_service_pb2.RegisterCampaignResponseMessage = utils.stub.registerCampaign(grpc_req)
             if grpc_res.doneSuccessfully:
                 return redirect(to='index')
             else:
@@ -173,21 +163,19 @@ def handle_campaign_details_page(request):
     else:
         # campaign dashboard page
         campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['id']), requester_email=request.user.email)
-        channel = grpc.insecure_channel(GRPC_HOST)
-        stub = et_service_pb2_grpc.ETServiceStub(channel)
         grpc_req = et_service_pb2.RetrieveParticipantsRequestMessage(
             userId=grpc_user_id,
             email=request.user.email,
             campaignId=campaign.campaign_id
         )
-        grpc_res: et_service_pb2.RetrieveParticipantsResponseMessage = stub.retrieveParticipants(grpc_req)
+        grpc_res: et_service_pb2.RetrieveParticipantsResponseMessage = utils.stub.retrieveParticipants(grpc_req)
         if grpc_res.doneSuccessfully:
             grpc_req = et_service_pb2.RetrieveParticipantsRequestMessage(
                 userId=grpc_user_id,
                 email=request.user.email,
                 campaignId=campaign.campaign_id
             )
-            grpc_res = stub.retrieveParticipants(grpc_req)
+            grpc_res = utils.stub.retrieveParticipants(grpc_req)
             if grpc_res.doneSuccessfully:
                 success = len(grpc_res.name) == 0
                 for name, email in zip(grpc_res.name, grpc_res.email):
@@ -197,7 +185,7 @@ def handle_campaign_details_page(request):
                         targetEmail=email,
                         targetCampaignId=campaign.campaign_id
                     )
-                    sub_grpc_res: et_service_pb2.RetrieveParticipantStatisticsResponseMessage = stub.retrieveParticipantStatistics(sub_grpc_req)
+                    sub_grpc_res: et_service_pb2.RetrieveParticipantStatisticsResponseMessage = utils.stub.retrieveParticipantStatistics(sub_grpc_req)
                     success |= sub_grpc_res.doneSuccessfully
                     if sub_grpc_res.doneSuccessfully:
                         et_models.Participant.create_or_update(
@@ -212,7 +200,6 @@ def handle_campaign_details_page(request):
                             per_data_source_amount_of_data=sub_grpc_res.perDataSourceAmountOfData
                         )
                 if success:
-                    channel.close()
                     return render(
                         request=request,
                         template_name='campaign_details.html',
@@ -222,7 +209,6 @@ def handle_campaign_details_page(request):
                             'participants': et_models.Participant.objects.filter(campaign=campaign)
                         }
                     )
-        channel.close()
         return redirect(to='index')
 
 
@@ -277,8 +263,6 @@ def handle_view_data_page(request):
         return redirect(to='index')
     else:
         from_time = int(request.GET['from_time'])
-        channel = grpc.insecure_channel(GRPC_HOST)
-        stub = et_service_pb2_grpc.ETServiceStub(channel)
         grpc_req = et_service_pb2.Retrieve100DataRecordsRequestMessage(
             userId=grpc_user_id,
             email=request.user.email,
@@ -287,8 +271,7 @@ def handle_view_data_page(request):
             targetDataSourceId=int(request.GET['data_source_id']),
             fromTimestamp=from_time
         )
-        grpc_res: et_service_pb2.Retrieve100DataRecordsResponseMessage = stub.retrieve100DataRecords(grpc_req)
-        channel.close()
+        grpc_res: et_service_pb2.Retrieve100DataRecordsResponseMessage = utils.stub.retrieve100DataRecords(grpc_req)
         if grpc_res.doneSuccessfully:
             records = []
             for timestamp, value in zip(grpc_res.timestamp, grpc_res.value):
@@ -298,7 +281,7 @@ def handle_view_data_page(request):
                 request=request,
                 template_name='view_raw_data.html',
                 context={
-                    'title': 'Latest (raw) 100 data records',
+                    'title': 'Data data samples (100 records at a time)',
                     'records': records,
                     'from_time': from_time
                 }
@@ -309,4 +292,42 @@ def handle_view_data_page(request):
 
 @login_required
 def handle_download_data_page(request):
-    return redirect(to='index')
+    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
+    if grpc_user_id is None:
+        return redirect(to='login')
+    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists() or \
+            'email' not in request.GET or not et_models.Participant.objects.filter(email=request.GET['email'], campaign_id=request.GET['campaign_id']).exists() or \
+            'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit():
+        return redirect(to='index')
+    else:
+        campaign_id = int(request.GET['campaign_id'])
+        email = request.GET['email']
+        data_source_id = int(request.GET['data_source_id'])
+
+        def load_next_100rows(pseudo_buffer):
+            writer = csv.writer(pseudo_buffer)
+            from_time = 0
+            data_available = True
+            while data_available:
+                grpc_req = et_service_pb2.Retrieve100DataRecordsRequestMessage(
+                    userId=grpc_user_id,
+                    email=email,
+                    targetEmail=request.GET['email'],
+                    targetCampaignId=campaign_id,
+                    targetDataSourceId=data_source_id,
+                    fromTimestamp=from_time
+                )
+                grpc_res: et_service_pb2.Retrieve100DataRecordsResponseMessage = utils.stub.retrieve100DataRecords(grpc_req)
+                if grpc_res.doneSuccessfully:
+                    for timestamp, value in zip(grpc_res.timestamp, grpc_res.value):
+                        from_time = timestamp
+                        yield writer.writerow([str(timestamp), value])
+                data_available = grpc_res.doneSuccessfully and grpc_res.moreDataAvailable
+
+        gen = load_next_100rows(pseudo_buffer=et_models.Echo())
+        res = StreamingHttpResponse(
+            streaming_content=(elem for elem in gen),
+            content_type='text/csv'
+        )
+        res['Content-Disposition'] = 'attachment; filename="email-{0}.csv"'.format(utils.timestamp_to_readable_string(utils.timestamp_now_ms()).replace('/', '-'))
+        return res

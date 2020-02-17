@@ -185,3 +185,8 @@ class Record:
     def __init__(self, timestamp_ms, value):
         self.time = utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms)
         self.value = value
+
+
+class Echo(object):
+    def write(self, value):
+        return value
