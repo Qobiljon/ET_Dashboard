@@ -69,10 +69,10 @@ class ETServiceStub(object):
             request_serializer=et__service__pb2.RetrieveParticipantStatisticsRequestMessage.SerializeToString,
             response_deserializer=et__service__pb2.RetrieveParticipantStatisticsResponseMessage.FromString,
         )
-        self.retrieveData = channel.unary_unary(
-            '/ETService/retrieveData',
-            request_serializer=et__service__pb2.RetrieveDataRequestMessage.SerializeToString,
-            response_deserializer=et__service__pb2.RetrieveDataResponseMessage.FromString,
+        self.retrieve100DataRecords = channel.unary_unary(
+            '/ETService/retrieve100DataRecords',
+            request_serializer=et__service__pb2.Retrieve100DataRecordsRequestMessage.SerializeToString,
+            response_deserializer=et__service__pb2.Retrieve100DataRecordsResponseMessage.FromString,
         )
         self.retrieveUnreadDirectMessages = channel.unary_unary(
             '/ETService/retrieveUnreadDirectMessages',
@@ -177,7 +177,7 @@ class ETServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def retrieveData(self, request, context):
+    def retrieve100DataRecords(self, request, context):
         # missing associated documentation comment in .proto file
         pass
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -270,10 +270,10 @@ def add_ETServiceServicer_to_server(servicer, server):
             request_deserializer=et__service__pb2.RetrieveParticipantStatisticsRequestMessage.FromString,
             response_serializer=et__service__pb2.RetrieveParticipantStatisticsResponseMessage.SerializeToString,
         ),
-        'retrieveData': grpc.unary_unary_rpc_method_handler(
-            servicer.retrieveData,
-            request_deserializer=et__service__pb2.RetrieveDataRequestMessage.FromString,
-            response_serializer=et__service__pb2.RetrieveDataResponseMessage.SerializeToString,
+        'retrieve100DataRecords': grpc.unary_unary_rpc_method_handler(
+            servicer.retrieve100DataRecords,
+            request_deserializer=et__service__pb2.Retrieve100DataRecordsRequestMessage.FromString,
+            response_serializer=et__service__pb2.Retrieve100DataRecordsResponseMessage.SerializeToString,
         ),
         'retrieveUnreadDirectMessages': grpc.unary_unary_rpc_method_handler(
             servicer.retrieveUnreadDirectMessages,

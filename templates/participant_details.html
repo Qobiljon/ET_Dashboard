@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h3>For the campaign: "{{ campaign.name }}"</h3>
+    <table>
+        <tr>
+            <th>Icon</th>
+            <th>Data source name</th>
+            <th>Sensor delay (ms)<br>(or config JSON)</th>
+            <th>Amount of<br>data samples</th>
+            <th>Actions on<br>Data</th>
+        </tr>
+        {% for data_source in data_sources %}
+            <tr data-source="{{ data_source.name }}" class="data_source">
+                <td><img src="http://{{ request.get_host }}/static/{{ data_source.icon_name }}" alt="{{ data_source.name }}"></td>
+                <td>{{ data_source.name }}</td>
+                {% if data_source.delay is None %}
+                    <td>{{ data_source.json }}</td>
+                {% elif data_source.json is None %}
+                    <td>{{ data_source.delay }} ms</td>
+                {% endif %}
+                <td>{{ data_source.amount_of_data }}</td>
+                <td>
+                    <a class="action_button" href="{% url 'download_data' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}">Download</a>
+                    <a class="action_button" href="{% url 'view_data' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}&from_time=0">View</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <style>
+        table {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        table tr:first-child {
+            background: #4285F4; /* #F1F1F1; /* Darken header a bit */
+            color: white;
+            font-weight: bold;
+            padding: 10px 0;
+            font-size: large;
+        }
+
+        table tr.data_source:nth-child(even) td {
+            background: white;
+        }
+
+        table tr.data_source:nth-child(even) td {
+            background: white;
+        }
+
+        /* Cells in odd rows (1,3,5...) are another (excludes header cells)  */
+        table tr.data_source:nth-child(odd) td {
+            background: #DFDFDF;
+        }
+
+        a.action_button {
+            background: #2ecc71;
+            padding: 5px;
+            margin: 2px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            float: right;
+            font-size: larger;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        a.action_button:hover {
+            background: #666;
+            color: #FFF;
+        }
+    </style>
+{% endblock %}

@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     syntax='proto3',
     serialized_options=_b('\n\024inha.nslab.easytrack'),
     serialized_pb=_b(
-        '\n\x10\x65t_service.proto\"2\n\x16\x44\x65\x66\x61ultResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\"7\n$LoginWithGoogleIdTokenRequestMessage\x12\x0f\n\x07idToken\x18\x01 \x01(\t\"U\n BindUserToCampaignRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x12\n\ncampaignId\x18\x03 \x01(\x05\"y\n!BindUserToCampaignResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x1a\n\x12isFirstTimeBinding\x18\x02 \x01(\x08\x12\x1e\n\x16\x63\x61mpaignStartTimestamp\x18\x03 \x01(\x03\"Z\n%DashboardLoginWithEmailRequestMessage\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61shboardKey\x18\x03 \x01(\t\"@\n\x14LoginResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x0e\n\x06userId\x18\x02 \x01(\x05\"\x9e\x01\n\x1eRegisterCampaignRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\r\n\x05notes\x18\x04 \x01(\t\x12\x12\n\nconfigJson\x18\x05 \x01(\t\x12\x16\n\x0estartTimestamp\x18\x06 \x01(\x03\x12\x14\n\x0c\x65ndTimestamp\x18\x07 \x01(\x03\"O\n\x1fRegisterCampaignResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x12\n\ncampaignId\x18\x02 \x01(\x05\"Y\n\x1fRetrieveCampaignsRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x17\n\x0fmyCampaignsOnly\x18\x03 \x01(\x08\"\xdf\x01\n RetrieveCampaignsResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x12\n\ncampaignId\x18\x02 \x03(\x05\x12\x0c\n\x04name\x18\x03 \x03(\t\x12\r\n\x05notes\x18\x04 \x03(\t\x12\x16\n\x0estartTimestamp\x18\x05 \x03(\x03\x12\x14\n\x0c\x65ndTimestamp\x18\x06 \x03(\x03\x12\x14\n\x0c\x63reatorEmail\x18\x07 \x03(\t\x12\x12\n\nconfigJson\x18\x08 \x03(\t\x12\x18\n\x10participantCount\x18\t \x03(\x05\"S\n\x1eRetrieveCampaignRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x12\n\ncampaignId\x18\x03 \x01(\x05\"\xca\x01\n\x1fRetrieveCampaignResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\r\n\x05notes\x18\x04 \x01(\t\x12\x16\n\x0estartTimestamp\x18\x05 \x01(\x03\x12\x14\n\x0c\x65ndTimestamp\x18\x06 \x01(\x03\x12\x14\n\x0c\x63reatorEmail\x18\x07 \x01(\t\x12\x12\n\nconfigJson\x18\x08 \x01(\t\x12\x18\n\x10participantCount\x18\t \x01(\x05\"\x88\x01\n\x1eSubmitDataRecordRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x12\n\ndataSource\x18\x04 \x01(\x05\x12\x10\n\x08\x61\x63\x63uracy\x18\x05 \x01(\x02\x12\x0e\n\x06values\x18\x06 \x01(\t\">\n\x1dSubmitHeartbeatRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\"y\n!SubmitDirectMessageRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x13\n\x0btargetEmail\x18\x03 \x01(\t\x12\x0f\n\x07subject\x18\x04 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x05 \x01(\t\"W\n\"RetrieveParticipantsRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x12\n\ncampaignId\x18\x03 \x01(\x05\"\\\n#RetrieveParticipantsResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\r\n\x05\x65mail\x18\x02 \x03(\t\x12\x0c\n\x04name\x18\x03 \x03(\t\"{\n+RetrieveParticipantStatisticsRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x13\n\x0btargetEmail\x18\x03 \x01(\t\x12\x18\n\x10targetCampaignId\x18\x04 \x01(\x05\"\xe2\x01\n,RetrieveParticipantStatisticsResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x18\n\x10\x61\x63tiveCampaignId\x18\x02 \x01(\x05\x12\x1d\n\x15\x63\x61mpaignJoinTimestamp\x18\x03 \x01(\x03\x12\x19\n\x11lastSyncTimestamp\x18\x04 \x01(\x03\x12\x1e\n\x16lastHeartbeatTimestamp\x18\x05 \x01(\x03\x12$\n\x1c\x61mountOfSubmittedDataSamples\x18\x06 \x01(\x05\"~\n\x1aRetrieveDataRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x13\n\x0btargetEmail\x18\x03 \x01(\t\x12\x15\n\rfromTimestamp\x18\x04 \x01(\x03\x12\x15\n\rtillTimestamp\x18\x05 \x01(\x03\"m\n\x1bRetrieveDataResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x11\n\ttimestamp\x18\x02 \x03(\x03\x12\x12\n\ndataSource\x18\x03 \x03(\x05\x12\r\n\x05value\x18\x04 \x03(\t\"K\n*RetrieveUnreadDirectMessagesRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\"\x91\x01\n+RetrieveUnreadDirectMessagesResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x13\n\x0bsourceEmail\x18\x02 \x03(\t\x12\x11\n\ttimestamp\x18\x03 \x03(\x03\x12\x0f\n\x07subject\x18\x04 \x03(\t\x12\x0f\n\x07\x63ontent\x18\x05 \x03(\t\"J\n)RetrieveUnreadNotificationsRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\"{\n*RetrieveUnreadNotificationsResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x11\n\ttimestamp\x18\x02 \x03(\x03\x12\x0f\n\x07subject\x18\x03 \x03(\t\x12\x0f\n\x07\x63ontent\x18\x04 \x03(\t\"K\n\x1c\x42indDataSourceRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\"O\n\x1d\x42indDataSourceResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x14\n\x0c\x64\x61taSourceId\x18\x02 \x01(\x05\"E\n$RetrieveAllDataSourcesRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\"{\n%RetrieveAllDataSourcesResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x14\n\x0c\x64\x61taSourceId\x18\x02 \x03(\x05\x12\x0c\n\x04name\x18\x03 \x03(\t\x12\x14\n\x0c\x63reatorEmail\x18\x04 \x03(\t2\x84\x0c\n\tETService\x12S\n\x11loginWithGoogleId\x12%.LoginWithGoogleIdTokenRequestMessage\x1a\x15.LoginResponseMessage\"\x00\x12]\n\x12\x62indUserToCampaign\x12!.BindUserToCampaignRequestMessage\x1a\".BindUserToCampaignResponseMessage\"\x00\x12Z\n\x17\x64\x61shboardLoginWithEmail\x12&.DashboardLoginWithEmailRequestMessage\x1a\x15.LoginResponseMessage\"\x00\x12W\n\x10registerCampaign\x12\x1f.RegisterCampaignRequestMessage\x1a .RegisterCampaignResponseMessage\"\x00\x12Z\n\x11retrieveCampaigns\x12 .RetrieveCampaignsRequestMessage\x1a!.RetrieveCampaignsResponseMessage\"\x00\x12W\n\x10retrieveCampaign\x12\x1f.RetrieveCampaignRequestMessage\x1a .RetrieveCampaignResponseMessage\"\x00\x12N\n\x10submitDataRecord\x12\x1f.SubmitDataRecordRequestMessage\x1a\x17.DefaultResponseMessage\"\x00\x12L\n\x0fsubmitHeartbeat\x12\x1e.SubmitHeartbeatRequestMessage\x1a\x17.DefaultResponseMessage\"\x00\x12T\n\x13submitDirectMessage\x12\".SubmitDirectMessageRequestMessage\x1a\x17.DefaultResponseMessage\"\x00\x12\x63\n\x14retrieveParticipants\x12#.RetrieveParticipantsRequestMessage\x1a$.RetrieveParticipantsResponseMessage\"\x00\x12~\n\x1dretrieveParticipantStatistics\x12,.RetrieveParticipantStatisticsRequestMessage\x1a-.RetrieveParticipantStatisticsResponseMessage\"\x00\x12K\n\x0cretrieveData\x12\x1b.RetrieveDataRequestMessage\x1a\x1c.RetrieveDataResponseMessage\"\x00\x12{\n\x1cretrieveUnreadDirectMessages\x12+.RetrieveUnreadDirectMessagesRequestMessage\x1a,.RetrieveUnreadDirectMessagesResponseMessage\"\x00\x12x\n\x1bretrieveUnreadNotifications\x12*.RetrieveUnreadNotificationsRequestMessage\x1a+.RetrieveUnreadNotificationsResponseMessage\"\x00\x12Q\n\x0e\x62indDataSource\x12\x1d.BindDataSourceRequestMessage\x1a\x1e.BindDataSourceResponseMessage\"\x00\x12i\n\x16retrieveAllDataSources\x12%.RetrieveAllDataSourcesRequestMessage\x1a&.RetrieveAllDataSourcesResponseMessage\"\x00\x42\x16\n\x14inha.nslab.easytrackb\x06proto3')
+        '\n\x10\x65t_service.proto\"2\n\x16\x44\x65\x66\x61ultResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\"7\n$LoginWithGoogleIdTokenRequestMessage\x12\x0f\n\x07idToken\x18\x01 \x01(\t\"U\n BindUserToCampaignRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x12\n\ncampaignId\x18\x03 \x01(\x05\"y\n!BindUserToCampaignResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x1a\n\x12isFirstTimeBinding\x18\x02 \x01(\x08\x12\x1e\n\x16\x63\x61mpaignStartTimestamp\x18\x03 \x01(\x03\"Z\n%DashboardLoginWithEmailRequestMessage\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61shboardKey\x18\x03 \x01(\t\"@\n\x14LoginResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x0e\n\x06userId\x18\x02 \x01(\x05\"\x9e\x01\n\x1eRegisterCampaignRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\r\n\x05notes\x18\x04 \x01(\t\x12\x12\n\nconfigJson\x18\x05 \x01(\t\x12\x16\n\x0estartTimestamp\x18\x06 \x01(\x03\x12\x14\n\x0c\x65ndTimestamp\x18\x07 \x01(\x03\"O\n\x1fRegisterCampaignResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x12\n\ncampaignId\x18\x02 \x01(\x05\"Y\n\x1fRetrieveCampaignsRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x17\n\x0fmyCampaignsOnly\x18\x03 \x01(\x08\"\xdf\x01\n RetrieveCampaignsResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x12\n\ncampaignId\x18\x02 \x03(\x05\x12\x0c\n\x04name\x18\x03 \x03(\t\x12\r\n\x05notes\x18\x04 \x03(\t\x12\x16\n\x0estartTimestamp\x18\x05 \x03(\x03\x12\x14\n\x0c\x65ndTimestamp\x18\x06 \x03(\x03\x12\x14\n\x0c\x63reatorEmail\x18\x07 \x03(\t\x12\x12\n\nconfigJson\x18\x08 \x03(\t\x12\x18\n\x10participantCount\x18\t \x03(\x05\"S\n\x1eRetrieveCampaignRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x12\n\ncampaignId\x18\x03 \x01(\x05\"\xca\x01\n\x1fRetrieveCampaignResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\r\n\x05notes\x18\x04 \x01(\t\x12\x16\n\x0estartTimestamp\x18\x05 \x01(\x03\x12\x14\n\x0c\x65ndTimestamp\x18\x06 \x01(\x03\x12\x14\n\x0c\x63reatorEmail\x18\x07 \x01(\t\x12\x12\n\nconfigJson\x18\x08 \x01(\t\x12\x18\n\x10participantCount\x18\t \x01(\x05\"\x88\x01\n\x1eSubmitDataRecordRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x12\n\ndataSource\x18\x04 \x01(\x05\x12\x10\n\x08\x61\x63\x63uracy\x18\x05 \x01(\x02\x12\x0e\n\x06values\x18\x06 \x01(\t\">\n\x1dSubmitHeartbeatRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\"y\n!SubmitDirectMessageRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x13\n\x0btargetEmail\x18\x03 \x01(\t\x12\x0f\n\x07subject\x18\x04 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x05 \x01(\t\"W\n\"RetrieveParticipantsRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x12\n\ncampaignId\x18\x03 \x01(\x05\"\\\n#RetrieveParticipantsResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\r\n\x05\x65mail\x18\x02 \x03(\t\x12\x0c\n\x04name\x18\x03 \x03(\t\"{\n+RetrieveParticipantStatisticsRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x13\n\x0btargetEmail\x18\x03 \x01(\t\x12\x18\n\x10targetCampaignId\x18\x04 \x01(\x05\"\x9b\x02\n,RetrieveParticipantStatisticsResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x18\n\x10\x61\x63tiveCampaignId\x18\x02 \x01(\x05\x12\x1d\n\x15\x63\x61mpaignJoinTimestamp\x18\x03 \x01(\x03\x12\x19\n\x11lastSyncTimestamp\x18\x04 \x01(\x03\x12\x1e\n\x16lastHeartbeatTimestamp\x18\x05 \x01(\x03\x12$\n\x1c\x61mountOfSubmittedDataSamples\x18\x06 \x01(\x05\x12\x14\n\x0c\x64\x61taSourceId\x18\x07 \x03(\x05\x12!\n\x19perDataSourceAmountOfData\x18\x08 \x03(\x05\"\xa7\x01\n$Retrieve100DataRecordsRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x13\n\x0btargetEmail\x18\x03 \x01(\t\x12\x18\n\x10targetCampaignId\x18\x04 \x01(\x05\x12\x1a\n\x12targetDataSourceId\x18\x05 \x01(\x05\x12\x15\n\rfromTimestamp\x18\x06 \x01(\x03\"w\n%Retrieve100DataRecordsResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x11\n\ttimestamp\x18\x02 \x03(\x03\x12\x12\n\ndataSource\x18\x03 \x03(\x05\x12\r\n\x05value\x18\x04 \x03(\t\"K\n*RetrieveUnreadDirectMessagesRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\"\x91\x01\n+RetrieveUnreadDirectMessagesResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x13\n\x0bsourceEmail\x18\x02 \x03(\t\x12\x11\n\ttimestamp\x18\x03 \x03(\x03\x12\x0f\n\x07subject\x18\x04 \x03(\t\x12\x0f\n\x07\x63ontent\x18\x05 \x03(\t\"J\n)RetrieveUnreadNotificationsRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\"{\n*RetrieveUnreadNotificationsResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x11\n\ttimestamp\x18\x02 \x03(\x03\x12\x0f\n\x07subject\x18\x03 \x03(\t\x12\x0f\n\x07\x63ontent\x18\x04 \x03(\t\"]\n\x1c\x42indDataSourceRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x10\n\x08iconName\x18\x04 \x01(\t\"a\n\x1d\x42indDataSourceResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x14\n\x0c\x64\x61taSourceId\x18\x02 \x01(\x05\x12\x10\n\x08iconName\x18\x03 \x01(\t\"E\n$RetrieveAllDataSourcesRequestMessage\x12\x0e\n\x06userId\x18\x01 \x01(\x05\x12\r\n\x05\x65mail\x18\x02 \x01(\t\"{\n%RetrieveAllDataSourcesResponseMessage\x12\x18\n\x10\x64oneSuccessfully\x18\x01 \x01(\x08\x12\x14\n\x0c\x64\x61taSourceId\x18\x02 \x03(\x05\x12\x0c\n\x04name\x18\x03 \x03(\t\x12\x14\n\x0c\x63reatorEmail\x18\x04 \x03(\t2\xa2\x0c\n\tETService\x12S\n\x11loginWithGoogleId\x12%.LoginWithGoogleIdTokenRequestMessage\x1a\x15.LoginResponseMessage\"\x00\x12]\n\x12\x62indUserToCampaign\x12!.BindUserToCampaignRequestMessage\x1a\".BindUserToCampaignResponseMessage\"\x00\x12Z\n\x17\x64\x61shboardLoginWithEmail\x12&.DashboardLoginWithEmailRequestMessage\x1a\x15.LoginResponseMessage\"\x00\x12W\n\x10registerCampaign\x12\x1f.RegisterCampaignRequestMessage\x1a .RegisterCampaignResponseMessage\"\x00\x12Z\n\x11retrieveCampaigns\x12 .RetrieveCampaignsRequestMessage\x1a!.RetrieveCampaignsResponseMessage\"\x00\x12W\n\x10retrieveCampaign\x12\x1f.RetrieveCampaignRequestMessage\x1a .RetrieveCampaignResponseMessage\"\x00\x12N\n\x10submitDataRecord\x12\x1f.SubmitDataRecordRequestMessage\x1a\x17.DefaultResponseMessage\"\x00\x12L\n\x0fsubmitHeartbeat\x12\x1e.SubmitHeartbeatRequestMessage\x1a\x17.DefaultResponseMessage\"\x00\x12T\n\x13submitDirectMessage\x12\".SubmitDirectMessageRequestMessage\x1a\x17.DefaultResponseMessage\"\x00\x12\x63\n\x14retrieveParticipants\x12#.RetrieveParticipantsRequestMessage\x1a$.RetrieveParticipantsResponseMessage\"\x00\x12~\n\x1dretrieveParticipantStatistics\x12,.RetrieveParticipantStatisticsRequestMessage\x1a-.RetrieveParticipantStatisticsResponseMessage\"\x00\x12i\n\x16retrieve100DataRecords\x12%.Retrieve100DataRecordsRequestMessage\x1a&.Retrieve100DataRecordsResponseMessage\"\x00\x12{\n\x1cretrieveUnreadDirectMessages\x12+.RetrieveUnreadDirectMessagesRequestMessage\x1a,.RetrieveUnreadDirectMessagesResponseMessage\"\x00\x12x\n\x1bretrieveUnreadNotifications\x12*.RetrieveUnreadNotificationsRequestMessage\x1a+.RetrieveUnreadNotificationsResponseMessage\"\x00\x12Q\n\x0e\x62indDataSource\x12\x1d.BindDataSourceRequestMessage\x1a\x1e.BindDataSourceResponseMessage\"\x00\x12i\n\x16retrieveAllDataSources\x12%.RetrieveAllDataSourcesRequestMessage\x1a&.RetrieveAllDataSourcesResponseMessage\"\x00\x42\x16\n\x14inha.nslab.easytrackb\x06proto3')
 )
 
 _DEFAULTRESPONSEMESSAGE = _descriptor.Descriptor(
@@ -962,6 +962,20 @@ _RETRIEVEPARTICIPANTSTATISTICSRESPONSEMESSAGE = _descriptor.Descriptor(
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             serialized_options=None, file=DESCRIPTOR),
+        _descriptor.FieldDescriptor(
+            name='dataSourceId', full_name='RetrieveParticipantStatisticsResponseMessage.dataSourceId', index=6,
+            number=7, type=5, cpp_type=1, label=3,
+            has_default_value=False, default_value=[],
+            message_type=None, enum_type=None, containing_type=None,
+            is_extension=False, extension_scope=None,
+            serialized_options=None, file=DESCRIPTOR),
+        _descriptor.FieldDescriptor(
+            name='perDataSourceAmountOfData', full_name='RetrieveParticipantStatisticsResponseMessage.perDataSourceAmountOfData', index=7,
+            number=8, type=5, cpp_type=1, label=3,
+            has_default_value=False, default_value=[],
+            message_type=None, enum_type=None, containing_type=None,
+            is_extension=False, extension_scope=None,
+            serialized_options=None, file=DESCRIPTOR),
     ],
     extensions=[
     ],
@@ -975,47 +989,54 @@ _RETRIEVEPARTICIPANTSTATISTICSRESPONSEMESSAGE = _descriptor.Descriptor(
     oneofs=[
     ],
     serialized_start=1981,
-    serialized_end=2207,
+    serialized_end=2264,
 )
 
-_RETRIEVEDATAREQUESTMESSAGE = _descriptor.Descriptor(
-    name='RetrieveDataRequestMessage',
-    full_name='RetrieveDataRequestMessage',
+_RETRIEVE100DATARECORDSREQUESTMESSAGE = _descriptor.Descriptor(
+    name='Retrieve100DataRecordsRequestMessage',
+    full_name='Retrieve100DataRecordsRequestMessage',
     filename=None,
     file=DESCRIPTOR,
     containing_type=None,
     fields=[
         _descriptor.FieldDescriptor(
-            name='userId', full_name='RetrieveDataRequestMessage.userId', index=0,
+            name='userId', full_name='Retrieve100DataRecordsRequestMessage.userId', index=0,
             number=1, type=5, cpp_type=1, label=1,
             has_default_value=False, default_value=0,
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             serialized_options=None, file=DESCRIPTOR),
         _descriptor.FieldDescriptor(
-            name='email', full_name='RetrieveDataRequestMessage.email', index=1,
+            name='email', full_name='Retrieve100DataRecordsRequestMessage.email', index=1,
             number=2, type=9, cpp_type=9, label=1,
             has_default_value=False, default_value=_b("").decode('utf-8'),
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             serialized_options=None, file=DESCRIPTOR),
         _descriptor.FieldDescriptor(
-            name='targetEmail', full_name='RetrieveDataRequestMessage.targetEmail', index=2,
+            name='targetEmail', full_name='Retrieve100DataRecordsRequestMessage.targetEmail', index=2,
             number=3, type=9, cpp_type=9, label=1,
             has_default_value=False, default_value=_b("").decode('utf-8'),
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             serialized_options=None, file=DESCRIPTOR),
         _descriptor.FieldDescriptor(
-            name='fromTimestamp', full_name='RetrieveDataRequestMessage.fromTimestamp', index=3,
-            number=4, type=3, cpp_type=2, label=1,
+            name='targetCampaignId', full_name='Retrieve100DataRecordsRequestMessage.targetCampaignId', index=3,
+            number=4, type=5, cpp_type=1, label=1,
             has_default_value=False, default_value=0,
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             serialized_options=None, file=DESCRIPTOR),
         _descriptor.FieldDescriptor(
-            name='tillTimestamp', full_name='RetrieveDataRequestMessage.tillTimestamp', index=4,
-            number=5, type=3, cpp_type=2, label=1,
+            name='targetDataSourceId', full_name='Retrieve100DataRecordsRequestMessage.targetDataSourceId', index=4,
+            number=5, type=5, cpp_type=1, label=1,
+            has_default_value=False, default_value=0,
+            message_type=None, enum_type=None, containing_type=None,
+            is_extension=False, extension_scope=None,
+            serialized_options=None, file=DESCRIPTOR),
+        _descriptor.FieldDescriptor(
+            name='fromTimestamp', full_name='Retrieve100DataRecordsRequestMessage.fromTimestamp', index=5,
+            number=6, type=3, cpp_type=2, label=1,
             has_default_value=False, default_value=0,
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
@@ -1032,40 +1053,40 @@ _RETRIEVEDATAREQUESTMESSAGE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=2209,
-    serialized_end=2335,
+    serialized_start=2267,
+    serialized_end=2434,
 )
 
-_RETRIEVEDATARESPONSEMESSAGE = _descriptor.Descriptor(
-    name='RetrieveDataResponseMessage',
-    full_name='RetrieveDataResponseMessage',
+_RETRIEVE100DATARECORDSRESPONSEMESSAGE = _descriptor.Descriptor(
+    name='Retrieve100DataRecordsResponseMessage',
+    full_name='Retrieve100DataRecordsResponseMessage',
     filename=None,
     file=DESCRIPTOR,
     containing_type=None,
     fields=[
         _descriptor.FieldDescriptor(
-            name='doneSuccessfully', full_name='RetrieveDataResponseMessage.doneSuccessfully', index=0,
+            name='doneSuccessfully', full_name='Retrieve100DataRecordsResponseMessage.doneSuccessfully', index=0,
             number=1, type=8, cpp_type=7, label=1,
             has_default_value=False, default_value=False,
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             serialized_options=None, file=DESCRIPTOR),
         _descriptor.FieldDescriptor(
-            name='timestamp', full_name='RetrieveDataResponseMessage.timestamp', index=1,
+            name='timestamp', full_name='Retrieve100DataRecordsResponseMessage.timestamp', index=1,
             number=2, type=3, cpp_type=2, label=3,
             has_default_value=False, default_value=[],
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             serialized_options=None, file=DESCRIPTOR),
         _descriptor.FieldDescriptor(
-            name='dataSource', full_name='RetrieveDataResponseMessage.dataSource', index=2,
+            name='dataSource', full_name='Retrieve100DataRecordsResponseMessage.dataSource', index=2,
             number=3, type=5, cpp_type=1, label=3,
             has_default_value=False, default_value=[],
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             serialized_options=None, file=DESCRIPTOR),
         _descriptor.FieldDescriptor(
-            name='value', full_name='RetrieveDataResponseMessage.value', index=3,
+            name='value', full_name='Retrieve100DataRecordsResponseMessage.value', index=3,
             number=4, type=9, cpp_type=9, label=3,
             has_default_value=False, default_value=[],
             message_type=None, enum_type=None, containing_type=None,
@@ -1083,8 +1104,8 @@ _RETRIEVEDATARESPONSEMESSAGE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=2337,
-    serialized_end=2446,
+    serialized_start=2436,
+    serialized_end=2555,
 )
 
 _RETRIEVEUNREADDIRECTMESSAGESREQUESTMESSAGE = _descriptor.Descriptor(
@@ -1120,8 +1141,8 @@ _RETRIEVEUNREADDIRECTMESSAGESREQUESTMESSAGE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=2448,
-    serialized_end=2523,
+    serialized_start=2557,
+    serialized_end=2632,
 )
 
 _RETRIEVEUNREADDIRECTMESSAGESRESPONSEMESSAGE = _descriptor.Descriptor(
@@ -1178,8 +1199,8 @@ _RETRIEVEUNREADDIRECTMESSAGESRESPONSEMESSAGE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=2526,
-    serialized_end=2671,
+    serialized_start=2635,
+    serialized_end=2780,
 )
 
 _RETRIEVEUNREADNOTIFICATIONSREQUESTMESSAGE = _descriptor.Descriptor(
@@ -1215,8 +1236,8 @@ _RETRIEVEUNREADNOTIFICATIONSREQUESTMESSAGE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=2673,
-    serialized_end=2747,
+    serialized_start=2782,
+    serialized_end=2856,
 )
 
 _RETRIEVEUNREADNOTIFICATIONSRESPONSEMESSAGE = _descriptor.Descriptor(
@@ -1266,8 +1287,8 @@ _RETRIEVEUNREADNOTIFICATIONSRESPONSEMESSAGE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=2749,
-    serialized_end=2872,
+    serialized_start=2858,
+    serialized_end=2981,
 )
 
 _BINDDATASOURCEREQUESTMESSAGE = _descriptor.Descriptor(
@@ -1298,6 +1319,13 @@ _BINDDATASOURCEREQUESTMESSAGE = _descriptor.Descriptor(
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             serialized_options=None, file=DESCRIPTOR),
+        _descriptor.FieldDescriptor(
+            name='iconName', full_name='BindDataSourceRequestMessage.iconName', index=3,
+            number=4, type=9, cpp_type=9, label=1,
+            has_default_value=False, default_value=_b("").decode('utf-8'),
+            message_type=None, enum_type=None, containing_type=None,
+            is_extension=False, extension_scope=None,
+            serialized_options=None, file=DESCRIPTOR),
     ],
     extensions=[
     ],
@@ -1310,8 +1338,8 @@ _BINDDATASOURCEREQUESTMESSAGE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=2874,
-    serialized_end=2949,
+    serialized_start=2983,
+    serialized_end=3076,
 )
 
 _BINDDATASOURCERESPONSEMESSAGE = _descriptor.Descriptor(
@@ -1335,6 +1363,13 @@ _BINDDATASOURCERESPONSEMESSAGE = _descriptor.Descriptor(
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             serialized_options=None, file=DESCRIPTOR),
+        _descriptor.FieldDescriptor(
+            name='iconName', full_name='BindDataSourceResponseMessage.iconName', index=2,
+            number=3, type=9, cpp_type=9, label=1,
+            has_default_value=False, default_value=_b("").decode('utf-8'),
+            message_type=None, enum_type=None, containing_type=None,
+            is_extension=False, extension_scope=None,
+            serialized_options=None, file=DESCRIPTOR),
     ],
     extensions=[
     ],
@@ -1347,8 +1382,8 @@ _BINDDATASOURCERESPONSEMESSAGE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=2951,
-    serialized_end=3030,
+    serialized_start=3078,
+    serialized_end=3175,
 )
 
 _RETRIEVEALLDATASOURCESREQUESTMESSAGE = _descriptor.Descriptor(
@@ -1384,8 +1419,8 @@ _RETRIEVEALLDATASOURCESREQUESTMESSAGE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=3032,
-    serialized_end=3101,
+    serialized_start=3177,
+    serialized_end=3246,
 )
 
 _RETRIEVEALLDATASOURCESRESPONSEMESSAGE = _descriptor.Descriptor(
@@ -1435,8 +1470,8 @@ _RETRIEVEALLDATASOURCESRESPONSEMESSAGE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=3103,
-    serialized_end=3226,
+    serialized_start=3248,
+    serialized_end=3371,
 )
 
 DESCRIPTOR.message_types_by_name['DefaultResponseMessage'] = _DEFAULTRESPONSEMESSAGE
@@ -1458,8 +1493,8 @@ DESCRIPTOR.message_types_by_name['RetrieveParticipantsRequestMessage'] = _RETRIE
 DESCRIPTOR.message_types_by_name['RetrieveParticipantsResponseMessage'] = _RETRIEVEPARTICIPANTSRESPONSEMESSAGE
 DESCRIPTOR.message_types_by_name['RetrieveParticipantStatisticsRequestMessage'] = _RETRIEVEPARTICIPANTSTATISTICSREQUESTMESSAGE
 DESCRIPTOR.message_types_by_name['RetrieveParticipantStatisticsResponseMessage'] = _RETRIEVEPARTICIPANTSTATISTICSRESPONSEMESSAGE
-DESCRIPTOR.message_types_by_name['RetrieveDataRequestMessage'] = _RETRIEVEDATAREQUESTMESSAGE
-DESCRIPTOR.message_types_by_name['RetrieveDataResponseMessage'] = _RETRIEVEDATARESPONSEMESSAGE
+DESCRIPTOR.message_types_by_name['Retrieve100DataRecordsRequestMessage'] = _RETRIEVE100DATARECORDSREQUESTMESSAGE
+DESCRIPTOR.message_types_by_name['Retrieve100DataRecordsResponseMessage'] = _RETRIEVE100DATARECORDSRESPONSEMESSAGE
 DESCRIPTOR.message_types_by_name['RetrieveUnreadDirectMessagesRequestMessage'] = _RETRIEVEUNREADDIRECTMESSAGESREQUESTMESSAGE
 DESCRIPTOR.message_types_by_name['RetrieveUnreadDirectMessagesResponseMessage'] = _RETRIEVEUNREADDIRECTMESSAGESRESPONSEMESSAGE
 DESCRIPTOR.message_types_by_name['RetrieveUnreadNotificationsRequestMessage'] = _RETRIEVEUNREADNOTIFICATIONSREQUESTMESSAGE
@@ -1603,19 +1638,19 @@ RetrieveParticipantStatisticsResponseMessage = _reflection.GeneratedProtocolMess
 })
 _sym_db.RegisterMessage(RetrieveParticipantStatisticsResponseMessage)
 
-RetrieveDataRequestMessage = _reflection.GeneratedProtocolMessageType('RetrieveDataRequestMessage', (_message.Message,), {
-    'DESCRIPTOR': _RETRIEVEDATAREQUESTMESSAGE,
+Retrieve100DataRecordsRequestMessage = _reflection.GeneratedProtocolMessageType('Retrieve100DataRecordsRequestMessage', (_message.Message,), {
+    'DESCRIPTOR': _RETRIEVE100DATARECORDSREQUESTMESSAGE,
     '__module__': 'et_service_pb2'
-    # @@protoc_insertion_point(class_scope:RetrieveDataRequestMessage)
+    # @@protoc_insertion_point(class_scope:Retrieve100DataRecordsRequestMessage)
 })
-_sym_db.RegisterMessage(RetrieveDataRequestMessage)
+_sym_db.RegisterMessage(Retrieve100DataRecordsRequestMessage)
 
-RetrieveDataResponseMessage = _reflection.GeneratedProtocolMessageType('RetrieveDataResponseMessage', (_message.Message,), {
-    'DESCRIPTOR': _RETRIEVEDATARESPONSEMESSAGE,
+Retrieve100DataRecordsResponseMessage = _reflection.GeneratedProtocolMessageType('Retrieve100DataRecordsResponseMessage', (_message.Message,), {
+    'DESCRIPTOR': _RETRIEVE100DATARECORDSRESPONSEMESSAGE,
     '__module__': 'et_service_pb2'
-    # @@protoc_insertion_point(class_scope:RetrieveDataResponseMessage)
+    # @@protoc_insertion_point(class_scope:Retrieve100DataRecordsResponseMessage)
 })
-_sym_db.RegisterMessage(RetrieveDataResponseMessage)
+_sym_db.RegisterMessage(Retrieve100DataRecordsResponseMessage)
 
 RetrieveUnreadDirectMessagesRequestMessage = _reflection.GeneratedProtocolMessageType('RetrieveUnreadDirectMessagesRequestMessage', (_message.Message,), {
     'DESCRIPTOR': _RETRIEVEUNREADDIRECTMESSAGESREQUESTMESSAGE,
@@ -1681,8 +1716,8 @@ _ETSERVICE = _descriptor.ServiceDescriptor(
     file=DESCRIPTOR,
     index=0,
     serialized_options=None,
-    serialized_start=3229,
-    serialized_end=4769,
+    serialized_start=3374,
+    serialized_end=4944,
     methods=[
         _descriptor.MethodDescriptor(
             name='loginWithGoogleId',
@@ -1784,12 +1819,12 @@ _ETSERVICE = _descriptor.ServiceDescriptor(
             serialized_options=None,
         ),
         _descriptor.MethodDescriptor(
-            name='retrieveData',
-            full_name='ETService.retrieveData',
+            name='retrieve100DataRecords',
+            full_name='ETService.retrieve100DataRecords',
             index=11,
             containing_service=None,
-            input_type=_RETRIEVEDATAREQUESTMESSAGE,
-            output_type=_RETRIEVEDATARESPONSEMESSAGE,
+            input_type=_RETRIEVE100DATARECORDSREQUESTMESSAGE,
+            output_type=_RETRIEVE100DATARECORDSRESPONSEMESSAGE,
             serialized_options=None,
         ),
         _descriptor.MethodDescriptor(

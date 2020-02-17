@@ -22,9 +22,14 @@ urlpatterns = [
     path('google43e44b3701ba10c8.html', views.handle_google_verification),
     path('google-auth/', include('social_django.urls', namespace='social')),
 
-    path('', views.handle_index_page, name='index'),
     path('login/', views.handle_login_api, name='login'),
     path('logout/', views.handle_logout_api, name='logout'),
+
+    path('', views.handle_index_page, name='index'),
     path('campaign/', views.handle_campaign_details_page, name='campaign'),
     path('new_campaign/', views.handle_create_campaign, name='create_campaign'),
+    path('participant/', views.handle_participant_details_page, name='participant'),
+
+    path('view_data/', views.handle_view_data_page, name='view_data'),
+    path('download_data/', views.handle_download_data_page, name='download_data'),
 ]

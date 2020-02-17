@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.core.validators import int_list_validator
+from utils import utils
 
 
 class GrpcUserIds(models.Model):
@@ -129,19 +131,27 @@ class Participant(models.Model):
     amount_of_data = models.IntegerField(default=None)
     last_heartbeat_time = models.CharField(max_length=64, default=None)
     last_sync_time = models.CharField(max_length=64, default=None)
+    data_source_ids = models.CharField(validators=[int_list_validator], max_length=512)
+    per_data_source_amount_of_data = models.CharField(validators=[int_list_validator], max_length=512)
 
     class Meta:
         unique_together = ['email', 'campaign_id']
 
     @staticmethod
-    def create_or_update(email, campaign, full_name, day_no, amount_of_data, last_heartbeat_time, last_sync_time):
-        if Participant.objects.filter(email=email, campaign=campaign).exists():
+    def create_or_update(email, campaign, full_name, day_no, amount_of_data, last_heartbeat_time, last_sync_time, data_source_ids, per_data_source_amount_of_data):
+        if len(data_source_ids) != len(per_data_source_amount_of_data):
+            print('data_source_ids', data_source_ids)
+            print('per_data_source_amount_of_data', per_data_source_amount_of_data)
+            raise ValueError('lengths of arrays for data source ids and their amounts of data do not match (%d != %d)' % (len(data_source_ids), len(per_data_source_amount_of_data)))
+        elif Participant.objects.filter(email=email, campaign=campaign).exists():
             participant = Participant.objects.get(email=email, campaign=campaign)
             participant.full_name = full_name
             participant.day_no = day_no
             participant.amount_of_data = amount_of_data
             participant.last_heartbeat_time = last_heartbeat_time
             participant.last_sync_time = last_sync_time
+            participant.data_source_ids = ','.join(str(elem) for elem in data_source_ids)
+            participant.per_data_source_amount_of_data = ','.join(str(elem) for elem in per_data_source_amount_of_data)
             participant.save()
         else:
             Participant.objects.create(
@@ -151,5 +161,27 @@ class Participant(models.Model):
                 day_no=day_no,
                 amount_of_data=amount_of_data,
                 last_heartbeat_time=last_heartbeat_time,
-                last_sync_time=last_sync_time
+                last_sync_time=last_sync_time,
+                data_source_ids=','.join(str(elem) for elem in data_source_ids),
+                per_data_source_amount_of_data=','.join(str(elem) for elem in per_data_source_amount_of_data)
             ).save()
+
+
+class DataSource:
+    def __init__(self, data_source_id, name, icon_name, amount_of_data, delay=None, json=None):
+        self.data_source_id = data_source_id
+        self.name = name
+        self.icon_name = icon_name
+        self.amount_of_data = amount_of_data
+        if delay is None:
+            self.json = json
+        elif json is None:
+            self.delay = delay
+        else:
+            raise ValueError('DataSource.__init__(): Bad data source, either delay or json must be passed!')
+
+
+class Record:
+    def __init__(self, timestamp_ms, value):
+        self.time = utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms)
+        self.value = value
