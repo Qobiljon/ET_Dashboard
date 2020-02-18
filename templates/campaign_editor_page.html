@@ -4,24 +4,26 @@
         <h2 id="errorMessage">Failed to create the campaign, please try again!</h2>
     {% endif %}
 
-    <form action="{% url 'create_campaign' %}" method="post">
+    <form action="{% url 'editor' %}" method="post">
         {% csrf_token %}
+        <input type="number" name="campaign_id" value="{% if edit_mode %}{{ campaign.campaign_id }}{% else %}-1{% endif %}" hidden>
         <table id="inputTable">
             <tr>
                 <td><label for="name">Name</label>
-                <td><input id="name" type="text" name="name" placeholder="e.g., My First Data Collection Campaign" required></td>
+                <td><input id="name" type="text" name="name" placeholder="e.g., My First Data Collection Campaign" required value="{% if edit_mode %}{{ campaign.name }}{% endif %}"></td>
             </tr>
             <tr>
                 <td><label for="notes">Notes on<br>the campaign</label>
-                <td><textarea name="notes" id="notes" cols="100" rows="10" placeholder="Notes on the campaign"></textarea></td>
+                <td><textarea name="notes" id="notes" cols="100" rows="10" placeholder="Notes on the campaign">{% if edit_mode %}{{ campaign.notes }}{% endif %}</textarea></td>
             </tr>
             <tr>
                 <td><label for="startTime">Start time</label>
-                <td><input name="startTime" id="notes" type="datetime-local" required/></td>
+                <td><input name="startTime" id="notes" type="datetime-local" required value="{% if edit_mode %}{{ campaign.start_timestamp_for_web }}{% endif %}"/></td>
+
             </tr>
             <tr>
                 <td><label for="endTime">End time</label>
-                <td><input name="endTime" id="notes" type="datetime-local" required/></td>
+                <td><input name="endTime" id="notes" type="datetime-local" required value="{% if edit_mode %}{{ campaign.end_timestamp_for_web }}{% endif %}"/></td>
             </tr>
         </table>
 
@@ -30,49 +32,32 @@
                 <th>Selected</th>
                 <th>Icon</th>
                 <th>Data source name</th>
-                <th>Sensor delay (ms) / Config JSON</th>
+                <th>Configurations (JSON)</th>
             </tr>
-            {% for elem in others %}
-                <tr data-source="{{ elem.name }}" class="data_source">
-                    <td><input type="checkbox" name="{{ elem.name }}"></td>
-                    <td><img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt=""></td>
-                    <td>{{ elem.name }}</td>
-                    {% if elem.type == 'delay' %}
-                        <td><label>Delay (ms) <input type="number" value="1000" name="delay_{{ elem.name }}" disabled></label></td>
-                    {% elif elem.type == 'json' %}
-                        <td><label>Config JSON <input type="text" value="{}" name="json_{{ elem.name }}" disabled></label></td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
-            {% for elem in android %}
-                <tr data-source="{{ elem.name }}" class="data_source">
-                    <td><input type="checkbox" name="{{ elem.name }}"></td>
-                    <td><img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt=""></td>
-                    <td>{{ elem.name }}</td>
-                    {% if elem.type == 'delay' %}
-                        <td><label>Delay (ms) <input type="number" value="1000" name="delay_{{ elem.name }}" disabled></label></td>
-                    {% elif elem.type == 'json' %}
-                        <td><label>Config JSON <input type="text" value="{}" name="json_{{ elem.name }}" disabled></label></td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
-            {% for elem in tizen %}
-                <tr data-source="{{ elem.name }}" class="data_source">
-                    <td><input type="checkbox" name="{{ elem.name }}"></td>
-                    <td><img src="http://{{ request.get_host }}/static/{{ elem.icon }}" alt=""></td>
-                    <td>{{ elem.name }}</td>
-                    {% if elem.type == 'delay' %}
-                        <td><label>Delay (ms) <input type="number" value="1000" name="delay_{{ elem.name }}" disabled></label></td>
-                    {% elif elem.type == 'json' %}
-                        <td><label>Config JSON <input type="text" value="{}" name="json_{{ elem.name }}" disabled></label></td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
+            {% if edit_mode %}
+                {% for data_source in data_sources %}
+                    <tr data-source="{{ data_source.name }}" class="{% if data_source.selected %}selected_data_source{% else %}data_source{% endif %}">
+                        <td><input type="checkbox" name="{{ data_source.name }}" {% if data_source.selected %}checked{% endif %}></td>
+                        <td><img src="http://{{ request.get_host }}/static/{{ data_source.icon_name }}" alt=""></td>
+                        <td>{{ data_source.name }}</td>
+                        <td><input type="text" value="{% if data_source.selected %}{{ data_source.config_json }}{% else %}{}{% endif %}" name="config_json_{{ data_source.name }}" {% if not data_source.selected %}disabled{% endif %} class="jsonField"></td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                {% for data_source in data_sources %}
+                    <tr data-source="{{ data_source.name }}" class="data_source">
+                        <td><input type="checkbox" name="{{ data_source.name }}"></td>
+                        <td><img src="http://{{ request.get_host }}/static/{{ data_source.icon_name }}" alt=""></td>
+                        <td>{{ data_source.name }}</td>
+                        <td><input type="text" value="{}" name="config_json_{{ data_source.name }}" disabled class="jsonField"></td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
         </table>
 
         <div>
             <a href="{% url 'index' %}" id="cancel_campaign_creation_button">Cancel</a>
-            <input type="submit" value="Create" id="create_campaign_button">
+            <input type="submit" value="{% if edit_mode %}Save changes{% else %}Create{% endif %}" id="create_campaign_button">
         </div>
     </form>
 
@@ -83,8 +68,7 @@
             rows.forEach(row => {
                 row.style.cursor = "pointer";
                 let checkBox = row.firstElementChild.firstElementChild;
-                let input = row.lastElementChild.firstElementChild.firstElementChild;
-                input.style.textAlign = "center";
+                let input = row.lastElementChild.firstElementChild;
                 row.addEventListener("click", () => {
                     checkBox.checked = !checkBox.checked;
                     row.className = checkBox.checked ? "selected_data_source" : "data_source";
@@ -194,6 +178,11 @@
         #cancel_campaign_creation_button:hover {
             background: #666;
             color: #FFF;
+        }
+
+        {#JSON fields#}
+        input.jsonField[type=text] {
+            text-align: center;
         }
     </style>
 {% endblock %}

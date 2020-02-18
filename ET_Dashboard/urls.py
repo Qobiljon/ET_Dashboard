@@ -27,7 +27,8 @@ urlpatterns = [
 
     path('', views.handle_index_page, name='index'),
     path('campaign/', views.handle_campaign_details_page, name='campaign'),
-    path('new_campaign/', views.handle_create_campaign, name='create_campaign'),
+    path('editor/', views.handle_create_or_modify_campaign, name='editor'),
+    path('delete/', views.handle_delete_campaign, name='delete_campaign'),
     path('participant/', views.handle_participant_details_page, name='participant'),
 
     path('view_data/', views.handle_view_data_page, name='view_data'),

@@ -34,6 +34,11 @@ class ETServiceStub(object):
             request_serializer=et__service__pb2.RegisterCampaignRequestMessage.SerializeToString,
             response_deserializer=et__service__pb2.RegisterCampaignResponseMessage.FromString,
         )
+        self.deleteCampaign = channel.unary_unary(
+            '/ETService/deleteCampaign',
+            request_serializer=et__service__pb2.DeleteCampaignRequestMessage.SerializeToString,
+            response_deserializer=et__service__pb2.DefaultResponseMessage.FromString,
+        )
         self.retrieveCampaigns = channel.unary_unary(
             '/ETService/retrieveCampaigns',
             request_serializer=et__service__pb2.RetrieveCampaignsRequestMessage.SerializeToString,
@@ -122,6 +127,13 @@ class ETServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def registerCampaign(self, request, context):
+        # missing associated documentation comment in .proto file
+        pass
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def deleteCampaign(self, request, context):
         # missing associated documentation comment in .proto file
         pass
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -234,6 +246,11 @@ def add_ETServiceServicer_to_server(servicer, server):
             servicer.registerCampaign,
             request_deserializer=et__service__pb2.RegisterCampaignRequestMessage.FromString,
             response_serializer=et__service__pb2.RegisterCampaignResponseMessage.SerializeToString,
+        ),
+        'deleteCampaign': grpc.unary_unary_rpc_method_handler(
+            servicer.deleteCampaign,
+            request_deserializer=et__service__pb2.DeleteCampaignRequestMessage.FromString,
+            response_serializer=et__service__pb2.DefaultResponseMessage.SerializeToString,
         ),
         'retrieveCampaigns': grpc.unary_unary_rpc_method_handler(
             servicer.retrieveCampaigns,

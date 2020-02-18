@@ -1,6 +1,7 @@
 import json
 import datetime
 import csv
+from json import JSONDecodeError
 
 # Django
 from django.contrib.auth import logout as dj_logout
@@ -73,49 +74,43 @@ def handle_login_api(request):
 @login_required
 @require_http_methods(['GET', 'POST'])
 def handle_logout_api(request):
-    if request.user.is_authenticated:
-        dj_logout(request=request)
+    dj_logout(request=request)
     return redirect(to='login')
 
 
 @login_required
 @require_http_methods(['GET', 'POST'])
-def handle_create_campaign(request):
+def handle_create_or_modify_campaign(request):
     grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if request.user.is_authenticated and grpc_user_id is not None:
+    if grpc_user_id is not None:
         if request.method == 'POST':
-            config_json = {}
-            counter = 0
-            for elem in et_models.PresetDataSources.all_preset_data_sources():
-                if elem['name'] in request.POST:
+            config_json = []
+            # first validate the user input JSON configurations
+            all_data_sources = et_models.DataSource.all_data_sources_no_details(user_id=None, email=None, use_grpc=False)
+            for elem in all_data_sources:
+                if elem.name in request.POST:
+                    try:
+                        json.loads(s=request.POST['config_json_%s' % elem.name])
+                    except JSONDecodeError:
+                        referer = request.META.get('HTTP_REFERER')
+                        if referer:
+                            return redirect(to=referer)
+                        else:
+                            return redirect(to='index')
+            for elem in all_data_sources:
+                if elem.name in request.POST:
                     grpc_req = et_service_pb2.BindDataSourceRequestMessage(
                         userId=grpc_user_id,
                         email=request.user.email,
-                        name=elem['name'],
-                        iconName=elem['icon']
+                        name=elem.name,
+                        iconName=elem.icon_name
                     )
                     grpc_res: et_service_pb2.BindDataSourceResponseMessage = utils.stub.bindDataSource(grpc_req)
-                    data_source = {'name': elem['name'], 'data_source_id': grpc_res.dataSourceId, 'icon_name': grpc_res.iconName}
-                    if 'delay_%s' % elem['name'] in request.POST:
-                        data_source['delay'] = request.POST['delay_%s' % elem['name']]
-                    elif 'json_%s' % elem['name'] in request.POST:
-                        data_source['json'] = request.POST['json_%s' % elem['name']]
-                    else:
-                        return render(
-                            request=request,
-                            template_name='create_campaign_page.html',
-                            context={
-                                'error': True,
-                                'android': et_models.PresetDataSources.android_sensors,
-                                'tizen': et_models.PresetDataSources.tizen_sensors,
-                                'others': et_models.PresetDataSources.others
-                            }
-                        )
-                    config_json[counter] = data_source
-                    counter += 1
+                    config_json += [{'name': elem.name, 'data_source_id': grpc_res.dataSourceId, 'icon_name': elem.icon_name, 'config_json': request.POST['config_json_%s' % elem.name]}]
             grpc_req = et_service_pb2.RegisterCampaignRequestMessage(
                 userId=grpc_user_id,
                 email=request.user.email,
+                campaignId=int(request.POST['campaign_id']),
                 name=request.POST['name'],
                 notes=request.POST['notes'],
                 startTimestamp=utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['startTime'], "%Y-%m-%dT%H:%M")),
@@ -128,26 +123,79 @@ def handle_create_campaign(request):
             else:
                 return render(
                     request=request,
-                    template_name='create_campaign_page.html',
+                    template_name='campaign_editor_page.html',
                     context={
                         'error': True,
                         'title': 'New campaign',
-                        'android': et_models.PresetDataSources.android_sensors,
-                        'tizen': et_models.PresetDataSources.tizen_sensors,
-                        'others': et_models.PresetDataSources.others
+                        'android': et_models.DataSource.android_sensors,
+                        'tizen': et_models.DataSource.tizen_sensors,
+                        'others': et_models.DataSource.others
+                    }
+                )
+        elif request.method == 'GET':
+            data_source_dict = et_models.DataSource.all_data_sources_no_details(user_id=grpc_user_id, email=request.user.email, map_with_name=True)
+            if 'edit' in request.GET and 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=int(request.GET['campaign_id']), creator_email=request.user.email).exists():
+                campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['campaign_id']), creator_email=request.user.email)
+                for config_json in json.loads(s=campaign.config_json):
+                    data_source_dict[config_json['name']].selected = True
+                    data_source_dict[config_json['name']].name = config_json['name']
+                    data_source_dict[config_json['name']].icon_name = config_json['icon_name']
+                    data_source_dict[config_json['name']].config_json = config_json['config_json']
+                data_source_list = []
+                for name in data_source_dict:
+                    data_source_list += [data_source_dict[name]]
+                data_source_list.sort(key=lambda key: key.name)
+                return render(
+                    request=request,
+                    template_name='campaign_editor_page.html',
+                    context={
+                        'edit_mode': True,
+                        'title': '"%s" Campaign Editor' % campaign.name,
+                        'campaign': campaign,
+                        'data_sources': data_source_list
+                    }
+                )
+            else:
+                data_source_list = []
+                for name in data_source_dict:
+                    data_source_list += [data_source_dict[name]]
+                data_source_list.sort(key=lambda key: key.name)
+                return render(
+                    request=request,
+                    template_name='campaign_editor_page.html',
+                    context={
+                        'title': 'New campaign',
+                        'data_sources': data_source_list,
                     }
                 )
         else:
-            return render(
-                request=request,
-                template_name='create_campaign_page.html',
-                context={
-                    'title': 'New campaign',
-                    'android': et_models.PresetDataSources.android_sensors,
-                    'tizen': et_models.PresetDataSources.tizen_sensors,
-                    'others': et_models.PresetDataSources.others
-                }
+            return redirect(to='index')
+    else:
+        return redirect(to='login')
+
+
+@login_required
+@require_http_methods(['GET'])
+def handle_delete_campaign(request):
+    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
+    if grpc_user_id is not None:
+        if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=int(request.GET['campaign_id'])).exists():
+            campaign_id = int(request.GET['campaign_id'])
+            grpc_req = et_service_pb2.DeleteCampaignRequestMessage(
+                userId=grpc_user_id,
+                email=request.user.email,
+                campaignId=campaign_id
             )
+            grpc_res: et_service_pb2.DefaultResponseMessage = utils.stub.deleteCampaign(grpc_req)
+            if grpc_res.doneSuccessfully:
+                et_models.Campaign.objects.get(campaign_id=campaign_id).delete()
+            return redirect(to='index')
+        else:
+            referer = request.META.get('HTTP_REFERER')
+            if referer:
+                return redirect(to=referer)
+            else:
+                return redirect(to='index')
     else:
         return redirect(to='login')
 
@@ -224,28 +272,15 @@ def handle_participant_details_page(request):
     else:
         # participant details page
         campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
-        participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=campaign)
-        amount_of_data_map = {}
-        for data_source_id, amount_of_data in zip(participant.data_source_ids.split(','), participant.per_data_source_amount_of_data.split(',')):
-            amount_of_data_map[int(data_source_id)] = int(amount_of_data)
-        config_json = json.loads(s=campaign.config_json)
-        data_sources = []
-        for index in config_json:
-            data_source = config_json[index]
-            data_source_id = data_source['data_source_id']
-            if 'delay' in data_source:
-                data_sources += [et_models.DataSource(data_source_id=data_source_id, name=data_source['name'], icon_name=data_source['icon_name'], amount_of_data=amount_of_data_map[data_source_id], delay=data_source['delay'])]
-            elif 'json' in data_source:
-                data_sources += [et_models.DataSource(data_source_id=data_source_id, name=data_source['name'], icon_name=data_source['icon_name'], amount_of_data=amount_of_data_map[data_source_id], json=data_source['json'])]
-            else:
-                raise ValueError('Bad campaign configurations, please refer to the application developer!')
+        trg_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=campaign)
+        data_sources = et_models.DataSource.participants_data_sources_details(campaign=campaign, trg_participant=trg_participant)
         return render(
             request=request,
             template_name='participant_details.html',
             context={
-                'title': "%s's data" % participant.full_name,
+                'title': "%s's data" % trg_participant.full_name,
                 'campaign': campaign,
-                'participant': participant,
+                'participant': trg_participant,
                 'data_sources': data_sources
             }
         )
@@ -323,11 +358,12 @@ def handle_download_data_page(request):
                         from_time = timestamp
                         yield writer.writerow([str(timestamp), value])
                 data_available = grpc_res.doneSuccessfully and grpc_res.moreDataAvailable
+                if not data_available:
+                    print(from_time)
 
-        gen = load_next_100rows(pseudo_buffer=et_models.Echo())
         res = StreamingHttpResponse(
-            streaming_content=(elem for elem in gen),
+            streaming_content=(row for row in load_next_100rows(pseudo_buffer=et_models.Echo())),
             content_type='text/csv'
         )
-        res['Content-Disposition'] = 'attachment; filename="email-{0}.csv"'.format(utils.timestamp_to_readable_string(utils.timestamp_now_ms()).replace('/', '-'))
+        res['Content-Disposition'] = 'attachment; filename="{0}-{1}.csv"'.format(email, utils.timestamp_to_readable_string(utils.timestamp_now_ms()).replace('/', '-'))
         return res

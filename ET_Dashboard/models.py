@@ -2,6 +2,10 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.core.validators import int_list_validator
 from utils import utils
+import json
+
+# gRPC
+from et_grpcs import et_service_pb2
 
 
 class GrpcUserIds(models.Model):
@@ -25,64 +29,6 @@ class GrpcUserIds(models.Model):
             GrpcUserIds.objects.create(email=email, user_id=user_id)
 
 
-class PresetDataSources:
-    android_sensors = [
-        {'name': 'ANDROID_ACCELEROMETER', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_ACCELEROMETER_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_GAME_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_AMBIENT_TEMPERATURE', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_GEOMAGNETIC_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_GRAVITY', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_GYROSCOPE', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_GYROSCOPE_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_HEART_BEAT', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_HEART_RATE', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_LIGHT', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_LINEAR_ACCELERATION', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_LOW_LATENCY_OFFBODY_DETECT', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_MAGNETIC_FIELD', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_MAGNETIC_FIELD_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_MOTION_DETECTION', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_ORIENTATION', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_POSE_6DOF', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_PRESSURE', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_PROXIMITY', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_RELATIVE_HUMIDITY', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_SIGNIFICANT_MOTION', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_STATIONARY_DETECT', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_STEP_COUNTER', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_STEP_DETECTOR', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_TEMPERATURE', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-        {'name': 'ANDROID_GPS', 'icon': 'smartphone-android-data-source.png', 'type': 'delay'},
-    ]
-    tizen_sensors = [
-        {'name': 'TIZEN_ACCELEROMETER', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_GRAVITY', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_GYROSCOPE', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_HRM', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_HUMIDITY', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_LIGHT', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_LINEARACCELERATION', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_MAGNETOMETER', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_ORIENTATION', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_PRESSURE', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_PROXIMITY', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_TEMPERATURE', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_ULTRAVIOLET', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-        {'name': 'TIZEN_GPS', 'icon': 'wearable-tizen-data-source.png', 'type': 'delay'},
-    ]
-    others = [
-        {'name': 'SURVEY_EMA', 'icon': 'survey-data-source.png', 'type': 'json'},
-        {'name': 'APPLICATION_USAGE', 'icon': 'app-usage-data-source.png', 'type': 'json'},
-        {'name': 'VOICE_RECORDING', 'icon': 'voice-recording-data-source.png', 'type': 'json'},
-    ]
-
-    @staticmethod
-    def all_preset_data_sources():
-        return PresetDataSources.others + PresetDataSources.android_sensors + PresetDataSources.tizen_sensors
-
-
 class Campaign(models.Model):
     campaign_id = models.IntegerField()
     requester_email = models.CharField(max_length=128)
@@ -96,6 +42,12 @@ class Campaign(models.Model):
 
     class Meta:
         unique_together = ['campaign_id', 'requester_email']
+
+    def start_timestamp_for_web(self):
+        return utils.timestamp_to_web_string(timestamp_ms=self.start_timestamp)
+
+    def end_timestamp_for_web(self):
+        return utils.timestamp_to_web_string(timestamp_ms=self.end_timestamp)
 
     @classmethod
     def create_or_update(cls, campaign_id, requester_email, name, notes, start_timestamp, end_timestamp, creator_email, config_json, participant_count):
@@ -168,17 +120,115 @@ class Participant(models.Model):
 
 
 class DataSource:
-    def __init__(self, data_source_id, name, icon_name, amount_of_data, delay=None, json=None):
+    def __init__(self, data_source_id, name, icon_name, amount_of_data, config_json):
         self.data_source_id = data_source_id
         self.name = name
         self.icon_name = icon_name
         self.amount_of_data = amount_of_data
-        if delay is None:
-            self.json = json
-        elif json is None:
-            self.delay = delay
-        else:
-            raise ValueError('DataSource.__init__(): Bad data source, either delay or json must be passed!')
+        self.config_json = config_json
+        self.selected = False
+
+    others = [
+        {'name': 'SURVEY_EMA', 'icon': 'survey-data-source.png'},
+        {'name': 'APPLICATION_USAGE', 'icon': 'app-usage-data-source.png'},
+        {'name': 'AUDIO_LOUDNESS', 'icon': 'audio-loudness-data-source.png'},
+        {'name': 'GEOFENCE', 'icon': 'geofence-data-source.png'},
+        {'name': 'LOCATION_GPS', 'icon': 'location-data-source.png'},
+        {'name': 'STATIONARY_DURATION', 'icon': 'stationary-duration-data-source.png'},
+        {'name': 'SCREEN_ON_OFF', 'icon': 'screen-on-off-data-source.png'},
+        {'name': 'UNLOCK_DURATION', 'icon': 'unlock-duration-data-source.png'},
+        {'name': 'CALLS', 'icon': 'calls-data-source.png'},
+        {'name': 'MESSAGES', 'icon': 'messages-data-source.png'},
+        {'name': 'ACTIVITY_RECOGNITION', 'icon': 'activity-recognition-data-source.png'},
+        {'name': 'ACTIVITY_TRANSITION', 'icon': 'activity-transition-data-source.png'},
+    ]
+    android_sensors = [
+        {'name': 'ANDROID_ACCELEROMETER', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_ACCELEROMETER_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_GAME_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_AMBIENT_TEMPERATURE', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_GEOMAGNETIC_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_GRAVITY', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_GYROSCOPE', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_GYROSCOPE_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_HEART_BEAT', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_HEART_RATE', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_LIGHT', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_LINEAR_ACCELERATION', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_LOW_LATENCY_OFFBODY_DETECT', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_MAGNETIC_FIELD', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_MAGNETIC_FIELD_UNCALIBRATED', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_MOTION_DETECTION', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_ORIENTATION', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_POSE_6DOF', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_PRESSURE', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_PROXIMITY', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_RELATIVE_HUMIDITY', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_ROTATION_VECTOR', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_SIGNIFICANT_MOTION', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_STATIONARY_DETECT', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_STEP_COUNTER', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_STEP_DETECTOR', 'icon': 'smartphone-android-data-source.png'},
+        {'name': 'ANDROID_TEMPERATURE', 'icon': 'smartphone-android-data-source.png'},
+    ]
+    tizen_sensors = [
+        {'name': 'TIZEN_ACCELEROMETER', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_GRAVITY', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_GYROSCOPE', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_HRM', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_HUMIDITY', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_LIGHT', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_LINEARACCELERATION', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_MAGNETOMETER', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_ORIENTATION', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_PRESSURE', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_PROXIMITY', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_TEMPERATURE', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_ULTRAVIOLET', 'icon': 'wearable-tizen-data-source.png'},
+        {'name': 'TIZEN_GPS', 'icon': 'wearable-tizen-data-source.png'},
+    ]
+
+    @staticmethod
+    def all_data_sources_no_details(user_id, email, use_grpc=True, map_with_name=False):
+        data_source_list = []
+        data_source_dict = {}
+        if use_grpc:
+            grpc_req = et_service_pb2.RetrieveAllDataSourcesRequestMessage(userId=user_id, email=email)
+            grpc_res: et_service_pb2.RetrieveAllDataSourcesResponseMessage = utils.stub.retrieveAllDataSources(grpc_req)
+            if grpc_res.doneSuccessfully:
+                for data_source_id, name, icon_name in zip(grpc_res.dataSourceId, grpc_res.name, grpc_res.iconName):
+                    data_source = DataSource(
+                        data_source_id=data_source_id,
+                        name=name,
+                        icon_name=icon_name,
+                        amount_of_data=-1,
+                        config_json=None
+                    )
+                    data_source_dict[name] = data_source
+                    data_source_list += [data_source]
+        for elem in DataSource.others + DataSource.android_sensors + DataSource.tizen_sensors:
+            if elem['name'] not in data_source_dict:
+                data_source = DataSource(
+                    data_source_id=-1,
+                    name=elem['name'],
+                    icon_name=elem['icon'],
+                    amount_of_data=-1,
+                    config_json=None
+                )
+                data_source_dict[elem['name']] = data_source
+                data_source_list += [data_source]
+        data_source_list.sort(key=lambda key: key.name)
+        return data_source_dict if map_with_name else data_source_list
+
+    @staticmethod
+    def participants_data_sources_details(campaign: Campaign, trg_participant: Participant):
+        data_sources = []
+        amount_of_data_map = {}
+        for data_source_id, amount_of_data in zip(trg_participant.data_source_ids.split(','), trg_participant.per_data_source_amount_of_data.split(',')):
+            amount_of_data_map[int(data_source_id)] = int(amount_of_data)
+        for config_json in json.loads(s=campaign.config_json):
+            data_sources += [DataSource(data_source_id=config_json['data_source_id'], name=config_json['name'], icon_name=config_json['icon_name'], amount_of_data=amount_of_data_map[config_json['data_source_id']], config_json=config_json['config_json'])]
+        return data_sources
 
 
 class Record:
