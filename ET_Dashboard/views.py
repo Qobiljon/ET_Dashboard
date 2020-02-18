@@ -86,27 +86,37 @@ def handle_create_or_modify_campaign(request):
         if request.method == 'POST':
             config_json = []
             # first validate the user input JSON configurations
-            all_data_sources = et_models.DataSource.all_data_sources_no_details(user_id=None, email=None, use_grpc=False)
-            for elem in all_data_sources:
-                if elem.name in request.POST:
-                    try:
-                        json.loads(s=request.POST['config_json_%s' % elem.name])
-                    except JSONDecodeError:
-                        referer = request.META.get('HTTP_REFERER')
-                        if referer:
-                            return redirect(to=referer)
-                        else:
-                            return redirect(to='index')
-            for elem in all_data_sources:
-                if elem.name in request.POST:
-                    grpc_req = et_service_pb2.BindDataSourceRequestMessage(
-                        userId=grpc_user_id,
-                        email=request.user.email,
-                        name=elem.name,
-                        iconName=elem.icon_name
-                    )
-                    grpc_res: et_service_pb2.BindDataSourceResponseMessage = utils.stub.bindDataSource(grpc_req)
-                    config_json += [{'name': elem.name, 'data_source_id': grpc_res.dataSourceId, 'icon_name': elem.icon_name, 'config_json': request.POST['config_json_%s' % elem.name]}]
+            data_sources = []
+            for elem in request.POST:
+                if str(elem).startswith("config_json_"):
+                    _name = str(elem)[12:]
+                    _icon_name = request.POST['icon_name_%s' % _name]
+                    _config_json = request.POST['config_json_%s' % _name]
+                    data_sources += [et_models.DataSource(
+                        data_source_id=-1,
+                        name=_name,
+                        icon_name=_icon_name,
+                        amount_of_data=-1,
+                        config_json=_config_json
+                    )]
+            for elem in data_sources:
+                try:
+                    json.loads(s=elem.config_json)
+                except JSONDecodeError:
+                    referer = request.META.get('HTTP_REFERER')
+                    if referer:
+                        return redirect(to=referer)
+                    else:
+                        return redirect(to='index')
+            for elem in data_sources:
+                grpc_req = et_service_pb2.BindDataSourceRequestMessage(
+                    userId=grpc_user_id,
+                    email=request.user.email,
+                    name=elem.name,
+                    iconName=elem.icon_name
+                )
+                grpc_res: et_service_pb2.BindDataSourceResponseMessage = utils.stub.bindDataSource(grpc_req)
+                config_json += [{'name': elem.name, 'data_source_id': grpc_res.dataSourceId, 'icon_name': elem.icon_name, 'config_json': elem.config_json}]
             grpc_req = et_service_pb2.RegisterCampaignRequestMessage(
                 userId=grpc_user_id,
                 email=request.user.email,
