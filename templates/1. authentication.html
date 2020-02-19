@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends '0. base.html' %}
 {% block content %}
     <div class="col s12 m6 offset-m3 center-align">
         <a class="oauth-container btn darken-4 white black-text" href="{% url 'social:begin' 'google-oauth2' %}{% if next %}?next={{ next }}{% endif %}" style="text-transform:none">

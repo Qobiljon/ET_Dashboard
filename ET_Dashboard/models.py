@@ -217,8 +217,11 @@ class DataSource:
                 )
                 data_source_dict[elem['name']] = data_source
                 data_source_list += [data_source]
-        data_source_list.sort(key=lambda key: key.name)
-        return data_source_dict if map_with_name else data_source_list
+        if map_with_name:
+            return data_source_dict
+        else:
+            data_source_list.sort(key=lambda key: key.name)
+            return data_source_list
 
     @staticmethod
     def participants_data_sources_details(campaign: Campaign, trg_participant: Participant):
@@ -228,6 +231,7 @@ class DataSource:
             amount_of_data_map[int(data_source_id)] = int(amount_of_data)
         for config_json in json.loads(s=campaign.config_json):
             data_sources += [DataSource(data_source_id=config_json['data_source_id'], name=config_json['name'], icon_name=config_json['icon_name'], amount_of_data=amount_of_data_map[config_json['data_source_id']], config_json=config_json['config_json'])]
+        data_sources.sort(key=lambda key: key.name)
         return data_sources
 
 

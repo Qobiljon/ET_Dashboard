@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends '0. base.html' %}
 {% block content %}
     <table>
         <tr>
@@ -9,19 +9,20 @@
             <th>Actions</th>
         </tr>
         {% for campaign in campaigns %}
-            <tr data-href="{% url 'campaign' %}?id={{ campaign.campaign_id }}">
+            <tr data-href="{% url 'participants-list' %}?id={{ campaign.campaign_id }}">
                 <td title="{{ campaign.name }}">{{ campaign.name|truncatechars:40 }}</td>
                 <td title="{{ campaign.notes }}">{% if campaign.notes|length == 0 %}-{% else %}{{ campaign.notes|truncatechars:20 }}{% endif %}</td>
                 <td>{{ campaign.creator_email }}</td>
                 <td>{{ campaign.participant_count }}</td>
                 <td>
-                    <a class="action_button_green" href="{% url 'editor' %}?campaign_id={{ campaign.id }}&edit">Edit</a>
-                    <a class="action_button_red" href="{% url 'delete_campaign' %}?campaign_id={{ campaign.id }}">Delete</a>
+                    <a title="Download campaign details as a JSON file" class="action_button_green" href="{% url 'get-configs' %}?campaign_id={{ campaign.id }}&edit">DOWNLOAD</a>
+                    <a class="action_button_green" href="{% url 'campaign-editor' %}?campaign_id={{ campaign.id }}">EDIT</a>
+                    <a class="action_button_red" href="{% url 'delete-campaign' %}?campaign_id={{ campaign.id }}">DELETE</a>
                 </td>
             </tr>
         {% endfor %}
     </table>
-    <a id="add_campaign_button" href="{% url 'editor' %}">Create a new campaign</a>
+    <a id="add_campaign_button" href="{% url 'campaign-editor' %}">Create a new campaign</a>
 
     <script>
         {# for handling campaign row clicks #}
@@ -102,8 +103,8 @@
 
         a.action_button_green {
             background: #2ecc71;
-            padding: 5px;
-            margin: 2px;
+            padding: 4px;
+            margin: 7px 0;
             color: white;
             border: none;
             border-radius: 5px;
@@ -112,10 +113,11 @@
             transition: all 0.3s;
             text-decoration: none;
         }
+
         a.action_button_red {
             background: orangered;
-            padding: 5px;
-            margin: 2px;
+            padding: 3px;
+            margin: 7px 0;
             color: white;
             border: none;
             border-radius: 5px;

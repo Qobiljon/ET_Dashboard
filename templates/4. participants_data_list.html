@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends '0. base.html' %}
 {% block content %}
     <h3>For the campaign: "{{ campaign.name }}"</h3>
     <table>
@@ -16,7 +16,7 @@
                 <td title="{{ data_source.config_json }}">{{ data_source.config_json|truncatechars:30 }}</td>
                 <td>{{ data_source.amount_of_data }}</td>
                 <td>
-                    <a class="action_button" href="{% url 'view_data' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}&from_time=0">View</a>
+                    <a class="action_button" href="{% url 'view_data' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}&from_time=-999999999">View</a>
                     <a class="action_button" href="{% url 'download_data' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}">Download</a>
                 </td>
             </tr>

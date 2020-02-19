@@ -25,12 +25,13 @@ urlpatterns = [
     path('login/', views.handle_login_api, name='login'),
     path('logout/', views.handle_logout_api, name='logout'),
 
-    path('', views.handle_index_page, name='index'),
-    path('campaign/', views.handle_campaign_details_page, name='campaign'),
-    path('editor/', views.handle_create_or_modify_campaign, name='editor'),
-    path('delete/', views.handle_delete_campaign, name='delete_campaign'),
-    path('participant/', views.handle_participant_details_page, name='participant'),
+    path('', views.handle_campaigns_list, name='campaigns-list'),
+    path('campaign/', views.handle_participants_list, name='participants-list'),
+    path('participant/', views.handle_participants_data_list, name='participant'),
+    path('data/', views.handle_raw_samples_list, name='view_data'),
+    path('edit/', views.handle_campaign_editor, name='campaign-editor'),
 
-    path('view_data/', views.handle_view_data_page, name='view_data'),
-    path('download_data/', views.handle_download_data_page, name='download_data'),
+    path('download_campaign/', views.handle_download_campaign_api, name='get-configs'),
+    path('delete/', views.handle_delete_campaign_api, name='delete-campaign'),
+    path('download_data/', views.handle_download_data_api, name='download_data'),
 ]

@@ -11,7 +11,7 @@
 <body>
 <header>
     <ul id="left_nav">
-        <li><a id="app_title" href="{% url 'index' %}">EasyTrack</a></li>
+        <li><a id="app_title" href="{% url 'campaigns-list' %}">EasyTrack</a></li>
     </ul>
     {% if user.is_authenticated %}
         <ul id="right_nav">
@@ -26,7 +26,7 @@
     {% endblock %}
 </div>
 <footer>
-    <a href="{% url 'index' %}">EasyTrack</a>
+    <a href="{% url 'campaigns-list' %}">EasyTrack</a>
 </footer>
 </body>
 <style>

@@ -1,10 +1,10 @@
-{% extends 'base.html' %}
+{% extends '0. base.html' %}
 {% block content %}
     {% if error %}
         <h2 id="errorMessage">Failed to create the campaign, please try again!</h2>
     {% endif %}
 
-    <form action="{% url 'editor' %}" method="post">
+    <form action="{% url 'campaign-editor' %}" method="post">
         {% csrf_token %}
         <input type="number" name="campaign_id" value="{% if edit_mode %}{{ campaign.campaign_id }}{% else %}-1{% endif %}" hidden>
         <table id="inputTable">
@@ -64,7 +64,7 @@
         </table>
 
         <div>
-            <a href="{% url 'index' %}" id="cancel_campaign_creation_button">Cancel</a>
+            <a href="{% url 'campaigns-list' %}" id="cancel_campaign_creation_button">Cancel</a>
             <input type="submit" value="{% if edit_mode %}Save changes{% else %}Create{% endif %}" id="create_campaign_button">
         </div>
     </form>
