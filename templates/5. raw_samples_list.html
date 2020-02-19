@@ -1,7 +1,7 @@
 {% extends '0. base.html' %}
 {% block content %}
     {% if records|length == 0 %}
-        <h2>[ N/A ]</h2>
+        <h2>[ EMPTY ]</h2>
     {% else %}
         <form id="view_data_submit_form" action="{% url 'view_data' %}" method="get" onsubmit="onFormSubmit()">
             <input type="number" name="campaign_id" value="{{ request.GET.campaign_id }}" hidden>

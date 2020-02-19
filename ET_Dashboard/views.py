@@ -176,12 +176,14 @@ def handle_raw_samples_list(request):
         return redirect(to='campaigns-list')
     else:
         from_time = int(request.GET['from_time'])
+        data_source_id = int(request.GET['data_source_id'])
+        campaign_id = int(request.GET['campaign_id'])
         grpc_req = et_service_pb2.Retrieve100DataRecordsRequestMessage(
             userId=grpc_user_id,
             email=request.user.email,
             targetEmail=request.GET['email'],
-            targetCampaignId=int(request.GET['campaign_id']),
-            targetDataSourceId=int(request.GET['data_source_id']),
+            targetCampaignId=campaign_id,
+            targetDataSourceId=data_source_id,
             fromTimestamp=from_time
         )
         grpc_res: et_service_pb2.Retrieve100DataRecordsResponseMessage = utils.stub.retrieve100DataRecords(grpc_req)
@@ -190,11 +192,16 @@ def handle_raw_samples_list(request):
             for timestamp, value in zip(grpc_res.timestamp, grpc_res.value):
                 records += [et_models.Record(timestamp_ms=timestamp, value=value)]
                 from_time = timestamp
+            data_source_name = None
+            for data_source in json.loads(s=et_models.Campaign.objects.get(campaign_id=campaign_id).config_json):
+                if data_source['data_source_id'] == data_source_id:
+                    data_source_name = data_source['name']
+                    break
             return render(
                 request=request,
                 template_name='5. raw_samples_list.html',
                 context={
-                    'title': 'Data data samples (100 records at a time)',
+                    'title': data_source_name,
                     'records': records,
                     'from_time': from_time
                 }
@@ -368,6 +375,7 @@ def handle_download_data_api(request):
                         from_time = timestamp
                         yield writer.writerow([str(timestamp), value])
                 data_available = grpc_res.doneSuccessfully and grpc_res.moreDataAvailable
+
         res = StreamingHttpResponse(
             streaming_content=(row for row in load_next_100rows(pseudo_buffer=et_models.Echo())),
             content_type='text/csv'

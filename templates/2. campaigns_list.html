@@ -15,8 +15,8 @@
                 <td>{{ campaign.creator_email }}</td>
                 <td>{{ campaign.participant_count }}</td>
                 <td>
-                    <a title="Download campaign details as a JSON file" class="action_button_green" href="{% url 'get-configs' %}?campaign_id={{ campaign.id }}&edit">DOWNLOAD</a>
-                    <a class="action_button_green" href="{% url 'campaign-editor' %}?campaign_id={{ campaign.id }}">EDIT</a>
+                    <a title="Download campaign details as a JSON file" class="action_button_green" href="{% url 'get-configs' %}?campaign_id={{ campaign.id }}">JSON</a>
+                    <a class="action_button_green" href="{% url 'campaign-editor' %}?campaign_id={{ campaign.id }}&edit">EDIT</a>
                     <a class="action_button_red" href="{% url 'delete-campaign' %}?campaign_id={{ campaign.id }}">DELETE</a>
                 </td>
             </tr>
