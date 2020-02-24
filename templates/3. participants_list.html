@@ -3,11 +3,11 @@
     <table>
         <tr>
             <th>Name</th>
-            <th>email</th>
-            <th>Day no.</th>
-            <th>Amount of samples</th>
-            <th>Last heartbeat time</th>
-            <th>Last sync time</th>
+            <th>Email</th>
+            <th>Participation<br>duration (days)</th>
+            <th>Amount of<br>samples</th>
+            <th>Latest<br>heartbeat time</th>
+            <th>Latest<br>sync time</th>
         </tr>
         {% for participant in participants %}
             <tr data-href="{% url 'participant' %}?campaign_id={{ request.GET.id }}&email={{ participant.email }}">
