@@ -381,9 +381,14 @@ def handle_download_data_api(request):
             streaming_content=(row for row in load_next_100rows(pseudo_buffer=et_models.Echo())),
             content_type='text/csv'
         )
+        data_source_name = None
+        for data_source in json.loads(s=et_models.Campaign.objects.get(campaign_id=campaign_id).config_json):
+            if data_source['data_source_id'] == data_source_id:
+                data_source_name = data_source['name']
+                break
         res['Content-Disposition'] = 'attachment; filename="{0}-{1}-{2}.csv"'.format(
             email,
-            data_source_id,
+            data_source_name.replace('/', '-'),
             utils.timestamp_to_readable_string(utils.timestamp_now_ms()).replace('/', '-')
         )
         return res
