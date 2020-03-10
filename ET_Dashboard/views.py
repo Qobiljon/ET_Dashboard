@@ -381,7 +381,11 @@ def handle_download_data_api(request):
             streaming_content=(row for row in load_next_100rows(pseudo_buffer=et_models.Echo())),
             content_type='text/csv'
         )
-        res['Content-Disposition'] = 'attachment; filename="{0}-{1}.csv"'.format(email, utils.timestamp_to_readable_string(utils.timestamp_now_ms()).replace('/', '-'))
+        res['Content-Disposition'] = 'attachment; filename="{0}-{1}-{2}.csv"'.format(
+            email,
+            data_source_id,
+            utils.timestamp_to_readable_string(utils.timestamp_now_ms()).replace('/', '-')
+        )
         return res
 
 
