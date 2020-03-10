@@ -87,7 +87,7 @@ class Participant(models.Model):
     per_data_source_amount_of_data = models.CharField(validators=[int_list_validator], max_length=512)
 
     class Meta:
-        unique_together = ['email', 'campaign_id']
+        unique_together = ['email', 'campaign']
 
     @staticmethod
     def create_or_update(email, campaign, full_name, day_no, amount_of_data, last_heartbeat_time, last_sync_time, data_source_ids, per_data_source_amount_of_data):
@@ -194,7 +194,7 @@ class DataSource:
         data_source_dict = {}
         if use_grpc:
             grpc_req = et_service_pb2.RetrieveAllDataSourcesRequestMessage(userId=user_id, email=email)
-            grpc_res: et_service_pb2.RetrieveAllDataSourcesResponseMessage = utils.stub.retrieveAllDataSources(grpc_req)
+            grpc_res = utils.stub.retrieveAllDataSources(grpc_req)
             if grpc_res.doneSuccessfully:
                 for data_source_id, name, icon_name in zip(grpc_res.dataSourceId, grpc_res.name, grpc_res.iconName):
                     data_source = DataSource(
