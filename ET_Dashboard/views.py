@@ -389,7 +389,7 @@ def handle_download_data_api(request):
         res['Content-Disposition'] = 'attachment; filename="{0}-{1}-{2}.csv"'.format(
             email,
             data_source_name.replace('/', '-'),
-            utils.timestamp_to_readable_string(utils.timestamp_now_ms()).replace('/', '-')
+            utils.timestamp_to_readable_string(utils.timestamp_now_ms()).replace('/', '-').replace(' ', '_')
         )
         return res
 
