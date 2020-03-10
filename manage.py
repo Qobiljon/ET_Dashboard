@@ -18,7 +18,7 @@ def handler(signal_received, frame):
 
 def setup_grpc():
     if not utils.channel_is_open:
-        utils.channel = grpc.insecure_channel('165.246.42.172:50051')
+        utils.channel = grpc.insecure_channel('165.246.21.202:50051')
         utils.stub = et_service_pb2_grpc.ETServiceStub(utils.channel)
         utils.channel_is_open = True
         signal.signal(signal.SIGTERM, handler)

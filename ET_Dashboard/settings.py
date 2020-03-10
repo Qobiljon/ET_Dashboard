@@ -27,9 +27,12 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'kevin-nsl-pc',
+
     '165.246.42.172',
-    'etdb.myvnc.com'
+    'etdb.myvnc.com',
+
+    '165.246.21.202',
+    'easytrack.inha.ac.kr'
 ]
 
 # Application definition
