@@ -19,7 +19,7 @@ def timestamp_diff_in_days(a, b):
 
 
 def timestamp_to_readable_string(timestamp_ms):
-    return datetime.datetime.fromtimestamp(float(timestamp_ms) / 1000).strftime('%Y/%m/%d %HH:%MM:%SS')
+    return datetime.datetime.fromtimestamp(float(timestamp_ms) / 1000).strftime('%Y/%m/%d %H:%M:%S')
 
 
 def timestamp_to_web_string(timestamp_ms):
