@@ -126,7 +126,7 @@ def handle_participants_list(request):
                             last_sync_time=utils.timestamp_to_readable_string(sub_grpc_res.lastSyncTimestamp),
                             data_source_ids=sub_grpc_res.dataSourceId,
                             per_data_source_amount_of_data=sub_grpc_res.perDataSourceAmountOfData,
-                            per_data_source_last_sync_time=','.join([utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms) for timestamp_ms in sub_grpc_res.perDataSourceLastSyncTimestamp])
+                            per_data_source_last_sync_time=[utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms) for timestamp_ms in sub_grpc_res.perDataSourceLastSyncTimestamp]
                         )
                 if success:
                     return render(

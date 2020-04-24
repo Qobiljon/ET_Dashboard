@@ -105,7 +105,7 @@ class Participant(models.Model):
             participant.last_sync_time = last_sync_time
             participant.data_source_ids = ','.join(str(elem) for elem in data_source_ids)
             participant.per_data_source_amount_of_data = ','.join(str(elem) for elem in per_data_source_amount_of_data)
-            participant.per_data_source_last_sync_time = ','.join(str(elem) for elem in per_data_source_last_sync_time)
+            participant.per_data_source_last_sync_time = ','.join(per_data_source_last_sync_time)
             participant.save()
         else:
             Participant.objects.create(
