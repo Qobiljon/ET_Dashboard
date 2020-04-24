@@ -54,6 +54,11 @@ class ETServiceStub(object):
             request_serializer=et__service__pb2.SubmitDataRecordRequestMessage.SerializeToString,
             response_deserializer=et__service__pb2.DefaultResponseMessage.FromString,
         )
+        self.submitDataRecords = channel.unary_unary(
+            '/ETService/submitDataRecords',
+            request_serializer=et__service__pb2.SubmitDataRecordsRequestMessage.SerializeToString,
+            response_deserializer=et__service__pb2.DefaultResponseMessage.FromString,
+        )
         self.submitHeartbeat = channel.unary_unary(
             '/ETService/submitHeartbeat',
             request_serializer=et__service__pb2.SubmitHeartbeatRequestMessage.SerializeToString,
@@ -78,6 +83,11 @@ class ETServiceStub(object):
             '/ETService/retrieve100DataRecords',
             request_serializer=et__service__pb2.Retrieve100DataRecordsRequestMessage.SerializeToString,
             response_deserializer=et__service__pb2.Retrieve100DataRecordsResponseMessage.FromString,
+        )
+        self.retrieveFilteredDataRecords = channel.unary_unary(
+            '/ETService/retrieveFilteredDataRecords',
+            request_serializer=et__service__pb2.RetrieveFilteredDataRecordsRequestMessage.SerializeToString,
+            response_deserializer=et__service__pb2.RetrieveFilteredDataRecordsResponseMessage.FromString,
         )
         self.retrieveUnreadDirectMessages = channel.unary_unary(
             '/ETService/retrieveUnreadDirectMessages',
@@ -161,6 +171,13 @@ class ETServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def submitDataRecords(self, request, context):
+        # missing associated documentation comment in .proto file
+        pass
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def submitHeartbeat(self, request, context):
         # missing associated documentation comment in .proto file
         pass
@@ -190,6 +207,13 @@ class ETServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def retrieve100DataRecords(self, request, context):
+        # missing associated documentation comment in .proto file
+        pass
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def retrieveFilteredDataRecords(self, request, context):
         # missing associated documentation comment in .proto file
         pass
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -267,6 +291,11 @@ def add_ETServiceServicer_to_server(servicer, server):
             request_deserializer=et__service__pb2.SubmitDataRecordRequestMessage.FromString,
             response_serializer=et__service__pb2.DefaultResponseMessage.SerializeToString,
         ),
+        'submitDataRecords': grpc.unary_unary_rpc_method_handler(
+            servicer.submitDataRecords,
+            request_deserializer=et__service__pb2.SubmitDataRecordsRequestMessage.FromString,
+            response_serializer=et__service__pb2.DefaultResponseMessage.SerializeToString,
+        ),
         'submitHeartbeat': grpc.unary_unary_rpc_method_handler(
             servicer.submitHeartbeat,
             request_deserializer=et__service__pb2.SubmitHeartbeatRequestMessage.FromString,
@@ -291,6 +320,11 @@ def add_ETServiceServicer_to_server(servicer, server):
             servicer.retrieve100DataRecords,
             request_deserializer=et__service__pb2.Retrieve100DataRecordsRequestMessage.FromString,
             response_serializer=et__service__pb2.Retrieve100DataRecordsResponseMessage.SerializeToString,
+        ),
+        'retrieveFilteredDataRecords': grpc.unary_unary_rpc_method_handler(
+            servicer.retrieveFilteredDataRecords,
+            request_deserializer=et__service__pb2.RetrieveFilteredDataRecordsRequestMessage.FromString,
+            response_serializer=et__service__pb2.RetrieveFilteredDataRecordsResponseMessage.SerializeToString,
         ),
         'retrieveUnreadDirectMessages': grpc.unary_unary_rpc_method_handler(
             servicer.retrieveUnreadDirectMessages,

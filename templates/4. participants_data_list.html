@@ -7,14 +7,17 @@
             <th>Data source name</th>
             <th>Configurations</th>
             <th>Number of<br>data samples</th>
+            <th>Latest sync time</th>
             <th>Actions (on data)</th>
         </tr>
+        {% load humanize %}
         {% for data_source in data_sources %}
             <tr data-source="{{ data_source.name }}" class="data_source">
                 <td><img src="http://{{ request.get_host }}/static/{{ data_source.icon_name }}" alt="{{ data_source.name }}"></td>
                 <td>{{ data_source.name }}</td>
                 <td title="{{ data_source.config_json }}">{{ data_source.config_json|truncatechars:30 }}</td>
-                <td>{{ data_source.amount_of_data }}</td>
+                <td>{{ data_source.amount_of_data|intcomma }}</td>
+                <td>{{ data_source.last_sync_time }}</td>
                 <td>
                     <a class="action_button" href="{% url 'view_data' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}&from_time=-999999999">View</a>
                     <a class="action_button" href="{% url 'download_data' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}">Download</a>

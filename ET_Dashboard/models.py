@@ -84,14 +84,15 @@ class Participant(models.Model):
     last_heartbeat_time = models.CharField(max_length=64, default=None)
     last_sync_time = models.CharField(max_length=64, default=None)
     data_source_ids = models.CharField(validators=[int_list_validator], max_length=512)
-    per_data_source_amount_of_data = models.CharField(validators=[int_list_validator], max_length=512)
+    per_data_source_amount_of_data = models.CharField(validators=[int_list_validator], max_length=1024)
+    per_data_source_last_sync_time = models.CharField(max_length=2048)
 
     class Meta:
         unique_together = ['email', 'campaign']
 
     @staticmethod
-    def create_or_update(email, campaign, full_name, day_no, amount_of_data, last_heartbeat_time, last_sync_time, data_source_ids, per_data_source_amount_of_data):
-        if len(data_source_ids) != len(per_data_source_amount_of_data):
+    def create_or_update(email, campaign, full_name, day_no, amount_of_data, last_heartbeat_time, last_sync_time, data_source_ids, per_data_source_amount_of_data, per_data_source_last_sync_time):
+        if len(data_source_ids) != len(per_data_source_amount_of_data) or len(data_source_ids) != len(per_data_source_last_sync_time):
             print('data_source_ids', data_source_ids)
             print('per_data_source_amount_of_data', per_data_source_amount_of_data)
             raise ValueError('lengths of arrays for data source ids and their amounts of data do not match (%d != %d)' % (len(data_source_ids), len(per_data_source_amount_of_data)))
@@ -104,6 +105,7 @@ class Participant(models.Model):
             participant.last_sync_time = last_sync_time
             participant.data_source_ids = ','.join(str(elem) for elem in data_source_ids)
             participant.per_data_source_amount_of_data = ','.join(str(elem) for elem in per_data_source_amount_of_data)
+            participant.per_data_source_last_sync_time = ','.join(str(elem) for elem in per_data_source_last_sync_time)
             participant.save()
         else:
             Participant.objects.create(
@@ -115,7 +117,8 @@ class Participant(models.Model):
                 last_heartbeat_time=last_heartbeat_time,
                 last_sync_time=last_sync_time,
                 data_source_ids=','.join(str(elem) for elem in data_source_ids),
-                per_data_source_amount_of_data=','.join(str(elem) for elem in per_data_source_amount_of_data)
+                per_data_source_amount_of_data=','.join(str(elem) for elem in per_data_source_amount_of_data),
+                per_data_source_last_sync_time=','.join(str(elem) for elem in per_data_source_last_sync_time)
             ).save()
 
 
