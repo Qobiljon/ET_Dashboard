@@ -151,6 +151,28 @@ def handle_participants_data_list(request):
             'email' not in request.GET or not et_models.Participant.objects.filter(email=request.GET['email'], campaign_id=request.GET['campaign_id']).exists():
         return redirect(to='campaigns-list')
     else:
+        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['id']), requester_email=request.user.email)
+        participant = et_models.Participant.objects.get(email=request.GET['email'], campaign_id=request.GET['campaign_id'])
+        grpc_req = et_service_pb2.RetrieveParticipantStatisticsRequestMessage(
+            userId=grpc_user_id,
+            email=request.user.email,
+            targetEmail=participant.email,
+            targetCampaignId=campaign.campaign_id
+        )
+        grpc_res = utils.stub.retrieveParticipantStatistics(grpc_req)
+        if grpc_res.doneSuccessfully:
+            et_models.Participant.create_or_update(
+                email=participant.email,
+                campaign=campaign,
+                full_name=participant.name,
+                day_no=utils.timestamp_diff_in_days(a=utils.timestamp_now_ms(), b=grpc_res.campaignJoinTimestamp),
+                amount_of_data=grpc_res.amountOfSubmittedDataSamples,
+                last_heartbeat_time=utils.timestamp_to_readable_string(grpc_res.lastHeartbeatTimestamp),
+                last_sync_time=utils.timestamp_to_readable_string(grpc_res.lastSyncTimestamp),
+                data_source_ids=grpc_res.dataSourceId,
+                per_data_source_amount_of_data=grpc_res.perDataSourceAmountOfData,
+                per_data_source_last_sync_time=[utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms) for timestamp_ms in grpc_res.perDataSourceLastSyncTimestamp]
+            )
         # participant's data list (data sources)
         campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
         trg_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=campaign)
