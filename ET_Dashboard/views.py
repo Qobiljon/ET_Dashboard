@@ -164,7 +164,7 @@ def handle_participants_data_list(request):
             et_models.Participant.create_or_update(
                 email=participant.email,
                 campaign=campaign,
-                full_name=participant.name,
+                full_name=participant.full_name,
                 day_no=utils.timestamp_diff_in_days(a=utils.timestamp_now_ms(), b=grpc_res.campaignJoinTimestamp),
                 amount_of_data=grpc_res.amountOfSubmittedDataSamples,
                 last_heartbeat_time=utils.timestamp_to_readable_string(grpc_res.lastHeartbeatTimestamp),
