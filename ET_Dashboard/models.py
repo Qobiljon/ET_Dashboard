@@ -85,7 +85,7 @@ class Participant(models.Model):
     last_sync_time = models.CharField(max_length=64, default=None)
     data_source_ids = models.CharField(validators=[int_list_validator], max_length=512)
     per_data_source_amount_of_data = models.CharField(validators=[int_list_validator], max_length=1024)
-    per_data_source_last_sync_time = models.CharField(max_length=2048)
+    per_data_source_last_sync_time = models.CharField(max_length=2048, default=0)
 
     class Meta:
         unique_together = ['email', 'campaign']
