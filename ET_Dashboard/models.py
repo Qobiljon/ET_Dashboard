@@ -123,11 +123,12 @@ class Participant(models.Model):
 
 
 class DataSource:
-    def __init__(self, data_source_id, name, icon_name, amount_of_data, config_json):
+    def __init__(self, data_source_id, name, icon_name, amount_of_data, last_sync_time, config_json):
         self.data_source_id = data_source_id
         self.name = name
         self.icon_name = icon_name
         self.amount_of_data = amount_of_data
+        self.last_sync_time = last_sync_time
         self.config_json = config_json
         self.selected = False
 
@@ -230,10 +231,19 @@ class DataSource:
     def participants_data_sources_details(campaign: Campaign, trg_participant: Participant):
         data_sources = []
         amount_of_data_map = {}
-        for data_source_id, amount_of_data in zip(trg_participant.data_source_ids.split(','), trg_participant.per_data_source_amount_of_data.split(',')):
+        last_sync_time_map = {}
+        for data_source_id, amount_of_data, last_sync_time in zip(trg_participant.data_source_ids.split(','), trg_participant.per_data_source_amount_of_data.split(','), trg_participant.per_data_source_last_sync_time.split(',')):
             amount_of_data_map[int(data_source_id)] = int(amount_of_data)
+            last_sync_time_map[int(data_source_id)] = last_sync_time
         for config_json in json.loads(s=campaign.config_json):
-            data_sources += [DataSource(data_source_id=config_json['data_source_id'], name=config_json['name'], icon_name=config_json['icon_name'], amount_of_data=amount_of_data_map[config_json['data_source_id']], config_json=config_json['config_json'])]
+            data_sources += [DataSource(
+                data_source_id=config_json['data_source_id'],
+                name=config_json['name'],
+                icon_name=config_json['icon_name'],
+                amount_of_data=amount_of_data_map[config_json['data_source_id']],
+                last_sync_time=last_sync_time_map[config_json['data_source_id']],
+                config_json=config_json['config_json']
+            )]
         data_sources.sort(key=lambda key: key.name)
         return data_sources
 
