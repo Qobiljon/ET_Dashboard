@@ -206,7 +206,8 @@ class DataSource:
                         name=name,
                         icon_name=icon_name,
                         amount_of_data=-1,
-                        config_json=None
+                        config_json=None,
+                        last_sync_time=None
                     )
                     data_source_dict[name] = data_source
                     data_source_list += [data_source]
@@ -217,7 +218,8 @@ class DataSource:
                     name=elem['name'],
                     icon_name=elem['icon'],
                     amount_of_data=-1,
-                    config_json=None
+                    config_json=None,
+                    last_sync_time=None
                 )
                 data_source_dict[elem['name']] = data_source
                 data_source_list += [data_source]
