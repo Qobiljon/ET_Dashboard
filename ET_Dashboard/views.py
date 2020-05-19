@@ -253,7 +253,8 @@ def handle_campaign_editor(request):
                         name=_name,
                         icon_name=_icon_name,
                         amount_of_data=-1,
-                        config_json=_config_json
+                        config_json=_config_json,
+                        last_sync_time=None
                     )]
             for elem in data_sources:
                 try:
