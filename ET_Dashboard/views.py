@@ -217,7 +217,7 @@ def handle_raw_samples_list(request):
                 records += [et_models.Record(timestamp_ms=timestamp, value=value)]
                 from_time = timestamp
             data_source_name = None
-            for data_source in json.loads(s=et_models.Campaign.objects.get(campaign_id=campaign_id).config_json):
+            for data_source in json.loads(s=et_models.Campaign.objects.get(requester_email=request.user.email, campaign_id=campaign_id).config_json):
                 if data_source['data_source_id'] == data_source_id:
                     data_source_name = data_source['name']
                     break
