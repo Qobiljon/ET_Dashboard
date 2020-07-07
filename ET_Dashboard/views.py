@@ -431,7 +431,7 @@ def handle_download_campaign_api(request):
         else:
             return redirect(to='campaigns-list')
     else:
-        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['campaign_id']))
+        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['campaign_id']), requester_email=request.user.email)
         data_sources = json.loads(s=campaign.config_json)
         res = {}
         for data_source in data_sources:
