@@ -29,9 +29,10 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 
     '165.246.42.172',
-    'etdb.myvnc.com',
+    'etdbg.myvnc.com',
 
     '165.246.21.202',
+    'etdb.myvnc.com',
     'easytrack.inha.ac.kr'
 ]
 
