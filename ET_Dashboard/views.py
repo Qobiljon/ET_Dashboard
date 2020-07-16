@@ -52,6 +52,7 @@ def handle_logout_api(request):
 def handle_campaigns_list(request):
     grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
     if grpc_user_id is not None:
+        load_unread_notifications(grpc_user_id=grpc_user_id, email=request.user.email)
         grpc_req = et_service_pb2.RetrieveCampaignsRequestMessage(userId=grpc_user_id, email=request.user.email, myCampaignsOnly=True)
         grpc_res = utils.stub.retrieveCampaigns(grpc_req)
         if grpc_res.doneSuccessfully:
@@ -69,12 +70,17 @@ def handle_campaigns_list(request):
                     participant_count=participant_count
                 )
             print('%s opened the main page' % request.user.email)
+        campaigns = et_models.Campaign.objects.filter(requester_email=request.user.email).order_by('name')
+        notifications = {}
+        for campaign in campaigns:
+            notifications[campaign.campaign_id] = et_models.Notifications.objects.filter(campaign_id=campaign.campaign_id).order_by('-timestamp')
         return render(
             request=request,
             template_name='2. campaigns_list.html',
             context={
                 'title': "%s's campaigns" % request.user.get_full_name(),
-                'campaigns': et_models.Campaign.objects.filter(requester_email=request.user.email).order_by('name')
+                'campaigns': campaigns,
+                'notifications': notifications
             }
         )
     else:
@@ -439,3 +445,17 @@ def handle_download_campaign_api(request):
         for data_source in data_sources:
             res[data_source['name']] = data_source['data_source_id']
         return JsonResponse(data=res)
+
+
+@login_required
+@require_http_methods(['GET'])
+def handle_notifications_list(request):
+    return None
+
+
+def load_unread_notifications(grpc_user_id, email):
+    grpc_req = et_service_pb2.RetrieveUnreadNotificationsRequestMessage(userId=grpc_user_id, email=email)
+    grpc_res = utils.stub.retrieveUnreadNotifications(grpc_req)
+    if grpc_res.doneSuccessfully:
+        for notification_id, campaign_id, timestamp, subject, content in zip(grpc_res.notificationId, grpc_res.campaignId, grpc_res.timestamp, grpc_res.subject, grpc_res.content):
+            et_models.Notifications.objects.create(notification_id=notification_id, campaign_id=campaign_id, timestamp=timestamp, subject=subject, content=content).save()

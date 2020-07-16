@@ -18,6 +18,10 @@
                 <td>
                     <a title="Download campaign details as a JSON file" class="action_button_green" href="{% url 'get-configs' %}?campaign_id={{ campaign.campaign_id }}">JSON</a>
                     <a class="action_button_green" href="{% url 'campaign-editor' %}?campaign_id={{ campaign.campaign_id }}&edit">EDIT</a>
+                    {# TODO: finish this notification part #}
+                    {# {% with campaign_id=campaign.campaign_id %} #}
+                    {# <a class="action_button_green" href="{% url 'notifications' %}?campaign_id={{ campaign.campaign_id }}">{{ notifications.campaign_id|length }}</a> #}
+                    {# {% endwith %} #}
                     <!-- a class="action_button_red" href="{% url 'delete-campaign' %}?campaign_id={{ campaign.campaign_id }}">DELETE</a -->
                 </td>
             </tr>
