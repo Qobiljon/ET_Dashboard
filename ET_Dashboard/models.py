@@ -36,6 +36,7 @@ class Campaign(models.Model):
     notes = models.TextField()
     start_timestamp = models.BigIntegerField()
     end_timestamp = models.BigIntegerField()
+    remove_inactive_users_timeout = models.IntegerField()
     creator_email = models.CharField(max_length=128)
     config_json = models.TextField()
     participant_count = models.IntegerField()
@@ -50,7 +51,7 @@ class Campaign(models.Model):
         return utils.timestamp_to_web_string(timestamp_ms=self.end_timestamp)
 
     @classmethod
-    def create_or_update(cls, campaign_id, requester_email, name, notes, start_timestamp, end_timestamp, creator_email, config_json, participant_count):
+    def create_or_update(cls, campaign_id, requester_email, name, notes, start_timestamp, end_timestamp, remove_inactive_users_timeout, creator_email, config_json, participant_count):
         if Campaign.objects.filter(campaign_id=campaign_id, requester_email=requester_email).exists():
             campaign = Campaign.objects.get(campaign_id=campaign_id, requester_email=requester_email)
             campaign.requester_email = requester_email
@@ -58,6 +59,7 @@ class Campaign(models.Model):
             campaign.notes = notes
             campaign.start_timestamp = start_timestamp
             campaign.end_timestamp = end_timestamp
+            campaign.remove_inactive_users_timeout = remove_inactive_users_timeout
             campaign.creator_email = creator_email
             campaign.config_json = config_json
             campaign.participant_count = participant_count
@@ -69,6 +71,7 @@ class Campaign(models.Model):
                 name=name, notes=notes,
                 start_timestamp=start_timestamp,
                 end_timestamp=end_timestamp,
+                remove_inactive_users_timeout=remove_inactive_users_timeout,
                 creator_email=creator_email,
                 config_json=config_json,
                 participant_count=participant_count

@@ -55,7 +55,7 @@ def handle_campaigns_list(request):
         grpc_req = et_service_pb2.RetrieveCampaignsRequestMessage(userId=grpc_user_id, email=request.user.email, myCampaignsOnly=True)
         grpc_res = utils.stub.retrieveCampaigns(grpc_req)
         if grpc_res.doneSuccessfully:
-            for campaign_id, name, notes, start_timestamp, end_timestamp, creator_email, config_json, participant_count in zip(grpc_res.campaignId, grpc_res.name, grpc_res.notes, grpc_res.startTimestamp, grpc_res.endTimestamp, grpc_res.creatorEmail, grpc_res.configJson, grpc_res.participantCount):
+            for campaign_id, name, notes, start_timestamp, end_timestamp, remove_inactive_users_timeout, creator_email, config_json, participant_count in zip(grpc_res.campaignId, grpc_res.name, grpc_res.notes, grpc_res.startTimestamp, grpc_res.endTimestamp, grpc_res.removeInactiveUsersTimeout, grpc_res.creatorEmail, grpc_res.configJson, grpc_res.participantCount):
                 et_models.Campaign.create_or_update(
                     campaign_id=campaign_id,
                     requester_email=request.user.email,
@@ -63,6 +63,7 @@ def handle_campaigns_list(request):
                     notes=notes,
                     start_timestamp=start_timestamp,
                     end_timestamp=end_timestamp,
+                    remove_inactive_users_timeout=remove_inactive_users_timeout,
                     creator_email=creator_email,
                     config_json=config_json,
                     participant_count=participant_count
@@ -282,6 +283,7 @@ def handle_campaign_editor(request):
                 notes=request.POST['notes'],
                 startTimestamp=utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['startTime'], "%Y-%m-%dT%H:%M")),
                 endTimestamp=utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['endTime'], "%Y-%m-%dT%H:%M")),
+                removeInactiveUsersTimeout=request.POST['remove_inactive_users_timeout'],
                 configJson=json.dumps(obj=config_json)
             )
             grpc_res = utils.stub.registerCampaign(grpc_req)

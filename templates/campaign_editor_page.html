@@ -24,6 +24,18 @@
                 <td><label for="endTime">End time</label>
                 <td><input name="endTime" id="notes" type="datetime-local" required value="{% if edit_mode %}{{ campaign.end_timestamp_for_web }}{% endif %}"/></td>
             </tr>
+            <tr>
+                <td><label>Remove inactive<br>users (days)<input id="remove_inactive_users_checkbox" type="checkbox" {% if edit_mode and campaign.remove_inactive_users_timeout > 0 %}checked{% endif %}></label>
+                </td>
+                <td><input id="remove_inactive_users_timeout" type="range"
+                        {% if edit_mode and campaign.remove_inactive_users_timeout > 0 %}
+                           min="1" max="100" value="{{ campaign.remove_inactive_users_timeout }}"
+                        {% else %}
+                           min="-1" max="-1" value="-1" hidden
+                        {% endif %}
+                           required>
+                </td>
+            </tr>
         </table>
 
         <a id="addRowButton" onclick="onInsertNewRowClick()">NEW DATA SOURCE</a>
