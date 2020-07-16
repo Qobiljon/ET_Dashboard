@@ -283,7 +283,7 @@ def handle_campaign_editor(request):
                 notes=request.POST['notes'],
                 startTimestamp=utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['startTime'], "%Y-%m-%dT%H:%M")),
                 endTimestamp=utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['endTime'], "%Y-%m-%dT%H:%M")),
-                removeInactiveUsersTimeout=request.POST['remove_inactive_users_timeout'],
+                removeInactiveUsersTimeout=int(request.POST['remove_inactive_users_timeout']) if int(request.POST['remove_inactive_users_timeout']) > 0 else -1,
                 configJson=json.dumps(obj=config_json)
             )
             grpc_res = utils.stub.registerCampaign(grpc_req)

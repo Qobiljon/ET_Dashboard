@@ -25,9 +25,11 @@
                 <td><input name="endTime" id="notes" type="datetime-local" required value="{% if edit_mode %}{{ campaign.end_timestamp_for_web }}{% endif %}"/></td>
             </tr>
             <tr>
-                <td><label>Remove inactive<br>users (days)<input id="remove_inactive_users_checkbox" type="checkbox" {% if edit_mode and campaign.remove_inactive_users_timeout > 0 %}checked{% endif %}></label>
+                <td>
+                    <input id="removeInactiveUsersCheckbox" type="checkbox" onclick="removeInactiveUsersClicked();" {% if edit_mode and campaign.remove_inactive_users_timeout > 0 %}checked{% endif %}>
+                    <label for="removeInactiveUsersCheckbox">Remove inactive<br>users (days)</label>
                 </td>
-                <td><input id="remove_inactive_users_timeout" type="range"
+                <td><input id="removeInactiveUsersNumberInput" type="number" name="remove_inactive_users_timeout"
                         {% if edit_mode and campaign.remove_inactive_users_timeout > 0 %}
                            min="1" max="100" value="{{ campaign.remove_inactive_users_timeout }}"
                         {% else %}
@@ -83,9 +85,13 @@
     <script>
         let dataSourceTable;
         let counter = 0;
+        let removeInactiveUsersCheckbox;
+        let removeInactiveUsersNumberInput;
 
         document.addEventListener("DOMContentLoaded", () => {
             dataSourceTable = document.getElementById("dataSourceTable");
+            removeInactiveUsersCheckbox = document.getElementById("removeInactiveUsersCheckbox");
+            removeInactiveUsersNumberInput = document.getElementById("removeInactiveUsersNumberInput");
 
             const rows = document.querySelectorAll("tr[data-source]");
             rows.forEach(row => {
@@ -107,6 +113,20 @@
                 });
             });
         });
+
+        function removeInactiveUsersClicked() {
+            if(removeInactiveUsersCheckbox.checked){
+                removeInactiveUsersNumberInput.min = "1";
+                removeInactiveUsersNumberInput.max = "100";
+                removeInactiveUsersNumberInput.value = {% if campaign.remove_inactive_users_timeout > 0 %}{{ campaign.remove_inactive_users_timeout }}{% else %}1{% endif %};
+                removeInactiveUsersNumberInput.style.display = "inline-block";
+            } else {
+                removeInactiveUsersNumberInput.min = "-1";
+                removeInactiveUsersNumberInput.max = "-1";
+                removeInactiveUsersNumberInput.value = "-1";
+                removeInactiveUsersNumberInput.style.display = "none";
+            }
+        }
 
         function onInsertNewRowClick() {
             let name = 'NEW_DATA_SOURCE_' + counter;
