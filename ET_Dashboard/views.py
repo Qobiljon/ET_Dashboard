@@ -221,7 +221,7 @@ def handle_raw_samples_list(request):
         grpc_req = et_service_pb2.Retrieve100DataRecordsRequestMessage(
             userId=grpc_user_id,
             email=request.user.email,
-            targetEmail=target_participant,
+            targetEmail=target_participant.email,
             targetCampaignId=target_campaign.campaign_id,
             targetDataSourceId=data_source_id,
             fromTimestamp=from_time
