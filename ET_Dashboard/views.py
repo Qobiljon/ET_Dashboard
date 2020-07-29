@@ -154,24 +154,27 @@ def handle_participants_data_list(request):
     grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
     if grpc_user_id is None:
         return redirect(to='login')
-    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists() or \
-            'email' not in request.GET or not et_models.Participant.objects.filter(email=request.GET['email'], campaign__campaign_id=request.GET['campaign_id']).exists():
+    target_campaign = None
+    target_participant = None
+    if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
+        target_campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
+    if target_campaign is not None and 'email' in request.GET and et_models.Participant.objects.filter(email=request.GET['email'], campaign__campaign_id=request.GET['campaign_id']).exists():
+        target_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=target_campaign)
+    if target_campaign is None or target_participant is None:
         return redirect(to='campaigns-list')
     else:
-        campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
-        participant = et_models.Participant.objects.get(email=request.GET['email'], campaign__campaign_id=request.GET['campaign_id'])
         grpc_req = et_service_pb2.RetrieveParticipantStatisticsRequestMessage(
             userId=grpc_user_id,
             email=request.user.email,
-            targetEmail=participant.email,
-            targetCampaignId=campaign.campaign_id
+            targetEmail=target_participant.email,
+            targetCampaignId=target_campaign.campaign_id
         )
         grpc_res = utils.stub.retrieveParticipantStatistics(grpc_req)
         if grpc_res.doneSuccessfully:
             et_models.Participant.create_or_update(
-                email=participant.email,
-                campaign=campaign,
-                full_name=participant.full_name,
+                email=target_participant.email,
+                campaign=target_campaign,
+                full_name=target_participant.full_name,
                 day_no=utils.timestamp_diff_in_days(a=utils.timestamp_now_ms(), b=grpc_res.campaignJoinTimestamp),
                 amount_of_data=grpc_res.amountOfSubmittedDataSamples,
                 last_heartbeat_time=utils.timestamp_to_readable_string(grpc_res.lastHeartbeatTimestamp),
@@ -181,16 +184,16 @@ def handle_participants_data_list(request):
                 per_data_source_last_sync_time=[utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms) for timestamp_ms in grpc_res.perDataSourceLastSyncTimestamp]
             )
         # participant's data list (data sources)
-        campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
-        trg_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=campaign)
+        target_campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
+        trg_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=target_campaign)
         return render(
             request=request,
             template_name='4. participants_data_list.html',
             context={
                 'title': "%s's data" % trg_participant.full_name,
-                'campaign': campaign,
+                'campaign': target_campaign,
                 'participant': trg_participant,
-                'data_sources': et_models.DataSource.participants_data_sources_details(campaign=campaign, trg_participant=trg_participant)
+                'data_sources': et_models.DataSource.participants_data_sources_details(campaign=target_campaign, trg_participant=trg_participant)
             }
         )
 
