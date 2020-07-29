@@ -93,11 +93,13 @@ def handle_participants_list(request):
     grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
     if grpc_user_id is None:
         return redirect(to='login')
-    elif 'id' not in request.GET or not str(request.GET['id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['id'], requester_email=request.user.email).exists():
+    campaign = None
+    if 'id' in request.GET and str(request.GET['id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=request.GET['id'], requester_email=request.user.email).exists():
+        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['id']), requester_email=request.user.email)
+    if campaign is None:
         return redirect(to='campaigns-list')
     else:
         # campaign dashboard page
-        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['id']), requester_email=request.user.email)
         grpc_req = et_service_pb2.RetrieveParticipantsRequestMessage(
             userId=grpc_user_id,
             email=request.user.email,
@@ -204,19 +206,23 @@ def handle_raw_samples_list(request):
     grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
     if grpc_user_id is None:
         return redirect(to='login')
-    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists() or \
-            'email' not in request.GET or not et_models.Participant.objects.filter(email=request.GET['email'], campaign_id=request.GET['campaign_id']).exists() or \
-            'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit() or 'from_time' not in request.GET or not (len(request.GET['from_time']) > 1 and str(request.GET['from_time'][1:]).isdigit()):
+    target_campaign = None
+    target_participant = None
+    if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
+        target_campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
+    if 'email' in request.GET and et_models.Participant.objects.filter(email=request.GET['email'], campaign_id=request.GET['campaign_id']).exists():
+        target_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign_id=request.GET['campaign_id'])
+    if target_campaign is None or target_participant is None or 'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit() or 'from_time' not in request.GET \
+            or not (len(request.GET['from_time']) > 1 and str(request.GET['from_time'][1:]).isdigit()):
         return redirect(to='campaigns-list')
     else:
         from_time = int(request.GET['from_time'])
         data_source_id = int(request.GET['data_source_id'])
-        campaign_id = int(request.GET['campaign_id'])
         grpc_req = et_service_pb2.Retrieve100DataRecordsRequestMessage(
             userId=grpc_user_id,
             email=request.user.email,
-            targetEmail=request.GET['email'],
-            targetCampaignId=campaign_id,
+            targetEmail=target_participant,
+            targetCampaignId=target_campaign.campaign_id,
             targetDataSourceId=data_source_id,
             fromTimestamp=from_time
         )
@@ -227,7 +233,7 @@ def handle_raw_samples_list(request):
                 records += [et_models.Record(timestamp_ms=timestamp, value=value)]
                 from_time = timestamp
             data_source_name = None
-            for data_source in json.loads(s=et_models.Campaign.objects.get(requester_email=request.user.email, campaign_id=campaign_id).config_json):
+            for data_source in json.loads(s=et_models.Campaign.objects.get(requester_email=request.user.email, campaign_id=target_campaign.campaign_id).config_json):
                 if data_source['data_source_id'] == data_source_id:
                     data_source_name = data_source['name']
                     break
