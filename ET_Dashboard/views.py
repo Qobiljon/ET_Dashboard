@@ -155,11 +155,11 @@ def handle_participants_data_list(request):
     if grpc_user_id is None:
         return redirect(to='login')
     elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists() or \
-            'email' not in request.GET or not et_models.Participant.objects.filter(email=request.GET['email'], campaign_id=request.GET['campaign_id']).exists():
+            'email' not in request.GET or not et_models.Participant.objects.filter(email=request.GET['email'], campaign__campaign_id=request.GET['campaign_id']).exists():
         return redirect(to='campaigns-list')
     else:
         campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
-        participant = et_models.Participant.objects.get(email=request.GET['email'], campaign_id=request.GET['campaign_id'])
+        participant = et_models.Participant.objects.get(email=request.GET['email'], campaign__campaign_id=request.GET['campaign_id'])
         grpc_req = et_service_pb2.RetrieveParticipantStatisticsRequestMessage(
             userId=grpc_user_id,
             email=request.user.email,
