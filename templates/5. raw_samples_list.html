@@ -73,6 +73,7 @@
             border-spacing: 0;
             margin-bottom: 20px;
             text-align: center;
+            table-layout: fixed;
         }
 
         #value_table tr:first-child {
@@ -81,6 +82,11 @@
             font-weight: bold;
             padding: 10px 0;
             font-size: large;
+        }
+
+        #value_table tr.data_source td {
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         #value_table tr.data_source:nth-child(even) td {
