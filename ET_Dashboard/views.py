@@ -210,8 +210,8 @@ def handle_raw_samples_list(request):
     target_participant = None
     if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
         target_campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
-    if 'email' in request.GET and et_models.Participant.objects.filter(email=request.GET['email'], campaign_id=request.GET['campaign_id']).exists():
-        target_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign_id=request.GET['campaign_id'])
+    if target_campaign is not None and 'email' in request.GET and et_models.Participant.objects.filter(email=request.GET['email'], campaign_id=request.GET['campaign_id']).exists():
+        target_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=target_campaign)
     if target_campaign is None or target_participant is None or 'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit() or 'from_time' not in request.GET \
             or not (len(request.GET['from_time']) > 1 and str(request.GET['from_time'][1:]).isdigit()):
         return redirect(to='campaigns-list')
