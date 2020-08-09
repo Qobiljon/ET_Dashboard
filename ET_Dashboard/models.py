@@ -125,6 +125,15 @@ class Participant(models.Model):
             ).save()
 
 
+class Notifications(models.Model):
+    notification_id = models.IntegerField(unique=True)
+    campaign_id = models.IntegerField()
+    timestamp = models.BigIntegerField()
+    subject = models.CharField(max_length=512)
+    content = models.CharField(max_length=2048)
+    read = models.BooleanField(default=False)
+
+
 class DataSource:
     def __init__(self, data_source_id, name, icon_name, amount_of_data, last_sync_time, config_json):
         self.data_source_id = data_source_id

@@ -30,6 +30,7 @@ urlpatterns = [
     path('participant/', views.handle_participants_data_list, name='participant'),
     path('data/', views.handle_raw_samples_list, name='view_data'),
     path('edit/', views.handle_campaign_editor, name='campaign-editor'),
+    path('notifications/', views.handle_notifications_list, name='notifications'),
 
     path('download_campaign/', views.handle_download_campaign_api, name='get-configs'),
     path('delete/', views.handle_delete_campaign_api, name='delete-campaign'),
