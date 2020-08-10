@@ -47,7 +47,7 @@
         });
 
         function deleteCampaignClick(clicked_id) {
-            if (confirm("Are you sure you want to delete this campaign?"))
+            if (confirm("This will delete your campaign and all its data. Proceed?") && confirm("Double check. Are you sure?"))
                 window.location.href = document.getElementById(clicked_id).dataset.href;
         }
     </script>
