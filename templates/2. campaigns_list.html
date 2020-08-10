@@ -10,11 +10,11 @@
         </tr>
         {% load humanize %}
         {% for campaign in campaigns %}
-            <tr data-href="{% url 'participants-list' %}?id={{ campaign.campaign_id }}">
-                <td title="{{ campaign.name }}">{{ campaign.name|truncatechars:40 }}</td>
-                <td title="{{ campaign.notes }}">{% if campaign.notes|length == 0 %}-{% else %}{{ campaign.notes|truncatechars:20 }}{% endif %}</td>
-                <td>{{ campaign.creator_email }}</td>
-                <td>{{ campaign.participant_count|intcomma }}</td>
+            <tr>
+                <td title="{{ campaign.name }}" data-href="{% url 'participants-list' %}?id={{ campaign.campaign_id }}">{{ campaign.name|truncatechars:40 }}</td>
+                <td title="{{ campaign.notes }}" data-href="{% url 'participants-list' %}?id={{ campaign.campaign_id }}">{% if campaign.notes|length == 0 %}-{% else %}{{ campaign.notes|truncatechars:20 }}{% endif %}</td>
+                <td data-href="{% url 'participants-list' %}?id={{ campaign.campaign_id }}">{{ campaign.creator_email }}</td>
+                <td data-href="{% url 'participants-list' %}?id={{ campaign.campaign_id }}">{{ campaign.participant_count|intcomma }}</td>
                 <td>
                     <a title="Download campaign details as a JSON file" class="action_button_green" href="{% url 'get-configs' %}?campaign_id={{ campaign.campaign_id }}">JSON</a>
                     <a class="action_button_green" href="{% url 'campaign-editor' %}?campaign_id={{ campaign.campaign_id }}&edit">EDIT</a>
@@ -33,7 +33,7 @@
     <script>
         {# for handling campaign row clicks #}
         document.addEventListener("DOMContentLoaded", () => {
-            const rows = document.querySelectorAll("tr[data-href]:not(a)");
+            const rows = document.querySelectorAll("td[data-href]");
             rows.forEach(row => {
                 row.addEventListener("click", () => {
                     window.location.href = row.dataset.href;
