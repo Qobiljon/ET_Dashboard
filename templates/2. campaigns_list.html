@@ -22,7 +22,7 @@
                     {# {% with campaign_id=campaign.campaign_id %} #}
                     {# <a class="action_button_green" href="{% url 'notifications' %}?campaign_id={{ campaign.campaign_id }}">{{ notifications.campaign_id|length }}</a> #}
                     {# {% endwith %} #}
-                    <!-- a class="action_button_red" href="{% url 'delete-campaign' %}?campaign_id={{ campaign.campaign_id }}">DELETE</a -->
+                    <a id="delete_campaign_button" class="action_button_red" href="#" onclick="deleteCampaignClick(this);" data="{% url 'delete-campaign' %}?campaign_id={{ campaign.campaign_id }}">DELETE</a>
                 </td>
             </tr>
         {% endfor %}
@@ -39,6 +39,14 @@
                 });
             });
         });
+
+        void deleteCampaignClick(button)
+        {
+            if (confirm("Are you sure you want to delete this campaign ?")) {
+                alert(button.data);
+                // window.location.href = button.data;
+            }
+        }
     </script>
 
     <style>
