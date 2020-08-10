@@ -22,7 +22,7 @@
                     {# {% with campaign_id=campaign.campaign_id %} #}
                     {# <a class="action_button_green" href="{% url 'notifications' %}?campaign_id={{ campaign.campaign_id }}">{{ notifications.campaign_id|length }}</a> #}
                     {# {% endwith %} #}
-                    <a id="delete_campaign_{{ campaign.campaign_id }}_button" href="#" class="action_button_red" onclick="deleteCampaignClick(this.id);" data-url="{% url 'delete-campaign' %}?campaign_id={{ campaign.campaign_id }}">DELETE</a>
+                    <a id="delete_campaign_{{ campaign.campaign_id }}_button" href="#" class="action_button_red" onclick="deleteCampaignClick(this.id);" data-href="{% url 'delete-campaign' %}?campaign_id={{ campaign.campaign_id }}">DELETE</a>
                 </td>
             </tr>
         {% endfor %}
@@ -38,14 +38,18 @@
                     window.location.href = row.dataset.href;
                 });
             });
+
+            const actionButtons = document.querySelectorAll("tr[data-href] td a");
+            actionButtons.forEach(button => {
+                let clone = button.cloneNode(true);
+                button.parentNode.replaceChild(clone, button);
+            });
         });
 
-        function deleteCampaignClick(clicked_id){
-			if(confirm("Are you sure you want to delete this campaign?")){
-				alert(document.getElementById(clicked_id).dataset.url);
-				// window.location.href = button.data;
-			}
-		}
+        function deleteCampaignClick(clicked_id) {
+            if (confirm("Are you sure you want to delete this campaign?"))
+                window.location.href = document.getElementById(clicked_id).dataset.href;
+        }
     </script>
 
     <style>
