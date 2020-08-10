@@ -32,17 +32,11 @@
     <script>
         {# for handling campaign row clicks #}
         document.addEventListener("DOMContentLoaded", () => {
-            const rows = document.querySelectorAll("tr[data-href]");
+            const rows = document.querySelectorAll("tr[data-href]:not(a)");
             rows.forEach(row => {
                 row.addEventListener("click", () => {
                     window.location.href = row.dataset.href;
                 });
-            });
-
-            const actionButtons = document.querySelectorAll("tr[data-href] td a");
-            actionButtons.forEach(button => {
-                let clone = button.cloneNode(true);
-                button.parentNode.replaceChild(clone, button);
             });
         });
 
