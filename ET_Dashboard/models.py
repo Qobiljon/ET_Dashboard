@@ -209,9 +209,9 @@ class DataSource:
         data_source_list = []
         data_source_dict = {}
         if use_grpc:
-            grpc_req = et_service_pb2.RetrieveAllDataSourcesRequestMessage(userId=user_id, email=email)
-            grpc_res = utils.stub.retrieveAllDataSources(grpc_req)
-            if grpc_res.doneSuccessfully:
+            grpc_req = et_service_pb2.RetrieveDataSources.Request(userId=user_id, email=email)
+            grpc_res = utils.stub.retrieveDataSources(grpc_req)
+            if grpc_res.success:
                 for data_source_id, name, icon_name in zip(grpc_res.dataSourceId, grpc_res.name, grpc_res.iconName):
                     data_source = DataSource(
                         data_source_id=data_source_id,

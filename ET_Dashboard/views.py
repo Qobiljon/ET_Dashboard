@@ -25,9 +25,9 @@ def handle_google_verification(request):
 @require_http_methods(['GET', 'POST'])
 def handle_login_api(request):
     if request.user.is_authenticated:
-        grpc_req = et_service_pb2.DashboardLoginWithEmailRequestMessage(email=request.user.email, name=request.user.get_full_name(), dashboardKey='ETd@$#b0@rd')
-        grpc_res = utils.stub.dashboardLoginWithEmail(grpc_req)
-        if grpc_res.doneSuccessfully:
+        grpc_req = et_service_pb2.LoginDashboard.Request(email=request.user.email, name=request.user.get_full_name(), dashboardKey='ETd@$#b0@rd')
+        grpc_res = utils.stub.loginDashboard(grpc_req)
+        if grpc_res.success:
             et_models.GrpcUserIds.create_or_update(email=request.user.email, user_id=grpc_res.userId)
             print('%s logged in' % request.user.email)
             return redirect(to='campaigns-list')
@@ -53,9 +53,9 @@ def handle_campaigns_list(request):
     grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
     if grpc_user_id is not None:
         load_unread_notifications(grpc_user_id=grpc_user_id, email=request.user.email)
-        grpc_req = et_service_pb2.RetrieveCampaignsRequestMessage(userId=grpc_user_id, email=request.user.email, myCampaignsOnly=True)
+        grpc_req = et_service_pb2.RetrieveCampaigns.Request(userId=grpc_user_id, email=request.user.email, myCampaignsOnly=True)
         grpc_res = utils.stub.retrieveCampaigns(grpc_req)
-        if grpc_res.doneSuccessfully:
+        if grpc_res.success:
             for campaign_id, name, notes, start_timestamp, end_timestamp, remove_inactive_users_timeout, creator_email, config_json, participant_count in zip(grpc_res.campaignId, grpc_res.name, grpc_res.notes, grpc_res.startTimestamp, grpc_res.endTimestamp, grpc_res.removeInactiveUsersTimeout, grpc_res.creatorEmail, grpc_res.configJson, grpc_res.participantCount):
                 et_models.Campaign.create_or_update(
                     campaign_id=campaign_id,
@@ -100,31 +100,31 @@ def handle_participants_list(request):
         return redirect(to='campaigns-list')
     else:
         # campaign dashboard page
-        grpc_req = et_service_pb2.RetrieveParticipantsRequestMessage(
+        grpc_req = et_service_pb2.RetrieveParticipants.Request(
             userId=grpc_user_id,
             email=request.user.email,
             campaignId=campaign.campaign_id
         )
         grpc_res = utils.stub.retrieveParticipants(grpc_req)
-        if grpc_res.doneSuccessfully:
-            grpc_req = et_service_pb2.RetrieveParticipantsRequestMessage(
+        if grpc_res.success:
+            grpc_req = et_service_pb2.RetrieveParticipants.Request(
                 userId=grpc_user_id,
                 email=request.user.email,
                 campaignId=campaign.campaign_id
             )
             grpc_res = utils.stub.retrieveParticipants(grpc_req)
-            if grpc_res.doneSuccessfully:
+            if grpc_res.success:
                 success = len(grpc_res.name) == 0
                 for name, email in zip(grpc_res.name, grpc_res.email):
-                    sub_grpc_req = et_service_pb2.RetrieveParticipantStatisticsRequestMessage(
+                    sub_grpc_req = et_service_pb2.RetrieveParticipantStats.Request(
                         userId=grpc_user_id,
                         email=request.user.email,
                         targetEmail=email,
                         targetCampaignId=campaign.campaign_id
                     )
-                    sub_grpc_res = utils.stub.retrieveParticipantStatistics(sub_grpc_req)
-                    success |= sub_grpc_res.doneSuccessfully
-                    if sub_grpc_res.doneSuccessfully:
+                    sub_grpc_res = utils.stub.retrieveParticipantStats(sub_grpc_req)
+                    success |= sub_grpc_res.success
+                    if sub_grpc_res.success:
                         et_models.Participant.create_or_update(
                             email=email,
                             campaign=campaign,
@@ -165,14 +165,14 @@ def handle_participants_data_list(request):
     if target_campaign is None or target_participant is None:
         return redirect(to='campaigns-list')
     else:
-        grpc_req = et_service_pb2.RetrieveParticipantStatisticsRequestMessage(
+        grpc_req = et_service_pb2.RetrieveParticipantStats.Request(
             userId=grpc_user_id,
             email=request.user.email,
             targetEmail=target_participant.email,
             targetCampaignId=target_campaign.campaign_id
         )
-        grpc_res = utils.stub.retrieveParticipantStatistics(grpc_req)
-        if grpc_res.doneSuccessfully:
+        grpc_res = utils.stub.retrieveParticipantStats(grpc_req)
+        if grpc_res.success:
             et_models.Participant.create_or_update(
                 email=target_participant.email,
                 campaign=target_campaign,
@@ -218,7 +218,7 @@ def handle_raw_samples_list(request):
     else:
         from_time = int(request.GET['from_time'])
         data_source_id = int(request.GET['data_source_id'])
-        grpc_req = et_service_pb2.Retrieve100DataRecordsRequestMessage(
+        grpc_req = et_service_pb2.Retrieve100DataRecords.Request(
             userId=grpc_user_id,
             email=request.user.email,
             targetEmail=target_participant.email,
@@ -227,7 +227,7 @@ def handle_raw_samples_list(request):
             fromTimestamp=from_time
         )
         grpc_res = utils.stub.retrieve100DataRecords(grpc_req)
-        if grpc_res.doneSuccessfully:
+        if grpc_res.success:
             records = []
             for timestamp, value in zip(grpc_res.timestamp, grpc_res.value):
                 records += [et_models.Record(timestamp_ms=timestamp, value=value)]
@@ -282,7 +282,7 @@ def handle_campaign_editor(request):
                     else:
                         return redirect(to='campaigns-list')
             for elem in data_sources:
-                grpc_req = et_service_pb2.BindDataSourceRequestMessage(
+                grpc_req = et_service_pb2.BindDataSource.Request(
                     userId=grpc_user_id,
                     email=request.user.email,
                     name=elem.name,
@@ -290,7 +290,7 @@ def handle_campaign_editor(request):
                 )
                 grpc_res = utils.stub.bindDataSource(grpc_req)
                 config_json += [{'name': elem.name, 'data_source_id': grpc_res.dataSourceId, 'icon_name': elem.icon_name, 'config_json': elem.config_json}]
-            grpc_req = et_service_pb2.RegisterCampaignRequestMessage(
+            grpc_req = et_service_pb2.RegisterCampaign.Request(
                 userId=grpc_user_id,
                 email=request.user.email,
                 campaignId=int(request.POST['campaign_id']),
@@ -302,7 +302,7 @@ def handle_campaign_editor(request):
                 configJson=json.dumps(obj=config_json)
             )
             grpc_res = utils.stub.registerCampaign(grpc_req)
-            if grpc_res.doneSuccessfully:
+            if grpc_res.success:
                 return redirect(to='campaigns-list')
             else:
                 return render(
@@ -365,13 +365,13 @@ def handle_delete_campaign_api(request):
     if grpc_user_id is not None:
         if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=int(request.GET['campaign_id'])).exists():
             campaign_id = int(request.GET['campaign_id'])
-            grpc_req = et_service_pb2.DeleteCampaignRequestMessage(
+            grpc_req = et_service_pb2.DeleteCampaign.Request(
                 userId=grpc_user_id,
                 email=request.user.email,
                 campaignId=campaign_id
             )
             grpc_res = utils.stub.deleteCampaign(grpc_req)
-            if grpc_res.doneSuccessfully:
+            if grpc_res.success:
                 et_models.Campaign.objects.get(campaign_id=campaign_id).delete()
             return redirect(to='campaigns-list')
         else:
@@ -390,8 +390,7 @@ def handle_download_data_api(request):
     if grpc_user_id is None:
         return redirect(to='login')
     elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists() or \
-            'email' not in request.GET or not et_models.Participant.objects.filter(email=request.GET['email'], campaign_id=request.GET['campaign_id']).exists() or \
-            'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit():
+            'email' not in request.GET or 'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit():
         return redirect(to='campaigns-list')
     else:
         campaign_id = int(request.GET['campaign_id'])
@@ -403,7 +402,7 @@ def handle_download_data_api(request):
             from_time = -999999999
             data_available = True
             while data_available:
-                grpc_req = et_service_pb2.Retrieve100DataRecordsRequestMessage(
+                grpc_req = et_service_pb2.Retrieve100DataRecords.Request(
                     userId=grpc_user_id,
                     email=email,
                     targetEmail=request.GET['email'],
@@ -412,11 +411,11 @@ def handle_download_data_api(request):
                     fromTimestamp=from_time
                 )
                 grpc_res = utils.stub.retrieve100DataRecords(grpc_req)
-                if grpc_res.doneSuccessfully:
+                if grpc_res.success:
                     for timestamp, value in zip(grpc_res.timestamp, grpc_res.value):
                         from_time = timestamp
                         yield writer.writerow([str(timestamp), value])
-                data_available = grpc_res.doneSuccessfully and grpc_res.moreDataAvailable
+                data_available = grpc_res.success and grpc_res.moreDataAvailable
 
         res = StreamingHttpResponse(
             streaming_content=(row for row in load_next_100rows(pseudo_buffer=et_models.Echo())),
@@ -463,8 +462,8 @@ def handle_notifications_list(request):
 
 
 def load_unread_notifications(grpc_user_id, email):
-    grpc_req = et_service_pb2.RetrieveUnreadNotificationsRequestMessage(userId=grpc_user_id, email=email)
+    grpc_req = et_service_pb2.RetrieveUnreadNotifications.Request(userId=grpc_user_id, email=email)
     grpc_res = utils.stub.retrieveUnreadNotifications(grpc_req)
-    if grpc_res.doneSuccessfully:
+    if grpc_res.success:
         for notification_id, campaign_id, timestamp, subject, content in zip(grpc_res.notificationId, grpc_res.campaignId, grpc_res.timestamp, grpc_res.subject, grpc_res.content):
             et_models.Notifications.objects.create(notification_id=notification_id, campaign_id=campaign_id, timestamp=timestamp, subject=subject, content=content).save()
