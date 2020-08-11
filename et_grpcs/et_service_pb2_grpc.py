@@ -14,10 +14,10 @@ class ETServiceStub(object):
         Args:
           channel: A grpc.Channel.
         """
-        self.loginWithGoogleId = channel.unary_unary(
-            '/ETService/loginWithGoogleId',
-            request_serializer=et__service__pb2.LoginWithGoogleIdTokenRequestMessage.SerializeToString,
-            response_deserializer=et__service__pb2.LoginResponseMessage.FromString,
+        self.loginWithGoogle = channel.unary_unary(
+            '/ETService/loginWithGoogle',
+            request_serializer=et__service__pb2.LoginWithGoogle.Request.SerializeToString,
+            response_deserializer=et__service__pb2.LoginWithGoogle.Response.FromString,
         )
         self.loginDashboard = channel.unary_unary(
             '/ETService/loginDashboard',
@@ -115,7 +115,7 @@ class ETServiceServicer(object):
     # missing associated documentation comment in .proto file
     pass
 
-    def loginWithGoogleId(self, request, context):
+    def loginWithGoogle(self, request, context):
         """user management module
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -251,10 +251,10 @@ class ETServiceServicer(object):
 
 def add_ETServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-        'loginWithGoogleId': grpc.unary_unary_rpc_method_handler(
-            servicer.loginWithGoogleId,
-            request_deserializer=et__service__pb2.LoginWithGoogleIdTokenRequestMessage.FromString,
-            response_serializer=et__service__pb2.LoginResponseMessage.SerializeToString,
+        'loginWithGoogle': grpc.unary_unary_rpc_method_handler(
+            servicer.loginWithGoogle,
+            request_deserializer=et__service__pb2.LoginWithGoogle.Request.FromString,
+            response_serializer=et__service__pb2.LoginWithGoogle.Response.SerializeToString,
         ),
         'loginDashboard': grpc.unary_unary_rpc_method_handler(
             servicer.loginDashboard,
