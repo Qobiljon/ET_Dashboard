@@ -15,8 +15,13 @@ def timestamp_now_ms():
 
 
 def calculate_day_number(join_timestamp):
-    delta = datetime.datetime.now() - datetime.datetime.fromtimestamp(float(join_timestamp) / 1000)
-    return delta.days
+    then = datetime.datetime.fromtimestamp(float(join_timestamp) / 1000).replace(hour=0, minute=0, second=0, microsecond=0)
+    then += datetime.timedelta(days=1)
+
+    now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    now += datetime.timedelta(days=1)
+
+    return (now - then).days
 
 
 def timestamp_to_readable_string(timestamp_ms):
