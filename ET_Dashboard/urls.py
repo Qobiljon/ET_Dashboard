@@ -32,7 +32,8 @@ urlpatterns = [
     path('edit/', views.handle_campaign_editor, name='campaign-editor'),
     path('notifications/', views.handle_notifications_list, name='notifications'),
 
-    path('download_campaign/', views.handle_download_campaign_api, name='get-configs'),
+    path('dataset-info', views.handle_dataset_info, name='dataset-info'),
+    path('download-dataset', views.handle_download_dataset_api, name='download-dataset'),
     path('delete/', views.handle_delete_campaign_api, name='delete-campaign'),
-    path('download_data/', views.handle_download_data_api, name='download_data'),
+    path('download-data/', views.handle_download_data_api, name='download-data'),
 ]

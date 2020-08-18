@@ -1,4 +1,4 @@
-{% extends '0. base.html' %}
+{% extends 'base.html' %}
 {% block content %}
     <table>
         <tr>
@@ -8,7 +8,7 @@
             <th>Participants</th>
             <th>Actions</th>
         </tr>
-        {% load humanize %}
+        {% load humanize staticfiles %}
         {% for campaign in campaigns %}
             <tr>
                 <td title="{{ campaign.name }}" data-href="{% url 'participants-list' %}?id={{ campaign.campaign_id }}">{{ campaign.name|truncatechars:40 }}</td>
@@ -16,14 +16,22 @@
                 <td data-href="{% url 'participants-list' %}?id={{ campaign.campaign_id }}">{{ campaign.creator_email }}</td>
                 <td data-href="{% url 'participants-list' %}?id={{ campaign.campaign_id }}">{{ campaign.participant_count|intcomma }}</td>
                 <td>
-                    <a title="Download campaign details as a JSON file" class="action_button_green" href="{% url 'get-configs' %}?campaign_id={{ campaign.campaign_id }}">JSON</a>
-                    <a class="action_button_green" href="{% url 'campaign-editor' %}?campaign_id={{ campaign.campaign_id }}&edit">EDIT</a>
+                    <a title="Edit campaign details" href="{% url 'campaign-editor' %}?campaign_id={{ campaign.campaign_id }}&edit">
+                        <img class="action_button_green" src="{% static 'edit_icon.png' %}" alt="download">
+                    </a>
+                    <a title="View dataset's technical configurations" href="{% url 'dataset-info' %}?campaign_id={{ campaign.campaign_id }}">
+                        <img class="action_button_green" src="{% static 'info_icon.png' %}" alt="download">
+                    </a>
+                    <a title="Download your complete dataset at this state" href="{% url 'download-dataset' %}?campaign_id={{ campaign.campaign_id }}">
+                        <img class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
+                    </a>
+                    <a title="!!! Delete the campaign (including the data)" id="delete_campaign_{{ campaign.campaign_id }}_button" href="#" onclick="deleteCampaignClick(this.id);" data-href="{% url 'delete-campaign' %}?campaign_id={{ campaign.campaign_id }}">
+                        <img class="action_button_red" src="{% static 'delete_icon.png' %}" alt="download">
+                    </a>
                     {# TODO: finish this notification part #}
                     {# {% with campaign_id=campaign.campaign_id %} #}
                     {# <a class="action_button_green" href="{% url 'notifications' %}?campaign_id={{ campaign.campaign_id }}">{{ notifications.campaign_id|length }}</a> #}
                     {# {% endwith %} #}
-                    <!--a class="action_button_red" href="{% url 'delete-campaign' %}?campaign_id={{ campaign.campaign_id }}">DELETE</a-->
-                    <a id="delete_campaign_{{ campaign.campaign_id }}_button" href="#" class="action_button_red" onclick="deleteCampaignClick(this.id);" data-href="{% url 'delete-campaign' %}?campaign_id={{ campaign.campaign_id }}">DELETE</a>
                 </td>
             </tr>
         {% endfor %}
@@ -73,7 +81,7 @@
             background: white;
             text-align: center;
             cursor: pointer;
-            padding: 5px 0;
+            padding: 5px;
         }
 
         /* Cells in even rows (2,4,6...) are one color */
@@ -103,7 +111,8 @@
             font-weight: 800;
             font-size: larger;
             cursor: pointer;
-        {#transition: all 0.3s;#} text-decoration: none;
+            text-decoration: none;
+        {#transition: all 0.3s;#}
         }
 
         #add_campaign_button:hover {
@@ -111,33 +120,38 @@
             color: #FFF;
         }
 
-        a.action_button_green {
-            background: #2ecc71;
-            padding: 4px;
-            margin: 7px 0;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: larger;
-            cursor: pointer;
-        {#transition: all 0.3s;#} text-decoration: none;
+        a{
+            text-decoration: none;
         }
 
-        a.action_button_red {
-            background: orangered;
+        img.action_button_green {
+            background: #2ecc71;
+            vertical-align: middle;
             padding: 3px;
-            margin: 7px 0;
+            margin: 2px 0;
             color: white;
             border: none;
             border-radius: 5px;
             font-size: larger;
             cursor: pointer;
-            text-decoration: none;
         {#transition: all 0.3s;#}
         }
 
-        a.action_button_green:hover, a.action_button_red:hover {
-            background: yellow;
+        img.action_button_red {
+            background: orangered;
+            vertical-align: middle;
+            padding: 3px;
+            margin: 2px 0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: larger;
+            cursor: pointer;
+        {#transition: all 0.3s;#}
+        }
+
+        img.action_button_green:hover, img.action_button_red:hover {
+            background: #4285F4;
             color: black;
         }
     </style>

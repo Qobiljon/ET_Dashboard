@@ -35,7 +35,7 @@ def handle_login_api(request):
             dj_logout(request=request)
     return render(
         request=request,
-        template_name='1. authentication.html',
+        template_name='page_authentication.html',
         context={'title': 'Authentication'}
     )
 
@@ -76,7 +76,7 @@ def handle_campaigns_list(request):
             notifications[campaign.campaign_id] = et_models.Notifications.objects.filter(campaign_id=campaign.campaign_id).order_by('-timestamp')
         return render(
             request=request,
-            template_name='2. campaigns_list.html',
+            template_name='page_campaigns.html',
             context={
                 'title': "%s's campaigns" % request.user.get_full_name(),
                 'campaigns': campaigns,
@@ -140,7 +140,7 @@ def handle_participants_list(request):
                 if success:
                     return render(
                         request=request,
-                        template_name='3. participants_list.html',
+                        template_name='page_campaign_participants.html',
                         context={
                             'title': "%s's participants" % campaign.name,
                             'campaign': campaign,
@@ -190,7 +190,7 @@ def handle_participants_data_list(request):
         trg_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=target_campaign)
         return render(
             request=request,
-            template_name='4. participants_data_list.html',
+            template_name='page_participant_data_sources_stats.html',
             context={
                 'title': "%s's data" % trg_participant.full_name,
                 'campaign': target_campaign,
@@ -239,7 +239,7 @@ def handle_raw_samples_list(request):
                     break
             return render(
                 request=request,
-                template_name='5. raw_samples_list.html',
+                template_name='page_raw_data_view.html',
                 context={
                     'title': data_source_name,
                     'records': records,
@@ -307,7 +307,7 @@ def handle_campaign_editor(request):
             else:
                 return render(
                     request=request,
-                    template_name='campaign_editor_page.html',
+                    template_name='page_campaign_editor.html',
                     context={
                         'error': True,
                         'title': 'New campaign',
@@ -331,7 +331,7 @@ def handle_campaign_editor(request):
                 data_source_list.sort(key=lambda key: key.name)
                 return render(
                     request=request,
-                    template_name='campaign_editor_page.html',
+                    template_name='page_campaign_editor.html',
                     context={
                         'edit_mode': True,
                         'title': '"%s" Campaign Editor' % campaign.name,
@@ -346,7 +346,7 @@ def handle_campaign_editor(request):
                 data_source_list.sort(key=lambda key: key.name)
                 return render(
                     request=request,
-                    template_name='campaign_editor_page.html',
+                    template_name='page_campaign_editor.html',
                     context={
                         'title': 'New campaign',
                         'data_sources': data_source_list,
@@ -382,6 +382,52 @@ def handle_delete_campaign_api(request):
                 return redirect(to='campaigns-list')
     else:
         return redirect(to='login')
+
+
+@login_required
+@require_http_methods(['GET'])
+def handle_dataset_info(request):
+    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
+    if grpc_user_id is None:
+        return redirect(to='login')
+    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
+        referer = request.META.get('HTTP_REFERER')
+        if referer:
+            return redirect(to=referer)
+        else:
+            return redirect(to='campaigns-list')
+    else:
+        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['campaign_id']), requester_email=request.user.email)
+        data_sources = json.loads(s=campaign.config_json)
+        return render(
+            request=request,
+            template_name='page_dataset_configs.html',
+            context={
+                'data_sources': data_sources,
+                'participants': et_models.Participant.objects.filter(campaign=campaign).order_by('full_name')
+            }
+        )
+
+
+@login_required
+@require_http_methods(['GET'])
+def handle_download_dataset(request):
+    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
+    if grpc_user_id is None:
+        return redirect(to='login')
+    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
+        referer = request.META.get('HTTP_REFERER')
+        if referer:
+            return redirect(to=referer)
+        else:
+            return redirect(to='campaigns-list')
+    else:
+        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['campaign_id']), requester_email=request.user.email)
+        data_sources = json.loads(s=campaign.config_json)
+        res = {}
+        for data_source in data_sources:
+            res[data_source['name']] = data_source['data_source_id']
+        return JsonResponse(data=res)
 
 
 @login_required
@@ -435,24 +481,8 @@ def handle_download_data_api(request):
 
 
 @login_required
-@require_http_methods(['GET'])
-def handle_download_campaign_api(request):
-    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if grpc_user_id is None:
-        return redirect(to='login')
-    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
-        referer = request.META.get('HTTP_REFERER')
-        if referer:
-            return redirect(to=referer)
-        else:
-            return redirect(to='campaigns-list')
-    else:
-        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['campaign_id']), requester_email=request.user.email)
-        data_sources = json.loads(s=campaign.config_json)
-        res = {}
-        for data_source in data_sources:
-            res[data_source['name']] = data_source['data_source_id']
-        return JsonResponse(data=res)
+def handle_download_dataset_api(request):
+    return render(request=request, template_name='page_coming_soon.html')
 
 
 @login_required

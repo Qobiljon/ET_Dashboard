@@ -1,4 +1,4 @@
-{% extends '0. base.html' %}
+{% extends 'base.html' %}
 {% block content %}
     <h3>For the campaign: "{{ campaign.name }}"</h3>
     <table>
@@ -10,7 +10,7 @@
             <th>Latest sync time</th>
             <th>Actions (on data)</th>
         </tr>
-        {% load humanize %}
+        {% load humanize staticfiles %}
         {% for data_source in data_sources %}
             <tr data-source="{{ data_source.name }}" class="data_source">
                 <td><img src="http://{{ request.get_host }}/static/{{ data_source.icon_name }}" alt="{{ data_source.name }}"></td>
@@ -19,8 +19,13 @@
                 <td>{{ data_source.amount_of_data|intcomma }}</td>
                 <td>{{ data_source.last_sync_time }}</td>
                 <td>
-                    <a class="action_button" href="{% url 'view_data' %}?campaign_id={{ campaign.campaign_id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}&from_time=-999999999">View</a>
-                    <a class="action_button" href="{% url 'download_data' %}?campaign_id={{ campaign.campaign_id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}">Download</a>
+                    <a class="action_button" href="{% url 'view_data' %}?campaign_id={{ campaign.campaign_id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}&from_time=-999999999">
+                        <img title="View raw data" class="action_button_green" src="{% static 'eye_icon.png' %}" alt="view">
+                    </a>
+
+                    <a class="action_button" href="{% url 'download-data' %}?campaign_id={{ campaign.campaign_id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}">
+                        <img title="Download raw data" class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
+                    </a>
                 </td>
             </tr>
         {% endfor %}
@@ -49,31 +54,30 @@
             background: white;
         }
 
-        table tr.data_source:nth-child(even) td {
-            background: white;
-        }
-
-        /* Cells in odd rows (1,3,5...) are another (excludes header cells)  */
         table tr.data_source:nth-child(odd) td {
             background: #DFDFDF;
         }
 
-        a.action_button {
+        a{
+            text-decoration: none;
+        }
+
+        img.action_button_green {
             background: #2ecc71;
-            padding: 5px;
-            margin: 2px;
+            vertical-align: middle;
+            padding: 3px;
+            margin: 2px 0;
             color: white;
             border: none;
             border-radius: 5px;
             font-size: larger;
             cursor: pointer;
-            text-decoration: none;
         {#transition: all 0.3s;#}
         }
 
-        a.action_button:hover {
-            background: #666;
-            color: #FFF;
+        img.action_button_green:hover, img.action_button_red:hover {
+            background: #4285F4;
+            color: black;
         }
     </style>
 {% endblock %}
