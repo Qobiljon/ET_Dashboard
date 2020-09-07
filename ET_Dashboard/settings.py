@@ -28,6 +28,9 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
 
+    '165.246.42.173',
+    'etdb1.myvnc.com',
+
     '165.246.42.172',
     'etdbg.myvnc.com',
 

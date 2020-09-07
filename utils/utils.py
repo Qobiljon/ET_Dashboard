@@ -1,9 +1,13 @@
-import time
+from et_grpcs import et_service_pb2_grpc
 import datetime
+import time
+import grpc
 
-channel = None
-stub = None
-channel_is_open = False
+
+def get_stub_and_channel():
+    channel = grpc.insecure_channel('127.0.0.1:50051')
+    stub = et_service_pb2_grpc.ETServiceStub(channel)
+    return stub, channel
 
 
 def datetime_to_timestamp_ms(value: datetime):
