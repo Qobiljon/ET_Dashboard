@@ -408,26 +408,6 @@ def handle_dataset_info(request):
 
 @login_required
 @require_http_methods(['GET'])
-def handle_download_dataset(request):
-    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if grpc_user_id is None:
-        return redirect(to='login')
-    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
-        referer = request.META.get('HTTP_REFERER')
-        if referer:
-            return redirect(to=referer)
-        else:
-            return redirect(to='campaigns-list')
-    else:
-        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['campaign_id']), requester_email=request.user.email)
-        data_sources = json.loads(s=campaign.config_json)
-        res = {}
-        for data_source in data_sources:
-            res[data_source['name']] = data_source['data_source_id']
-        return JsonResponse(data=res)
-
-
-@login_required
 def handle_download_data_api(request):
     grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
     if grpc_user_id is None:
@@ -448,7 +428,7 @@ def handle_download_data_api(request):
         grpc_res = utils.stub.downloadDumpfile(grpc_req)
         if grpc_res.success:
             now = datetime.datetime.now()
-            file_name = f'{target_email}_{now.month}_{now.day}_{now.year}_{now.hour}_{now.minute}_{now.second}.bin'
+            file_name = f'et data {target_email} {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.bin'
             res = HttpResponse(grpc_res.dump, content_type='application/x-binary')
             res['Content-Disposition'] = f'attachment; filename={file_name}'
         else:
@@ -457,6 +437,7 @@ def handle_download_data_api(request):
 
 
 @login_required
+@require_http_methods(['GET'])
 def handle_download_dataset_api(request):
     # return render(request=request, template_name='page_coming_soon.html')
     grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
@@ -476,7 +457,7 @@ def handle_download_dataset_api(request):
         grpc_res = utils.stub.retrieveParticipants(grpc_req)
         if grpc_res.success:
             now = datetime.datetime.now()
-            file_name = f'easytrack data extraction {now.month}-{now.day}-{now.year} {now.hour}:{now.minute}.zip'
+            file_name = f'et data {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.zip'
             file_path = utils.get_download_file_path(file_name=file_name)
             fp = zipfile.ZipFile(file_path, 'w', zipfile.ZIP_STORED)
             with open(os.path.join(settings.STATIC_DIR, 'restoring_postgres_data.txt'), 'r') as r:
