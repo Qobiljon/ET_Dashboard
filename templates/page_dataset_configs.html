@@ -31,26 +31,10 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{ participant.full_name }}</td>
                 <td>{{ participant.email }}</td>
-                <td>{{ participant.id }}</td>
+                <td>{{ participant.grpc_id }}</td>
             </tr>
         {% endfor %}
     </table>
-
-    <h3>PostgreSQL template script for restoring data after downloading from dashboard</h3>
-    <code>
-        <strong>Creating schema:</strong>
-        create table if not exists "data"."[YOUR_CAMPAIGN_ID_HERE]-[PARTICIPANT_ID_HERE]"<br>
-        (<br>
-            "id" serial primary key,<br>
-            "timestamp" bigint,<br>
-            "value" bytea not null,<br>
-            "data_source_id" integer,<br>
-            unique ("timestamp", "data_source_id")<br>
-        );'<br>
-        <br>
-        <strong>Restoring data from downloaded file:</strong><br>
-        copy "data"."[YOUR_CAMPAIGN_ID_HERE]-[YOUR_PARTICIPANT_ID_HERE]"("id", "timestamp", "value", "data_source_id") from [YOUR_FILE_NAME_HERE] with binary;
-    </code>
 
 
     <style>

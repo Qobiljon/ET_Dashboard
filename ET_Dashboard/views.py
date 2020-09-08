@@ -1,7 +1,9 @@
 from json import JSONDecodeError
-import mimetypes
+from utils import settings
 import datetime
+import zipfile
 import json
+import os
 
 # Django
 from django.contrib.auth import logout as dj_logout
@@ -107,46 +109,40 @@ def handle_participants_list(request):
         )
         grpc_res = utils.stub.retrieveParticipants(grpc_req)
         if grpc_res.success:
-            grpc_req = et_service_pb2.RetrieveParticipants.Request(
-                userId=grpc_user_id,
-                email=request.user.email,
-                campaignId=campaign.campaign_id
-            )
-            grpc_res = utils.stub.retrieveParticipants(grpc_req)
-            if grpc_res.success:
-                success = len(grpc_res.name) == 0
-                for name, email in zip(grpc_res.name, grpc_res.email):
-                    sub_grpc_req = et_service_pb2.RetrieveParticipantStats.Request(
-                        userId=grpc_user_id,
-                        email=request.user.email,
-                        targetEmail=email,
-                        targetCampaignId=campaign.campaign_id
+            success = len(grpc_res.name) == 0
+            for grpc_id, name, email in zip(grpc_res.userId, grpc_res.name, grpc_res.email):
+                sub_grpc_req = et_service_pb2.RetrieveParticipantStats.Request(
+                    userId=grpc_user_id,
+                    email=request.user.email,
+                    targetEmail=email,
+                    targetCampaignId=campaign.campaign_id
+                )
+                sub_grpc_res = utils.stub.retrieveParticipantStats(sub_grpc_req)
+                success |= sub_grpc_res.success
+                if sub_grpc_res.success:
+                    et_models.Participant.create_or_update(
+                        grpc_id=grpc_id,
+                        email=email,
+                        campaign=campaign,
+                        full_name=name,
+                        day_no=utils.calculate_day_number(join_timestamp=sub_grpc_res.campaignJoinTimestamp),
+                        amount_of_data=sub_grpc_res.amountOfSubmittedDataSamples,
+                        last_heartbeat_time=utils.timestamp_to_readable_string(sub_grpc_res.lastHeartbeatTimestamp),
+                        last_sync_time=utils.timestamp_to_readable_string(sub_grpc_res.lastSyncTimestamp),
+                        data_source_ids=sub_grpc_res.dataSourceId,
+                        per_data_source_amount_of_data=sub_grpc_res.perDataSourceAmountOfData,
+                        per_data_source_last_sync_time=[utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms) for timestamp_ms in sub_grpc_res.perDataSourceLastSyncTimestamp]
                     )
-                    sub_grpc_res = utils.stub.retrieveParticipantStats(sub_grpc_req)
-                    success |= sub_grpc_res.success
-                    if sub_grpc_res.success:
-                        et_models.Participant.create_or_update(
-                            email=email,
-                            campaign=campaign,
-                            full_name=name,
-                            day_no=utils.calculate_day_number(join_timestamp=sub_grpc_res.campaignJoinTimestamp),
-                            amount_of_data=sub_grpc_res.amountOfSubmittedDataSamples,
-                            last_heartbeat_time=utils.timestamp_to_readable_string(sub_grpc_res.lastHeartbeatTimestamp),
-                            last_sync_time=utils.timestamp_to_readable_string(sub_grpc_res.lastSyncTimestamp),
-                            data_source_ids=sub_grpc_res.dataSourceId,
-                            per_data_source_amount_of_data=sub_grpc_res.perDataSourceAmountOfData,
-                            per_data_source_last_sync_time=[utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms) for timestamp_ms in sub_grpc_res.perDataSourceLastSyncTimestamp]
-                        )
-                if success:
-                    return render(
-                        request=request,
-                        template_name='page_campaign_participants.html',
-                        context={
-                            'title': "%s's participants" % campaign.name,
-                            'campaign': campaign,
-                            'participants': et_models.Participant.objects.filter(campaign=campaign).order_by('full_name')
-                        }
-                    )
+            if success:
+                return render(
+                    request=request,
+                    template_name='page_campaign_participants.html',
+                    context={
+                        'title': "%s's participants" % campaign.name,
+                        'campaign': campaign,
+                        'participants': et_models.Participant.objects.filter(campaign=campaign).order_by('full_name')
+                    }
+                )
         return redirect(to='campaigns-list')
 
 
@@ -174,6 +170,7 @@ def handle_participants_data_list(request):
         grpc_res = utils.stub.retrieveParticipantStats(grpc_req)
         if grpc_res.success:
             et_models.Participant.create_or_update(
+                grpc_id=target_participant.grpc_id,
                 email=target_participant.email,
                 campaign=target_campaign,
                 full_name=target_participant.full_name,
@@ -461,7 +458,51 @@ def handle_download_data_api(request):
 
 @login_required
 def handle_download_dataset_api(request):
-    return render(request=request, template_name='page_coming_soon.html')
+    # return render(request=request, template_name='page_coming_soon.html')
+    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
+    if grpc_user_id is None:
+        return redirect(to='login')
+    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
+        return redirect(to='campaigns-list')
+    else:
+        campaign_id = int(request.GET['campaign_id'])
+        email = request.user.email
+
+        grpc_req = et_service_pb2.RetrieveParticipants.Request(
+            userId=grpc_user_id,
+            email=email,
+            campaignId=campaign_id
+        )
+        grpc_res = utils.stub.retrieveParticipants(grpc_req)
+        if grpc_res.success:
+            now = datetime.datetime.now()
+            file_name = f'easytrack data extraction {now.month}-{now.day}-{now.year} {now.hour}:{now.minute}.zip'
+            file_path = utils.get_download_file_path(file_name=file_name)
+            fp = zipfile.ZipFile(file_path, 'w', zipfile.ZIP_STORED)
+            with open(os.path.join(settings.STATIC_DIR, 'restoring_postgres_data.txt'), 'r') as r:
+                fp.writestr('!README.txt', r.read())
+            fp.writestr('!info.txt', f'campaign_id : {campaign_id}')
+
+            for email in grpc_res.email:
+                sub_grpc_req = et_service_pb2.DownloadDumpfile.Request(
+                    userId=grpc_user_id,
+                    email=email,
+                    campaignId=campaign_id,
+                    targetEmail=email
+                )
+                sub_grpc_res = utils.stub.downloadDumpfile(sub_grpc_req)
+                if sub_grpc_res.success:
+                    fp.writestr(f'{email}.bin', sub_grpc_res.dump)
+            fp.close()
+            with open(file_path, 'rb') as r:
+                content = r.read()
+            os.remove(file_path)
+
+            res = HttpResponse(content, content_type='application/zip')
+            res['Content-Disposition'] = f'attachment; filename={file_name}'
+        else:
+            res = redirect(to='campaigns-list')
+        return res
 
 
 @login_required

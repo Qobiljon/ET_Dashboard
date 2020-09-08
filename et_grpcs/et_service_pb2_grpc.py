@@ -89,6 +89,11 @@ class ETServiceStub(object):
             request_serializer=et__service__pb2.RetrieveFilteredDataRecords.Request.SerializeToString,
             response_deserializer=et__service__pb2.RetrieveFilteredDataRecords.Response.FromString,
         )
+        self.downloadDumpfile = channel.unary_unary(
+            '/ETService/downloadDumpfile',
+            request_serializer=et__service__pb2.DownloadDumpfile.Request.SerializeToString,
+            response_deserializer=et__service__pb2.DownloadDumpfile.Response.FromString,
+        )
         self.submitHeartbeat = channel.unary_unary(
             '/ETService/submitHeartbeat',
             request_serializer=et__service__pb2.SubmitHeartbeat.Request.SerializeToString,
@@ -108,11 +113,6 @@ class ETServiceStub(object):
             '/ETService/retrieveUnreadNotifications',
             request_serializer=et__service__pb2.RetrieveUnreadNotifications.Request.SerializeToString,
             response_deserializer=et__service__pb2.RetrieveUnreadNotifications.Response.FromString,
-        )
-        self.downloadDumpfile = channel.unary_unary(
-            '/ETService/downloadDumpfile',
-            request_serializer=et__service__pb2.DownloadDumpfile.Request.SerializeToString,
-            response_deserializer=et__service__pb2.DownloadDumpfile.Response.FromString,
         )
 
 
@@ -225,6 +225,13 @@ class ETServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def downloadDumpfile(self, request, context):
+        # missing associated documentation comment in .proto file
+        pass
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def submitHeartbeat(self, request, context):
         """statistics module
         """
@@ -249,13 +256,6 @@ class ETServiceServicer(object):
     def retrieveUnreadNotifications(self, request, context):
         # missing associated documentation comment in .proto file
         pass
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def downloadDumpfile(self, request, context):
-        """data extraction module
-        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -338,6 +338,11 @@ def add_ETServiceServicer_to_server(servicer, server):
             request_deserializer=et__service__pb2.RetrieveFilteredDataRecords.Request.FromString,
             response_serializer=et__service__pb2.RetrieveFilteredDataRecords.Response.SerializeToString,
         ),
+        'downloadDumpfile': grpc.unary_unary_rpc_method_handler(
+            servicer.downloadDumpfile,
+            request_deserializer=et__service__pb2.DownloadDumpfile.Request.FromString,
+            response_serializer=et__service__pb2.DownloadDumpfile.Response.SerializeToString,
+        ),
         'submitHeartbeat': grpc.unary_unary_rpc_method_handler(
             servicer.submitHeartbeat,
             request_deserializer=et__service__pb2.SubmitHeartbeat.Request.FromString,
@@ -357,11 +362,6 @@ def add_ETServiceServicer_to_server(servicer, server):
             servicer.retrieveUnreadNotifications,
             request_deserializer=et__service__pb2.RetrieveUnreadNotifications.Request.FromString,
             response_serializer=et__service__pb2.RetrieveUnreadNotifications.Response.SerializeToString,
-        ),
-        'downloadDumpfile': grpc.unary_unary_rpc_method_handler(
-            servicer.downloadDumpfile,
-            request_deserializer=et__service__pb2.DownloadDumpfile.Request.FromString,
-            response_serializer=et__service__pb2.DownloadDumpfile.Response.SerializeToString,
         ),
     }
     generic_handler = grpc.method_handlers_generic_handler(

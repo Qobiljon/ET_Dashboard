@@ -79,6 +79,7 @@ class Campaign(models.Model):
 
 
 class Participant(models.Model):
+    grpc_id = models.IntegerField()
     email = models.CharField(max_length=256)
     campaign = models.ForeignKey(to=Campaign, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=256)
@@ -94,13 +95,14 @@ class Participant(models.Model):
         unique_together = ['email', 'campaign']
 
     @staticmethod
-    def create_or_update(email, campaign, full_name, day_no, amount_of_data, last_heartbeat_time, last_sync_time, data_source_ids, per_data_source_amount_of_data, per_data_source_last_sync_time):
+    def create_or_update(grpc_id, email, campaign, full_name, day_no, amount_of_data, last_heartbeat_time, last_sync_time, data_source_ids, per_data_source_amount_of_data, per_data_source_last_sync_time):
         if len(data_source_ids) != len(per_data_source_amount_of_data) or len(data_source_ids) != len(per_data_source_last_sync_time):
             print('data_source_ids', data_source_ids)
             print('per_data_source_amount_of_data', per_data_source_amount_of_data)
             raise ValueError('lengths of arrays for data source ids and their amounts of data do not match (%d != %d)' % (len(data_source_ids), len(per_data_source_amount_of_data)))
         elif Participant.objects.filter(email=email, campaign=campaign).exists():
             participant = Participant.objects.get(email=email, campaign=campaign)
+            participant.grpc_id = grpc_id
             participant.full_name = full_name
             participant.day_no = day_no
             participant.amount_of_data = amount_of_data
@@ -112,6 +114,7 @@ class Participant(models.Model):
             participant.save()
         else:
             Participant.objects.create(
+                grpc_id=grpc_id,
                 email=email,
                 campaign=campaign,
                 full_name=full_name,
