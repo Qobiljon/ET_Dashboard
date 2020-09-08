@@ -8,8 +8,9 @@
             <th>Amount of<br>samples</th>
             <th>Latest<br>heartbeat time</th>
             <th>Latest<br>sync time</th>
+            <th>Action</th>
         </tr>
-        {% load humanize %}
+        {% load humanize staticfiles %}
         {% for participant in participants %}
             <tr data-href="{% url 'participant' %}?campaign_id={{ request.GET.id }}&email={{ participant.email }}">
                 <td>{{ participant.full_name }}</td>
@@ -18,6 +19,11 @@
                 <td>{{ participant.amount_of_data|intcomma }}</td>
                 <td>{{ participant.last_heartbeat_time }}</td>
                 <td>{{ participant.last_sync_time }}</td>
+                <td>
+                    <a class="action_button" href="{% url 'download-data' %}?campaign_id={{ campaign.campaign_id }}&email={{ participant.email }}">
+                        <img title="Download raw data" class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
+                    </a>
+                </td>
             </tr>
         {% endfor %}
     </table>
@@ -76,6 +82,24 @@
         tr:not(:first-child):hover td {
             background: #666;
             color: white;
+        }
+
+        img.action_button_green {
+            background: #2ecc71;
+            vertical-align: middle;
+            padding: 3px;
+            margin: 2px 0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: larger;
+            cursor: pointer;
+        {#transition: all 0.3s;#}
+        }
+
+        img.action_button_green:hover, img.action_button_red:hover {
+            background: #4285F4;
+            color: black;
         }
     </style>
 {% endblock %}

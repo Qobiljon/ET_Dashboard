@@ -19,12 +19,8 @@
                 <td>{{ data_source.amount_of_data|intcomma }}</td>
                 <td>{{ data_source.last_sync_time }}</td>
                 <td>
-                    <a class="action_button" href="{% url 'view_data' %}?campaign_id={{ campaign.campaign_id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}&from_time=-999999999">
+                    <a class="action_button" href="{% url 'view_data' %}?campaign_id={{ campaign.campaign_id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}&from_id=0">
                         <img title="View raw data" class="action_button_green" src="{% static 'eye_icon.png' %}" alt="view">
-                    </a>
-
-                    <a class="action_button" href="{% url 'download-data' %}?campaign_id={{ campaign.campaign_id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}">
-                        <img title="Download raw data" class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
                     </a>
                 </td>
             </tr>
@@ -58,7 +54,7 @@
             background: #DFDFDF;
         }
 
-        a{
+        a {
             text-decoration: none;
         }
 

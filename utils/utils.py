@@ -1,5 +1,7 @@
-import time
+from utils import settings
 import datetime
+import time
+import os
 
 channel = None
 stub = None
@@ -33,3 +35,17 @@ def timestamp_to_web_string(timestamp_ms):
     date_part = '-'.join([str(date_time.year), '%02d' % date_time.month, '%02d' % date_time.day])
     time_part = ':'.join(['%02d' % date_time.hour, '%02d' % date_time.minute])
     return 'T'.join([date_part, time_part])
+
+
+def get_download_file_path(file_name):
+    if not os.path.exists(settings.download_dir):
+        os.mkdir(settings.download_dir)
+        os.chmod(settings.download_dir, 0o777)
+
+    file_path = os.path.join(settings.download_dir, file_name)
+    fp = open(file_path, 'w+')
+    fp.close()
+
+    os.chmod(file_path, 0o777)
+
+    return file_path

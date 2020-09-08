@@ -1,12 +1,12 @@
-import json
-import datetime
-import csv
 from json import JSONDecodeError
+import mimetypes
+import datetime
+import json
 
 # Django
 from django.contrib.auth import logout as dj_logout
 from django.contrib.auth.decorators import login_required
-from django.http import StreamingHttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
@@ -212,26 +212,26 @@ def handle_raw_samples_list(request):
         target_campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
     if target_campaign is not None and 'email' in request.GET and et_models.Participant.objects.filter(email=request.GET['email'], campaign=target_campaign).exists():
         target_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=target_campaign)
-    if target_campaign is None or target_participant is None or 'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit() or 'from_time' not in request.GET \
-            or not (len(request.GET['from_time']) > 1 and str(request.GET['from_time'][1:]).isdigit()):
+    if target_campaign is None or target_participant is None or 'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit() or 'from_id' not in request.GET or not str(request.GET['from_id']).replace('-', '').isdigit():
         return redirect(to='campaigns-list')
     else:
-        from_time = int(request.GET['from_time'])
+        from_record_id = int(request.GET['from_id'])
         data_source_id = int(request.GET['data_source_id'])
-        grpc_req = et_service_pb2.Retrieve100DataRecords.Request(
+        grpc_req = et_service_pb2.RetrieveKNextDataRecords.Request(
             userId=grpc_user_id,
             email=request.user.email,
             targetEmail=target_participant.email,
             targetCampaignId=target_campaign.campaign_id,
             targetDataSourceId=data_source_id,
-            fromTimestamp=from_time
+            fromRecordId=from_record_id,
+            k=100,
         )
-        grpc_res = utils.stub.retrieve100DataRecords(grpc_req)
+        grpc_res = utils.stub.retrieveKNextDataRecords(grpc_req)
         if grpc_res.success:
             records = []
-            for timestamp, value in zip(grpc_res.timestamp, grpc_res.value):
-                records += [et_models.Record(timestamp_ms=timestamp, value=value)]
-                from_time = timestamp
+            for record_id, timestamp, value in zip(grpc_res.id, grpc_res.timestamp, grpc_res.value):
+                records += [et_models.Record(record_id=record_id, timestamp_ms=timestamp, value=value)]
+                from_record_id = max(from_record_id, record_id)
             data_source_name = None
             for data_source in json.loads(s=et_models.Campaign.objects.get(requester_email=request.user.email, campaign_id=target_campaign.campaign_id).config_json):
                 if data_source['data_source_id'] == data_source_id:
@@ -243,7 +243,7 @@ def handle_raw_samples_list(request):
                 context={
                     'title': data_source_name,
                     'records': records,
-                    'from_time': from_time
+                    'from_id': from_record_id
                 }
             )
         else:
@@ -435,48 +435,27 @@ def handle_download_data_api(request):
     grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
     if grpc_user_id is None:
         return redirect(to='login')
-    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists() or \
-            'email' not in request.GET or 'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit():
+    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists() or 'email' not in request.GET:
         return redirect(to='campaigns-list')
     else:
         campaign_id = int(request.GET['campaign_id'])
         email = request.user.email
-        data_source_id = int(request.GET['data_source_id'])
+        target_email = request.GET['email']
 
-        def load_next_100rows(pseudo_buffer):
-            writer = csv.writer(pseudo_buffer)
-            from_time = -999999999
-            data_available = True
-            while data_available:
-                grpc_req = et_service_pb2.Retrieve100DataRecords.Request(
-                    userId=grpc_user_id,
-                    email=email,
-                    targetEmail=request.GET['email'],
-                    targetCampaignId=campaign_id,
-                    targetDataSourceId=data_source_id,
-                    fromTimestamp=from_time
-                )
-                grpc_res = utils.stub.retrieve100DataRecords(grpc_req)
-                if grpc_res.success:
-                    for timestamp, value in zip(grpc_res.timestamp, grpc_res.value):
-                        from_time = timestamp
-                        yield writer.writerow([str(timestamp), value])
-                data_available = grpc_res.success and grpc_res.moreDataAvailable
-
-        res = StreamingHttpResponse(
-            streaming_content=(row for row in load_next_100rows(pseudo_buffer=et_models.Echo())),
-            content_type='text/csv'
+        grpc_req = et_service_pb2.DownloadDumpfile.Request(
+            userId=grpc_user_id,
+            email=email,
+            campaignId=campaign_id,
+            targetEmail=target_email
         )
-        data_source_name = None
-        for data_source in json.loads(s=et_models.Campaign.objects.get(campaign_id=campaign_id).config_json):
-            if data_source['data_source_id'] == data_source_id:
-                data_source_name = data_source['name']
-                break
-        res['Content-Disposition'] = 'attachment; filename="{0}-{1}-{2}.csv"'.format(
-            request.GET['email'],
-            data_source_name.replace('/', '-'),
-            utils.timestamp_to_readable_string(utils.timestamp_now_ms()).replace('/', '-').replace(' ', '_')
-        )
+        grpc_res = utils.stub.downloadDumpfile(grpc_req)
+        if grpc_res.success:
+            now = datetime.datetime.now()
+            file_name = f'{target_email}_{now.month}_{now.day}_{now.year}_{now.hour}_{now.minute}_{now.second}.bin'
+            res = HttpResponse(grpc_res.dump, content_type='application/x-binary')
+            res['Content-Disposition'] = f'attachment; filename={file_name}'
+        else:
+            res = redirect(to='campaigns-list')
         return res
 
 

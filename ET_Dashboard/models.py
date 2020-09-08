@@ -263,7 +263,8 @@ class DataSource:
 
 
 class Record:
-    def __init__(self, timestamp_ms, value):
+    def __init__(self, record_id, timestamp_ms, value):
+        self.record_id = record_id
         self.time = utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms)
         self.value = value
 
