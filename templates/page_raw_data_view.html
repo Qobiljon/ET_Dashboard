@@ -25,10 +25,10 @@
             {% for record in records %}
                 <tr class="data_source">
                     <td>{{ record.time }}</td>
-                    {% if record.value|length > 100 %}
-                        <td>{{ record.value }}</td>
+                    {% if record.value|length <= 100 %}
+                        <td title="{{ record.value }}">{{ record.value|truncatechars:30 }}</td>
                     {% else %}
-                        <td>[<i>{{ record.value|length }} byte data record</i>]</td>
+                        <td>[ <i>{{ record.value|length }} byte data record</i> ]</td>
                     {% endif %}
                 </tr>
             {% endfor %}
