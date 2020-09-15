@@ -7,7 +7,12 @@ import os
 
 
 def get_grpc_channel_stub():
-    channel = grpc.insecure_channel('127.0.0.1:50051', options=[('grpc.max_message_length', 10 * 1024 * 1024 * 1024)])
+    MAX_MESSAGE_LENGTH = 2147483647
+
+    channel = grpc.insecure_channel('127.0.0.1:50051', options=[
+        ('grpc.max_send_message_length', MAX_MESSAGE_LENGTH),
+        ('grpc.max_receive_message_length', MAX_MESSAGE_LENGTH),
+    ])
     stub = et_service_pb2_grpc.ETServiceStub(channel=channel)
     return channel, stub
 
