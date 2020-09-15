@@ -1,11 +1,15 @@
+from et_grpcs import et_service_pb2_grpc
 from utils import settings
 import datetime
 import time
+import grpc
 import os
 
-channel = None
-stub = None
-channel_is_open = False
+
+def get_grpc_channel_stub():
+    channel = grpc.insecure_channel('127.0.0.1:50051', options=[('grpc.max_message_length', 10 * 1024 * 1024 * 1024)])
+    stub = et_service_pb2_grpc.ETServiceStub(channel=channel)
+    return channel, stub
 
 
 def datetime_to_timestamp_ms(value: datetime):

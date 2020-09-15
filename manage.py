@@ -8,24 +8,6 @@ from utils import utils
 from et_grpcs import et_service_pb2_grpc
 
 
-def handler(signal_received, frame):
-    if utils.channel_is_open:
-        utils.channel.close()
-        utils.channel_is_open = False
-        print('gRPC stopped')
-        exit(0)
-
-
-def setup_grpc():
-    if not utils.channel_is_open:
-        utils.channel = grpc.insecure_channel('127.0.0.1:50051')
-        utils.stub = et_service_pb2_grpc.ETServiceStub(utils.channel)
-        utils.channel_is_open = True
-        signal.signal(signal.SIGTERM, handler)
-        signal.signal(signal.SIGINT, handler)
-        print('gRPC channel opened')
-
-
 def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ET_Dashboard.settings')
     try:
@@ -36,7 +18,6 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
-    setup_grpc()
     execute_from_command_line(sys.argv)
 
 
