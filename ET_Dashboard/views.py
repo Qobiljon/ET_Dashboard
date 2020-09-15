@@ -457,8 +457,20 @@ def handle_download_data_api(request):
         grpc_res = stub.downloadDumpfile(grpc_req)
         if grpc_res.success:
             now = datetime.datetime.now()
-            file_name = f'et data {target_email} {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.bin'
-            res = HttpResponse(grpc_res.dump, content_type='application/x-binary')
+            file_name = f'et data {target_email} {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.zip'
+            file_path = utils.get_download_file_path(file_name=file_name)
+            fp = zipfile.ZipFile(file_path, 'w', zipfile.ZIP_STORED)
+            with open(os.path.join(settings.STATIC_DIR, 'restoring_postgres_data.txt'), 'r') as r:
+                fp.writestr('!README.txt', r.read())
+            fp.writestr('!info.txt', f'campaign_id : {campaign_id}')
+            fp.writestr(f'{target_email}.bin', grpc_res.dump)
+
+            fp.close()
+            with open(file_path, 'rb') as r:
+                content = r.read()
+            os.remove(file_path)
+
+            res = HttpResponse(content=content, content_type='application/x-binary')
             res['Content-Disposition'] = f'attachment; filename={file_name}'
         else:
             res = redirect(to='campaigns-list')
@@ -497,16 +509,16 @@ def handle_download_dataset_api(request):
                 fp.writestr('!README.txt', r.read())
             fp.writestr('!info.txt', f'campaign_id : {campaign_id}')
 
-            for email in grpc_res.email:
+            for target_email in grpc_res.email:
                 sub_grpc_req = et_service_pb2.DownloadDumpfile.Request(
                     userId=grpc_user_id,
                     email=email,
                     campaignId=campaign_id,
-                    targetEmail=email
+                    targetEmail=target_email
                 )
                 sub_grpc_res = stub.downloadDumpfile(sub_grpc_req)
                 if sub_grpc_res.success:
-                    fp.writestr(f'{email}.bin', sub_grpc_res.dump)
+                    fp.writestr(f'{target_email}.bin', sub_grpc_res.dump)
             fp.close()
             with open(file_path, 'rb') as r:
                 content = r.read()
