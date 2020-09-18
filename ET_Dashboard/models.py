@@ -213,7 +213,9 @@ class DataSource:
         data_source_dict = {}
         if use_grpc:
             grpc_req = et_service_pb2.RetrieveDataSources.Request(userId=user_id, email=email)
-            grpc_res = utils.stub.retrieveDataSources(grpc_req)
+            channel, stub = utils.get_grpc_channel_stub()
+            grpc_res = stub.retrieveDataSources(grpc_req)
+            channel.close()
             if grpc_res.success:
                 for data_source_id, name, icon_name in zip(grpc_res.dataSourceId, grpc_res.name, grpc_res.iconName):
                     data_source = DataSource(
@@ -266,8 +268,7 @@ class DataSource:
 
 
 class Record:
-    def __init__(self, record_id, timestamp_ms, value):
-        self.record_id = record_id
+    def __init__(self, timestamp_ms, value):
         self.time = utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms)
         self.value = value
 

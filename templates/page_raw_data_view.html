@@ -44,8 +44,8 @@
             dateTimePicker = document.getElementById("datetime_picker");
             viewDataForm = document.getElementById("view_data_submit_form");
 
-            let fromTimestamp = parseInt(fromTimeMs.value.toString());
-            if (fromTimestamp !== 0) {
+            let fromTimestamp = {% if from_timestamp %} {{ from_timestamp }} {% else %} 0 {% endif %};
+            if (fromTimestamp > 0) {
                 let date = new Date(fromTimestamp);
                 let datePart = [date.getFullYear().toString().padStart(2, '0'), (date.getMonth() + 1).toString().padStart(2, '0'), date.getDate().toString().padStart(2, '0')].join('-');
                 let timePart = [date.getHours().toString().padStart(2, '0'), date.getMinutes().toString().padStart(2, '0')].join(':');

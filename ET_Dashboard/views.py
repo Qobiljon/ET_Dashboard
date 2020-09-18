@@ -238,8 +238,8 @@ def handle_raw_samples_list(request):
         grpc_res = stub.retrieveFilteredDataRecords(grpc_req)
         if grpc_res.success:
             records = []
-            for record_id, timestamp, value in zip(grpc_res.id, grpc_res.timestamp, grpc_res.value):
-                records += [et_models.Record(record_id=record_id, timestamp_ms=timestamp, value=value)]
+            for timestamp, value in zip(grpc_res.timestamp, grpc_res.value):
+                records += [et_models.Record(timestamp_ms=timestamp, value=value)]
                 from_timestamp = max(from_timestamp, timestamp)
             data_source_name = None
             for data_source in json.loads(s=et_models.Campaign.objects.get(requester_email=request.user.email, campaign_id=target_campaign.campaign_id).config_json):
