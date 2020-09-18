@@ -221,26 +221,26 @@ def handle_raw_samples_list(request):
         target_campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
     if target_campaign is not None and 'email' in request.GET and et_models.Participant.objects.filter(email=request.GET['email'], campaign=target_campaign).exists():
         target_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=target_campaign)
-    if target_campaign is None or target_participant is None or 'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit() or 'from_id' not in request.GET or not str(request.GET['from_id']).replace('-', '').isdigit():
+    if target_campaign is None or target_participant is None or 'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit() or 'from_timestamp' not in request.GET or not str(request.GET['from_timestamp']).replace('-', '').isdigit():
         return redirect(to='campaigns-list')
     else:
-        from_record_id = int(request.GET['from_id'])
+        from_timestamp = int(request.GET['from_timestamp'])
         data_source_id = int(request.GET['data_source_id'])
-        grpc_req = et_service_pb2.RetrieveKNextDataRecords.Request(
+        grpc_req = et_service_pb2.RetrieveFilteredDataRecords.Request(
             userId=grpc_user_id,
             email=request.user.email,
             targetEmail=target_participant.email,
             targetCampaignId=target_campaign.campaign_id,
             targetDataSourceId=data_source_id,
-            fromRecordId=from_record_id,
-            k=100,
+            fromTimestamp=from_timestamp,
+            simplifyIfTooLarge=True,
         )
-        grpc_res = stub.retrieveKNextDataRecords(grpc_req)
+        grpc_res = stub.retrieveFilteredDataRecords(grpc_req)
         if grpc_res.success:
             records = []
             for record_id, timestamp, value in zip(grpc_res.id, grpc_res.timestamp, grpc_res.value):
                 records += [et_models.Record(record_id=record_id, timestamp_ms=timestamp, value=value)]
-                from_record_id = max(from_record_id, record_id)
+                from_timestamp = max(from_timestamp, timestamp)
             data_source_name = None
             for data_source in json.loads(s=et_models.Campaign.objects.get(requester_email=request.user.email, campaign_id=target_campaign.campaign_id).config_json):
                 if data_source['data_source_id'] == data_source_id:
@@ -253,7 +253,7 @@ def handle_raw_samples_list(request):
                 context={
                     'title': data_source_name,
                     'records': records,
-                    'from_id': from_record_id
+                    'from_timestamp': from_timestamp
                 }
             )
         else:
