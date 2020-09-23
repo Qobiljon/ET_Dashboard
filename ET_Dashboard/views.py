@@ -62,7 +62,8 @@ def handle_campaigns_list(request):
         grpc_req = et_service_pb2.RetrieveCampaigns.Request(userId=grpc_user_id, email=request.user.email, myCampaignsOnly=True)
         grpc_res = stub.retrieveCampaigns(grpc_req)
         if grpc_res.success:
-            for campaign_id, name, notes, start_timestamp, end_timestamp, remove_inactive_users_timeout, creator_email, config_json, participant_count in zip(grpc_res.campaignId, grpc_res.name, grpc_res.notes, grpc_res.startTimestamp, grpc_res.endTimestamp, grpc_res.removeInactiveUsersTimeout, grpc_res.creatorEmail, grpc_res.configJson, grpc_res.participantCount):
+            for campaign_id, name, notes, start_timestamp, end_timestamp, remove_inactive_users_timeout, creator_email, config_json, participant_count in zip(grpc_res.campaignId, grpc_res.name, grpc_res.notes, grpc_res.startTimestamp, grpc_res.endTimestamp, grpc_res.removeInactiveUsersTimeout,
+                                                                                                                                                              grpc_res.creatorEmail, grpc_res.configJson, grpc_res.participantCount):
                 et_models.Campaign.create_or_update(
                     campaign_id=campaign_id,
                     requester_email=request.user.email,
@@ -116,6 +117,8 @@ def handle_participants_list(request):
         )
         grpc_res = stub.retrieveParticipants(grpc_req)
         if grpc_res.success:
+            if et_models.Participant.objects.filter(campaign=campaign).exists():
+                et_models.Participant.objects.filter(campaign=campaign).delete()
             success = len(grpc_res.name) == 0
             for grpc_id, name, email in zip(grpc_res.userId, grpc_res.name, grpc_res.email):
                 sub_grpc_req = et_service_pb2.RetrieveParticipantStats.Request(
