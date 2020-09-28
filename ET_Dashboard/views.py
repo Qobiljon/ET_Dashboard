@@ -242,7 +242,7 @@ def handle_raw_samples_list(request):
         if grpc_res.success:
             records = []
             for timestamp, value in zip(grpc_res.timestamp, grpc_res.value):
-                records += [et_models.Record(timestamp_ms=timestamp, value=value)]
+                records += [et_models.Record(timestamp_ms=timestamp, value=str(value, 'utf-8'))]
                 from_timestamp = max(from_timestamp, timestamp)
             data_source_name = None
             for data_source in json.loads(s=et_models.Campaign.objects.get(requester_email=request.user.email, campaign_id=target_campaign.campaign_id).config_json):

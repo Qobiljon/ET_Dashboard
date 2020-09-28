@@ -26,7 +26,7 @@
                 <tr class="data_source">
                     <td>{{ record.time }}</td>
                     {% if record.value|length <= 100 %}
-                        <td title="{{ record.value }}">{{ record.value|truncatechars:30 }}</td>
+                        <td title="{{ record.value }}">{{ record.value|truncatechars:120 }}</td>
                     {% else %}
                         <td>[ <i>{{ record.value|length }} byte data record</i> ]</td>
                     {% endif %}
