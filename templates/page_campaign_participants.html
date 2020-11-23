@@ -23,7 +23,7 @@
                     <a class="action_button" href="{% url 'download-data' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}">
                         <img title="Download raw data" class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
                     </a>
-                    <a class="action_button" href="{% url 'easytrack-monitor' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}">
+                    <a class="action_button" href="{% url 'easytrack-monitor' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}&data_source_name=all">
                         <img title="Monitor the participant {{ participant.email }}" class="action_button_green" src="{% static 'monitor_icon.png' %}" alt="EasyTrack monitor">
                     </a>
                 </td>

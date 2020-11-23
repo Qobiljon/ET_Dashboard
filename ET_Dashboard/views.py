@@ -377,68 +377,144 @@ def handle_easytrack_monitor(request):
     if db_user is not None:
         if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
             db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
+            db_campaign_data_sources = db.get_campaign_data_sources(db_campaign=db_campaign)
             if db_campaign is not None:
-                db_campaign_data_sources = db.get_campaign_data_sources(db_campaign=db_campaign)
+                now_datetime = datetime.datetime.now()
 
-                now_datetime = datetime.datetime.now().replace(day=12)  # todo for testing : .replace(day=12)
+                if 'plot_date' in request.GET:
+                    plot_date_str = str(request.GET['plot_date'])
+                    if re.search(r'\d{4}-\d{2}-\d{2}', plot_date_str) is not None:
+                        year, month, day = plot_date_str.split('-')
+                        year, month, day = int(year), int(month), int(day)
+                        now_datetime = now_datetime.replace(year=year, month=month, day=day)
+
                 till_timestamp = utils.datetime_to_timestamp_ms(now_datetime)
                 from_datetime = now_datetime.replace(minute=0, second=0, microsecond=0)
                 from_datetime -= datetime.timedelta(hours=23)
                 from_timestamp = utils.datetime_to_timestamp_ms(from_datetime)
+                window = 3600000  # 1 hour jump
 
                 if 'email' in request.GET:
                     db_participant_user = db.get_user(email=request.GET['email'])
                     if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
-                        data_source_hourly_stats = {}
-                        # region calculate hourly stats
-                        for db_data_source in db_campaign_data_sources:
-                            data_source_hourly_stats[db_data_source['id']] = []
-                            _jump = 3600000  # 1 hour jump
-                            _from_timestamp = from_timestamp
-                            _till_timestamp = _from_timestamp + _jump
-                            while _from_timestamp < till_timestamp:
-                                hour = utils.get_timestamp_hour(timestamp_ms=_from_timestamp)
-                                amount = db.get_filtered_amount_of_data(
-                                    db_campaign=db_campaign,
-                                    db_user=db_participant_user,
-                                    from_timestamp=_from_timestamp,
-                                    till_timestamp=_till_timestamp,
-                                    db_data_source=db_data_source
-                                )
-                                data_source_hourly_stats[db_data_source['id']] += [(hour, amount)]
-                                _from_timestamp += _jump
-                                _till_timestamp += _jump
-                        # endregion
+                        if 'data_source_name' in request.GET:
+                            data_source_name = request.GET['data_source_name']
+                            db_data_source = db.get_data_source(data_source_name=data_source_name)
+                            if data_source_name == 'all':
+                                hourly_stats = {}
+                                # region compute hourly stats
+                                for db_data_source in db_campaign_data_sources:
+                                    _from_timestamp = from_timestamp
+                                    _till_timestamp = _from_timestamp + window
+                                    while _from_timestamp < till_timestamp:
+                                        hour = utils.get_timestamp_hour(timestamp_ms=_from_timestamp)
+                                        amount = db.get_filtered_amount_of_data(
+                                            db_campaign=db_campaign,
+                                            db_user=db_participant_user,
+                                            from_timestamp=_from_timestamp,
+                                            till_timestamp=_till_timestamp,
+                                            db_data_source=db_data_source
+                                        )
+                                        if hour in hourly_stats:
+                                            hourly_stats[hour] += amount
+                                        else:
+                                            hourly_stats[hour] = amount
+                                        _from_timestamp += window
+                                        _till_timestamp += window
+                                # endregion
 
-                        # todo plot dq completeness line graph
-                        data_sources = []
-                        for db_data_source in db_campaign_data_sources:
-                            x = []
-                            y = []
-                            max_amount = 10
-                            for hour, amount in data_source_hourly_stats[db_data_source['id']]:
-                                if hour < 13:
-                                    hour = f'{hour} {"pm" if hour == 12 else "am"}'
-                                else:
-                                    hour = f'{hour % 12} pm'
-                                x += [hour]
-                                y += [amount]
-                                max_amount = max(max_amount, amount)
-                            fig = go.Figure([go.Bar(x=x, y=y)])
-                            fig.update_yaxes(range=[0, max_amount])
-                            graph_div = plotly.offline.plot(fig, auto_open=False, output_type="div")
-                            data_source = EnhancedDataSource(db_data_source=db_data_source)
-                            data_source.attach_plot(plot_str=graph_div)
-                            data_sources += [data_source]
-                        return render(
-                            request=request,
-                            template_name='easytrack_monitor.html',
-                            context={
-                                'campaign': db_campaign,
-                                'participant_monitoring': True,
-                                'data_sources': data_sources
-                            }
-                        )
+                                data_source = {'name': 'all campaign data sources combined'}
+                                # region plot hourly stats
+                                x = []
+                                y = []
+                                max_amount = 10
+                                hours = list(hourly_stats.keys())
+                                hours.sort()
+                                for hour in hours:
+                                    amount = hourly_stats[hour]
+                                    if hour < 13:
+                                        hour = f'{hour} {"pm" if hour == 12 else "am"}'
+                                    else:
+                                        hour = f'{hour % 12} pm'
+                                    x += [hour]
+                                    y += [amount]
+                                    max_amount = max(max_amount, amount)
+                                fig = go.Figure([go.Bar(x=x, y=y)])
+                                fig.update_yaxes(range=[0, max_amount])
+                                plot_str = plotly.offline.plot(fig, auto_open=False, output_type="div")
+                                data_source['plot'] = plot_str
+                                # endregion
+
+                                return render(
+                                    request=request,
+                                    template_name='easytrack_monitor.html',
+                                    context={
+                                        'campaign': db_campaign,
+                                        'participants': [db_participant_user],
+                                        'plot_date': now_datetime,
+                                        'all_data_sources': db_campaign_data_sources,
+                                        'plot_data_source': data_source
+                                    }
+                                )
+                            elif db_data_source is not None:
+                                hourly_stats = {}
+                                # region compute hourly stats
+                                _from_timestamp = from_timestamp
+                                _till_timestamp = _from_timestamp + window
+                                while _from_timestamp < till_timestamp:
+                                    hour = utils.get_timestamp_hour(timestamp_ms=_from_timestamp)
+                                    amount = db.get_filtered_amount_of_data(
+                                        db_campaign=db_campaign,
+                                        db_user=db_participant_user,
+                                        from_timestamp=_from_timestamp,
+                                        till_timestamp=_till_timestamp,
+                                        db_data_source=db_data_source
+                                    )
+                                    if hour in hourly_stats:
+                                        hourly_stats[hour] += amount
+                                    else:
+                                        hourly_stats[hour] = amount
+                                    _from_timestamp += window
+                                    _till_timestamp += window
+                                # endregion
+
+                                data_source = EnhancedDataSource(db_data_source=db_data_source)
+                                # region plot hourly stats
+                                x = []
+                                y = []
+                                max_amount = 10
+                                hours = list(hourly_stats.keys())
+                                hours.sort()
+                                for hour in hours:
+                                    amount = hourly_stats[hour]
+                                    if hour < 13:
+                                        hour = f'{hour} {"pm" if hour == 12 else "am"}'
+                                    else:
+                                        hour = f'{hour % 12} pm'
+                                    x += [hour]
+                                    y += [amount]
+                                    max_amount = max(max_amount, amount)
+                                fig = go.Figure([go.Bar(x=x, y=y)])
+                                fig.update_yaxes(range=[0, max_amount])
+                                plot_str = plotly.offline.plot(fig, auto_open=False, output_type="div")
+                                data_source.attach_plot(plot_str=plot_str)
+                                # endregion
+
+                                return render(
+                                    request=request,
+                                    template_name='easytrack_monitor.html',
+                                    context={
+                                        'campaign': db_campaign,
+                                        'participants': [db_participant_user],
+                                        'plot_date': now_datetime,
+                                        'all_data_sources': db_campaign_data_sources,
+                                        'plot_data_source': data_source
+                                    }
+                                )
+                            else:
+                                return redirect(to='campaigns-list')
+                        else:
+                            return redirect(to='campaigns-list')
                     else:
                         return redirect(to='campaigns-list')
                 else:
