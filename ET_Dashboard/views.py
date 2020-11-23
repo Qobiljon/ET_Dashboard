@@ -380,17 +380,17 @@ def handle_easytrack_monitor(request):
             db_campaign_data_sources = db.get_campaign_data_sources(db_campaign=db_campaign)
             db_campaign_participant_users = db.get_campaign_participants(db_campaign=db_campaign)
             if db_campaign is not None:
-                now_datetime = datetime.datetime.now()
+                from_datetime = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+                till_datetime = from_datetime + datetime.timedelta(hours=24)
 
                 if 'plot_date' in request.GET:
                     plot_date_str = str(request.GET['plot_date'])
                     if re.search(r'\d{4}-\d{1,2}-\d{1,2}', plot_date_str) is not None:
                         year, month, day = plot_date_str.split('-')
-                        now_datetime = now_datetime.replace(year=int(year), month=int(month), day=int(day))
+                        from_datetime = datetime.datetime(year=int(year), month=int(month), day=int(day), hour=0, minute=0, second=0, microsecond=0)
+                        till_datetime = from_datetime + datetime.timedelta(hours=24)
 
-                till_timestamp = utils.datetime_to_timestamp_ms(now_datetime)
-                from_datetime = now_datetime.replace(minute=0, second=0, microsecond=0)
-                from_datetime -= datetime.timedelta(hours=23)
+                till_timestamp = utils.datetime_to_timestamp_ms(till_datetime)
                 from_timestamp = utils.datetime_to_timestamp_ms(from_datetime)
                 window = 3600000  # 1 hour jump
 
@@ -458,7 +458,7 @@ def handle_easytrack_monitor(request):
                             context={
                                 'title': 'EasyTracker',
                                 'campaign': db_campaign,
-                                'plot_date': f'{now_datetime.year}-{now_datetime.month:02}-{now_datetime.day:02}',
+                                'plot_date': f'{from_datetime.year}-{from_datetime.month:02}-{from_datetime.day:02}',
 
                                 'participants': db_campaign_participant_users,
                                 'plot_participant': plot_participant,
@@ -518,7 +518,7 @@ def handle_easytrack_monitor(request):
                             context={
                                 'title': 'EasyTracker',
                                 'campaign': db_campaign,
-                                'plot_date': f'{now_datetime.year}-{now_datetime.month:02}-{now_datetime.day:02}',
+                                'plot_date': f'{from_datetime.year}-{from_datetime.month:02}-{from_datetime.day:02}',
 
                                 'participants': db_campaign_participant_users,
                                 'plot_participant': plot_participant,
