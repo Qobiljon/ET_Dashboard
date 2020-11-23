@@ -3,16 +3,14 @@
     <h3>Data sources ({{ data_sources|length }})</h3>
     <table>
         <tr>
-            <th>#</th>
-            <th>Data source name</th>
-            <th>Data source ID</th>
+            <th class="id_column">ID</th>
+            <th class="data_source_name_column">Data source name</th>
         </tr>
         {% load humanize %}
         {% for data_source in data_sources %}
             <tr class="table-content">
-                <td>{{ forloop.counter }}</td>
-                <td>{{ data_source.name }}</td>
-                <td>{{ data_source.data_source_id }}</td>
+                <td class="id_column">{{ data_source.data_source_id }}</td>
+                <td class="data_source_name_column">{{ data_source.name }}</td>
             </tr>
         {% endfor %}
     </table>
@@ -20,18 +18,16 @@
     <h3>Participants ({{ participants|length }})</h3>
     <table>
         <tr>
-            <th>#</th>
-            <th>Full name</th>
-            <th>Email address</th>
-            <th>User ID</th>
+            <th class="id_column">ID</th>
+            <th class="user_name_column">Full name</th>
+            <th class="user_email_column">Email address</th>
         </tr>
         {% load humanize %}
         {% for participant in participants %}
             <tr class="table-content">
-                <td>{{ forloop.counter }}</td>
-                <td>{{ participant.full_name }}</td>
-                <td>{{ participant.email }}</td>
-                <td>{{ participant.grpc_id }}</td>
+                <td class="id_column">{{ participant.id }}</td>
+                <td class="user_name_column">{{ participant.name }}</td>
+                <td class="user_email_column">{{ participant.email }}</td>
             </tr>
         {% endfor %}
     </table>
@@ -46,6 +42,20 @@
             border-spacing: 0;
             margin-bottom: 20px;
             text-align: center;
+            table-layout: fixed;
+        }
+
+        .id_column {
+            width: 10%;
+        }
+        .user_name_column {
+            width: 45%;
+        }
+        .user_email_column {
+            width: 45%
+        }
+        .data_source_name_column{
+            width: 90%;
         }
 
         table tr:first-child {

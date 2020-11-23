@@ -19,7 +19,7 @@
                 <td>{{ data_source.amount_of_data|intcomma }}</td>
                 <td>{{ data_source.last_sync_time }}</td>
                 <td>
-                    <a class="action_button" href="{% url 'view_data' %}?campaign_id={{ campaign.campaign_id }}&email={{ participant.email }}&data_source_id={{ data_source.data_source_id }}&from_timestamp=-1">
+                    <a class="action_button" href="{% url 'view_data' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}&data_source_id={{ data_source.id }}&from_timestamp=-1">
                         <img title="View raw data" class="action_button_green" src="{% static 'eye_icon.png' %}" alt="view">
                     </a>
                 </td>

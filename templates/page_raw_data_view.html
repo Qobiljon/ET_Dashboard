@@ -14,19 +14,21 @@
                 From time:
                 <input type="datetime-local" id="datetime_picker" oninput="onDateTimeInput()">
             </label>
-            <input class="action_button" type="submit" value="Fetch next 200 data records">
+            <input class="action_button" type="submit" value="Fetch next 500 data records">
         </form>
 
         <table id="value_table">
             <tr>
-                <th>Time</th>
-                <th>Value</th>
+                <th class="row_column">Row</th>
+                <th class="time_column">Time</th>
+                <th class="value_column">Value</th>
             </tr>
             {% for record in records %}
                 <tr class="data_source">
-                    <td>{{ record.time }}</td>
-                    {% if record.value|length <= 100 %}
-                        <td title="{{ record.value }}">{{ record.value|truncatechars:120 }}</td>
+                    <td>{{ record.row }}</td>
+                    <td>{{ record.timestamp }}</td>
+                    {% if record.value|length <= 512 %}
+                        <td title="{{ record.value }}">{{ record.value|truncatechars:256 }}</td>
                     {% else %}
                         <td>[ <i>{{ record.value|length }} byte data record</i> ]</td>
                     {% endif %}
@@ -80,6 +82,16 @@
             margin-bottom: 20px;
             text-align: center;
             table-layout: fixed;
+        }
+
+        .row_column {
+            width: 10%;
+        }
+        .time_column {
+            width: 20%;
+        }
+        .value_column {
+            width: 70%
         }
 
         #value_table tr:first-child {

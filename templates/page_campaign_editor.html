@@ -6,7 +6,7 @@
 
     <form action="{% url 'campaign-editor' %}" method="post">
         {% csrf_token %}
-        <input type="number" name="campaign_id" value="{% if edit_mode %}{{ campaign.campaign_id }}{% else %}-1{% endif %}" hidden>
+        <input type="number" name="campaign_id" value="{% if edit_mode %}{{ campaign.id }}{% else %}-1{% endif %}" hidden>
         <table id="inputTable">
             <tr>
                 <td><label for="name">Name</label>
@@ -18,11 +18,11 @@
             </tr>
             <tr>
                 <td><label for="startTime">Start time</label>
-                <td><input name="startTime" id="notes" type="datetime-local" required value="{% if edit_mode %}{{ campaign.start_timestamp_for_web }}{% endif %}"/></td>
+                <td><input name="startTime" id="startTime" type="datetime-local" required value="{% if edit_mode %}{{ campaign_start_time }}{% endif %}"/></td>
             </tr>
             <tr>
                 <td><label for="endTime">End time</label>
-                <td><input name="endTime" id="notes" type="datetime-local" required value="{% if edit_mode %}{{ campaign.end_timestamp_for_web }}{% endif %}"/></td>
+                <td><input name="endTime" id="endTime" type="datetime-local" required value="{% if edit_mode %}{{ campaign_end_time }}{% endif %}"/></td>
             </tr>
             <tr>
                 <td>
@@ -50,6 +50,7 @@
                 <th>Configurations (JSON)</th>
             </tr>
             {% if edit_mode %}
+                {# edit an existing campaign #}
                 {% for data_source in data_sources %}
                     <tr data-source="{{ data_source.name }}" class="{% if data_source.selected %}selected_data_source{% else %}data_source{% endif %}">
                         <td><input type="checkbox" name="{{ data_source.name }}" {% if data_source.selected %}checked{% endif %}></td>
@@ -62,6 +63,7 @@
                     </tr>
                 {% endfor %}
             {% else %}
+                {# edit for a new campaign #}
                 {% for data_source in data_sources %}
                     <tr data-source="{{ data_source.name }}" class="data_source">
                         <td><input type="checkbox" name="{{ data_source.name }}"></td>

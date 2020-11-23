@@ -4,6 +4,7 @@ import datetime
 import time
 import grpc
 import os
+import re
 
 
 def get_grpc_channel_stub():
@@ -58,3 +59,10 @@ def get_download_file_path(file_name):
     os.chmod(file_path, 0o777)
 
     return file_path
+
+
+def is_numeric(string, floating=False):
+    if floating:
+        return re.search(pattern=r'^[+-]?\d+\.\d+$', string=string) is not None
+    else:
+        return re.search(pattern=r'^[+-]?\d+$', string=string) is not None
