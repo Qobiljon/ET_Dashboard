@@ -5,8 +5,9 @@
         <label for="data_source_name">
             Participant
             <select name="email" form="monitor-form">
+                <option value="all" {% if plot_participant.email == 'all' %}selected{% endif %}>All campaign participants combined</option>
                 {% for participant in participants %}
-                    <option value="{{ participant.email }}" {% if forloop.counter == 1 %}selected{% endif %}>{{ participant.name }} ({{ participant.email }})</option>
+                    <option value="{{ participant.email }}" {% if plot_participant.email == participant.email %}selected{% endif %}>{{ participant.name }} ({{ participant.email }})</option>
                 {% endfor %}
             </select>
         </label>
@@ -23,11 +24,12 @@
         &nbsp;
         <label for="plot_date">
             Date
-            <input type="date" name="plot_date" value="{{ plot_date.year }}-{{ plot_date.month }}-{{ plot_date.day }}">
+            <input type="date" name="plot_date" value="{{ plot_date }}">
         </label>
         &nbsp;
         <input type="submit" value="Plot">
     </form>
-    <h2>DQ_completeness plots for - {{ plot_data_source.name }}</h2>
+
+    <h3>DQ_completeness plot</h3>
     {{ plot_data_source.plot|safe }}
 {% endblock %}
