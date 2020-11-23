@@ -23,6 +23,9 @@
                     <a class="action_button" href="{% url 'download-data' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}">
                         <img title="Download raw data" class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
                     </a>
+                    <a class="action_button" href="{% url 'easytrack-monitor' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}">
+                        <img title="Monitor the participant {{ participant.email }}" class="action_button_green" src="{% static 'monitor_icon.png' %}" alt="EasyTrack monitor">
+                    </a>
                 </td>
             </tr>
         {% endfor %}
@@ -82,6 +85,10 @@
         tr:not(:first-child):hover td {
             background: #666;
             color: white;
+        }
+
+        a.action_button {
+            text-decoration: none;
         }
 
         img.action_button_green {

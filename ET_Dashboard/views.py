@@ -1,7 +1,9 @@
+import plotly.graph_objects as go
 from json import JSONDecodeError
 from utils import settings
 import datetime
 import zipfile
+import plotly
 import json
 import os
 import re
@@ -13,13 +15,10 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
-# gRPC
-from et_grpcs import et_service_pb2
-
 # EasyTrack
-from ET_Dashboard import models as et_models
-from utils import utils
+from ET_Dashboard.models import EnhancedDataSource
 from utils import db_mgr as db
+from utils import utils
 
 
 def handle_google_verification(request):
@@ -76,6 +75,7 @@ def handle_campaigns_list(request):
             }
         )
     else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
@@ -113,6 +113,7 @@ def handle_participants_list(request):
         else:
             return redirect(to='campaigns-list')
     else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
@@ -159,6 +160,7 @@ def handle_participants_data_list(request):
         else:
             return redirect(to='campaigns-list')
     else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
@@ -212,6 +214,7 @@ def handle_raw_samples_list(request):
         else:
             return redirect(to='campaigns-list')
     else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
@@ -363,6 +366,96 @@ def handle_campaign_editor(request):
         else:
             return redirect(to='campaigns-list')
     else:
+        dj_logout(request=request)
+        return redirect(to='login')
+
+
+@login_required
+@require_http_methods(['GET'])
+def handle_easytrack_monitor(request):
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
+            if db_campaign is not None:
+                db_campaign_data_sources = db.get_campaign_data_sources(db_campaign=db_campaign)
+
+                now_datetime = datetime.datetime.now().replace(day=12)  # todo for testing : .replace(day=12)
+                till_timestamp = utils.datetime_to_timestamp_ms(now_datetime)
+                from_datetime = now_datetime.replace(minute=0, second=0, microsecond=0)
+                from_datetime -= datetime.timedelta(hours=23)
+                from_timestamp = utils.datetime_to_timestamp_ms(from_datetime)
+
+                if 'email' in request.GET:
+                    db_participant_user = db.get_user(email=request.GET['email'])
+                    if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
+                        data_source_hourly_stats = {}
+                        # region calculate hourly stats
+                        for db_data_source in db_campaign_data_sources:
+                            data_source_hourly_stats[db_data_source['id']] = []
+                            _jump = 3600000  # 1 hour jump
+                            _from_timestamp = from_timestamp
+                            _till_timestamp = _from_timestamp + _jump
+                            while _from_timestamp < till_timestamp:
+                                hour = utils.get_timestamp_hour(timestamp_ms=_from_timestamp)
+                                amount = db.get_filtered_amount_of_data(
+                                    db_campaign=db_campaign,
+                                    db_user=db_participant_user,
+                                    from_timestamp=_from_timestamp,
+                                    till_timestamp=_till_timestamp,
+                                    db_data_source=db_data_source
+                                )
+                                data_source_hourly_stats[db_data_source['id']] += [(hour, amount)]
+                                _from_timestamp += _jump
+                                _till_timestamp += _jump
+                        # endregion
+
+                        # todo plot dq completeness line graph
+                        data_sources = []
+                        for db_data_source in db_campaign_data_sources:
+                            x = []
+                            y = []
+                            max_amount = 10
+                            for hour, amount in data_source_hourly_stats[db_data_source['id']]:
+                                if hour < 13:
+                                    hour = f'{hour} {"pm" if hour == 12 else "am"}'
+                                else:
+                                    hour = f'{hour % 12} pm'
+                                x += [hour]
+                                y += [amount]
+                                max_amount = max(max_amount, amount)
+                            fig = go.Figure([go.Bar(x=x, y=y)])
+                            fig.update_yaxes(range=[0, max_amount])
+                            graph_div = plotly.offline.plot(fig, auto_open=False, output_type="div")
+                            data_source = EnhancedDataSource(db_data_source=db_data_source)
+                            data_source.attach_plot(plot_str=graph_div)
+                            data_sources += [data_source]
+                        return render(
+                            request=request,
+                            template_name='easytrack_monitor.html',
+                            context={
+                                'campaign': db_campaign,
+                                'participant_monitoring': True,
+                                'data_sources': data_sources
+                            }
+                        )
+                    else:
+                        return redirect(to='campaigns-list')
+                else:
+                    # todo campaign monitoring
+                    return render(
+                        request=request,
+                        template_name='easytrack_monitor.html',
+                        context={
+                            'campaign': db_campaign,
+                        }
+                    )
+            else:
+                return redirect(to='campaigns-list')
+        else:
+            return redirect(to='campaigns-list')
+    else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
@@ -391,6 +484,7 @@ def handle_dataset_info(request):
         else:
             return redirect(to='campaigns-list')
     else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
@@ -409,6 +503,7 @@ def handle_delete_campaign_api(request):
         else:
             return redirect(to='campaigns-list')
     else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
@@ -455,6 +550,7 @@ def handle_download_data_api(request):
         else:
             return redirect(to='campaigns-list')
     else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
@@ -496,6 +592,7 @@ def handle_download_dataset_api(request):
         else:
             return redirect(to='campaigns-list')
     else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
@@ -503,4 +600,3 @@ def handle_download_dataset_api(request):
 @require_http_methods(['GET'])
 def handle_notifications_list(request):
     return None
-

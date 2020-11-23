@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if participant_monitoring %}
+        {% for data_source in data_sources %}
+            <h2>{{ data_source.name }}</h2>
+            <div style="width:100%;height:100%">
+                {{ data_source.plot|safe }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

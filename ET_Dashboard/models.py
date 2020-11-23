@@ -1,4 +1,21 @@
-# from django.contrib.auth.models import User
+class EnhancedDataSource:
+    db_data_source: dict
+    plot_str: str
 
-# gRPC
-from et_grpcs import et_service_pb2
+    def __init__(self, db_data_source):
+        self.db_data_source = db_data_source
+
+    def attach_plot(self, plot_str):
+        self.plot_str = plot_str
+
+    def id(self):
+        return self.db_data_source['id']
+
+    def name(self):
+        return self.db_data_source['name']
+
+    def icon_name(self):
+        return self.db_data_source['icon_name']
+
+    def plot(self):
+        return self.plot_str

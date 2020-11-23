@@ -263,7 +263,6 @@ def get_all_data_sources():
 def get_campaign_data_sources(db_campaign):
     db_data_sources = []
     config_jsons = json.loads(s=db_campaign['config_json'])
-    res_stats = []
     for config_json in config_jsons:
         db_data_source = get_data_source(data_source_id=config_json['data_source_id'])
         if db_data_source is not None:
@@ -518,5 +517,51 @@ def get_participants_data_source_sync_timestamps(db_user, db_campaign, db_data_s
     cur.close()
     get_db_connection().commit()
     return 0 if sync_timestamp is None else sync_timestamp
+
+
+def get_filtered_amount_of_data(db_campaign, from_timestamp, till_timestamp, db_user=None, db_data_source=None):
+    cur = get_db_connection().cursor(cursor_factory=psycopg2_extras.DictCursor)
+    amount = 0
+
+    if db_user is None:
+        # all users
+        if db_data_source is None:
+            # all data sources
+            for db_participant_user in get_campaign_participants(db_campaign=db_campaign):
+                cur.execute(f'select count(*) as "amount" from "data"."{db_campaign["id"]}-{db_participant_user["id"]}" where "timestamp">=%s and "timestamp"<%s;', (
+                    from_timestamp,
+                    till_timestamp
+                ))
+                amount += cur.fetchone()['amount']
+        else:
+            # single data source
+            for db_participant_user in get_campaign_participants(db_campaign=db_campaign):
+                cur.execute(f'select count(*) as "amount" from "data"."{db_campaign["id"]}-{db_participant_user["id"]}" where "data_source_id"=%s and "timestamp">=%s and "timestamp"<%s;', (
+                    db_data_source['id'],
+                    from_timestamp,
+                    till_timestamp
+                ))
+                amount += cur.fetchone()['amount']
+    else:
+        # single user
+        if db_data_source is None:
+            # all data sources
+            cur.execute(f'select count(*) as "amount" from "data"."{db_campaign["id"]}-{db_user["id"]}" where "timestamp">=%s and "timestamp"<%s;', (
+                from_timestamp,
+                till_timestamp
+            ))
+            amount += cur.fetchone()['amount']
+        else:
+            # single data source
+            # f'select count(*) as "amount" from "data"."{db_campaign["id"]}-{db_user["id"]}" where "data_source_id"={db_data_source["id"]} and "timestamp">={from_timestamp} and "timestamp"<{till_timestamp};'
+            cur.execute(f'select count(*) as "amount" from "data"."{db_campaign["id"]}-{db_user["id"]}" where "data_source_id"=%s and "timestamp">=%s and "timestamp"<%s;', (
+                db_data_source['id'],
+                from_timestamp,
+                till_timestamp
+            ))
+            amount += cur.fetchone()['amount']
+    cur.close()
+    get_db_connection().commit()
+    return amount
 
 # endregion

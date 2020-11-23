@@ -22,6 +22,10 @@ def datetime_to_timestamp_ms(value: datetime):
     return int(round(value.timestamp() * 1000))
 
 
+def get_timestamp_hour(timestamp_ms):
+    return datetime.datetime.fromtimestamp(timestamp_ms / 1000).hour
+
+
 def timestamp_now_ms():
     return int(round(time.time() * 1000))
 
