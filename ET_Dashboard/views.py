@@ -66,6 +66,7 @@ def handle_campaigns_list(request):
                 'participants': db.get_campaign_participants_count(db_campaign=db_campaign)
             }]
         print('%s opened the main page' % request.user.email)
+        my_campaigns.sort(key=lambda x: x['id'])
         return render(
             request=request,
             template_name='page_campaigns.html',
@@ -91,6 +92,7 @@ def handle_participants_list(request):
                 participants = []
                 for participant in db.get_campaign_participants(db_campaign=db_campaign):
                     participants += [{
+                        'id': participant['id'],
                         'name': participant['name'],
                         'email': participant['email'],
                         'day_no': utils.calculate_day_number(join_timestamp=db.get_participant_join_timestamp(db_user=participant, db_campaign=db_campaign)),
@@ -98,7 +100,7 @@ def handle_participants_list(request):
                         'last_heartbeat_time': utils.timestamp_to_readable_string(timestamp_ms=db.get_participant_heartbeat_timestamp(db_user=participant, db_campaign=db_campaign)),
                         'last_sync_time': utils.timestamp_to_readable_string(timestamp_ms=db.get_participant_last_sync_timestamp(db_user=participant, db_campaign=db_campaign)),
                     }]
-                participants.sort(key=lambda x: x['name'])
+                participants.sort(key=lambda x: x['id'])
                 return render(
                     request=request,
                     template_name='page_campaign_participants.html',
@@ -141,6 +143,7 @@ def handle_participants_data_list(request):
                                 'amount_of_data': amount_of_data,
                                 'last_sync_time': utils.timestamp_to_readable_string(timestamp_ms=last_sync_time)
                             }]
+                        data_sources.sort(key=lambda x: x['name'])
                         return render(
                             request=request,
                             template_name='page_participant_data_sources_stats.html',
@@ -311,7 +314,7 @@ def handle_campaign_editor(request):
 
                 if 'name' in request.POST and 'notes' in request.POST and 'startTime' in request.POST and 'endTime' and 'remove_inactive_users_timeout' in request.POST:
                     _campaign_name = str(request.POST['name'])
-                    if len(_campaign_name) > 4 and utils.is_numeric(request.POST['remove_inactive_users_timeout']) and is_date_time(request.POST['startTime']) and is_date_time(request.POST['endTime']):
+                    if utils.is_numeric(request.POST['remove_inactive_users_timeout']) and is_date_time(request.POST['startTime']) and is_date_time(request.POST['endTime']):
                         return {
                             'name': _campaign_name,
                             'notes': str(request.POST['notes']),
@@ -551,7 +554,7 @@ def handle_dataset_info(request):
                 campaign_data_sources = list(json.loads(s=db_campaign['config_json']))
                 campaign_data_sources.sort(key=lambda x: x['name'])
                 participants = list(db.get_campaign_participants(db_campaign=db_campaign))
-                participants.sort(key=lambda x: x['name'])
+                participants.sort(key=lambda x: x['id'])
                 return render(
                     request=request,
                     template_name='page_dataset_configs.html',
