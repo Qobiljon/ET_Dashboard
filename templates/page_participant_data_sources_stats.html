@@ -3,22 +3,22 @@
     <h3>For the campaign: "{{ campaign.name }}"</h3>
     <table>
         <tr>
-            <th>Icon</th>
-            <th>Data source name</th>
-            <th>Configurations</th>
-            <th>Number of<br>data samples</th>
-            <th>Latest sync time</th>
-            <th>Actions (on data)</th>
+            <th class="icon_column">Icon</th>
+            <th class="name_column">Data source name</th>
+            <th class="config_column">Configurations</th>
+            <th class="amount_column">Number of<br>data samples</th>
+            <th class="sync_time_column">Latest sync time</th>
+            <th class="actions_column">Actions (on data)</th>
         </tr>
         {% load humanize staticfiles %}
         {% for data_source in data_sources %}
             <tr data-source="{{ data_source.name }}" class="data_source">
-                <td><img src="http://{{ request.get_host }}/static/{{ data_source.icon_name }}" alt="{{ data_source.name }}"></td>
-                <td>{{ data_source.name }}</td>
-                <td title="{{ data_source.config_json }}">{{ data_source.config_json|truncatechars:30 }}</td>
-                <td>{{ data_source.amount_of_data|intcomma }}</td>
-                <td>{{ data_source.last_sync_time }}</td>
-                <td>
+                <td class="icon_column"><img src="http://{{ request.get_host }}/static/{{ data_source.icon_name }}" alt="{{ data_source.name }}"></td>
+                <td class="name_column">{{ data_source.name }}</td>
+                <td class="config_column" title="{{ data_source.config_json }}">{{ data_source.config_json|truncatechars:30 }}</td>
+                <td class="amount_column" {% if data_source.amount_of_data == 0 %} style="color: red;" {% endif %}>{{ data_source.amount_of_data|intcomma }} samples</td>
+                <td class="sync_time_column">{{ data_source.last_sync_time }}</td>
+                <td class="actions_column">
                     <a class="action_button" href="{% url 'view_data' %}?campaign_id={{ campaign.id }}&email={{ participant.email }}&data_source_id={{ data_source.id }}&from_timestamp=-1">
                         <img title="View raw data" class="action_button_green" src="{% static 'eye_icon.png' %}" alt="view">
                     </a>
@@ -36,6 +36,25 @@
             border-spacing: 0;
             margin-bottom: 20px;
             text-align: center;
+        }
+
+        .icon_column {
+            width: 10%;
+        }
+        .name_column {
+            width: 20%;
+        }
+        .config_column {
+            width: 20%;
+        }
+        .amount_column {
+            width: 20%;
+        }
+        .sync_time_column {
+            width: 20%;
+        }
+        .actions_column {
+            width: 10%;
         }
 
         table tr:first-child {

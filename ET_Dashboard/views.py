@@ -93,8 +93,6 @@ def handle_participants_list(request):
                 for participant in db.get_campaign_participants(db_campaign=db_campaign):
                     participants += [{
                         'id': participant['id'],
-                        'name': participant['name'],
-                        'email': participant['email'],
                         'day_no': utils.calculate_day_number(join_timestamp=db.get_participant_join_timestamp(db_user=participant, db_campaign=db_campaign)),
                         'amount_of_data': db.get_participants_amount_of_data(db_user=participant, db_campaign=db_campaign),
                         'last_heartbeat_time': utils.timestamp_to_readable_string(timestamp_ms=db.get_participant_heartbeat_timestamp(db_user=participant, db_campaign=db_campaign)),
@@ -130,8 +128,8 @@ def handle_participants_data_list(request):
                 campaign_data_source_configs = {}
                 for data_source in json.loads(s=db_campaign['config_json']):
                     campaign_data_source_configs[data_source['data_source_id']] = data_source['config_json']
-                if 'email' in request.GET:
-                    db_participant_user = db.get_user(email=request.GET['email'])
+                if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
+                    db_participant_user = db.get_user(user_id=request.GET['participant_id'])
                     if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
                         data_sources = []
                         for db_data_source, amount_of_data, last_sync_time in db.get_participants_per_data_source_stats(db_user=db_participant_user, db_campaign=db_campaign):
@@ -148,7 +146,7 @@ def handle_participants_data_list(request):
                             request=request,
                             template_name='page_participant_data_sources_stats.html',
                             context={
-                                'title': "%s's data" % db_participant_user['name'],
+                                'title': "Data from participant ID=%d" % db_participant_user['id'],
                                 'campaign': db_campaign,
                                 'participant': db_participant_user,
                                 'data_sources': data_sources
@@ -397,14 +395,14 @@ def handle_easytrack_monitor(request):
                 from_timestamp = utils.datetime_to_timestamp_ms(from_datetime)
                 window = 3600000  # 1 hour jump
 
-                if 'email' in request.GET:
-                    db_participant_user = db.get_user(email=request.GET['email'])
+                if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
+                    db_participant_user = db.get_user(user_id=request.GET['participant_id'])
                     if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
                         plot_participant = db_participant_user
                     else:
-                        plot_participant = {'email': 'all'}
+                        plot_participant = {'id': 'all'}
                 else:
-                    plot_participant = {'email': 'all'}
+                    plot_participant = {'id': 'all'}
 
                 if 'data_source_name' in request.GET:
                     data_source_name = request.GET['data_source_name']
@@ -412,7 +410,7 @@ def handle_easytrack_monitor(request):
                     if data_source_name == 'all':
                         hourly_stats = {}
                         # region compute hourly stats
-                        for db_participant_user in (db_campaign_participant_users if plot_participant['email'] == 'all' else [plot_participant]):
+                        for db_participant_user in (db_campaign_participant_users if plot_participant['id'] == 'all' else [plot_participant]):
                             for db_data_source in db_campaign_data_sources:
                                 _from_timestamp = from_timestamp
                                 _till_timestamp = _from_timestamp + window
@@ -473,7 +471,7 @@ def handle_easytrack_monitor(request):
                     elif db_data_source is not None:
                         hourly_stats = {}
                         # region compute hourly stats
-                        for db_participant_user in (db_campaign_participant_users if plot_participant['email'] == 'all' else [plot_participant]):
+                        for db_participant_user in (db_campaign_participant_users if plot_participant['id'] == 'all' else [plot_participant]):
                             _from_timestamp = from_timestamp
                             _till_timestamp = _from_timestamp + window
                             while _from_timestamp < till_timestamp:
@@ -599,8 +597,8 @@ def handle_download_data_api(request):
         if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
             db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
             if db_campaign is not None:
-                if 'email' in request.GET:
-                    db_participant_user = db.get_user(email=request.GET['email'])
+                if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
+                    db_participant_user = db.get_user(user_id=request.GET['participant_id'])
                     if db_participant_user is not None:
                         # dump db data
                         dump_file_path = db.dump_data(db_campaign=db_campaign, db_user=db_participant_user)
