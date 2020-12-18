@@ -148,7 +148,7 @@ def handle_participants_data_list(request):
                             request=request,
                             template_name='page_participant_data_sources_stats.html',
                             context={
-                                'title': f'Data submitted by {db_participant_user["name"]} (ID = {db_participant_user["id"]})',
+                                'title': f'Data submitted by {db_participant_user["name"]}, {db_participant_user["email"]} (ID = {db_participant_user["id"]})',
                                 'campaign': db_campaign,
                                 'participant': db_participant_user,
                                 'data_sources': data_sources
