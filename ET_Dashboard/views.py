@@ -93,6 +93,8 @@ def handle_participants_list(request):
                 for participant in db.get_campaign_participants(db_campaign=db_campaign):
                     participants += [{
                         'id': participant['id'],
+                        'name': participant['name'],
+                        'email': participant['email'],
                         'day_no': utils.calculate_day_number(join_timestamp=db.get_participant_join_timestamp(db_user=participant, db_campaign=db_campaign)),
                         'amount_of_data': db.get_participants_amount_of_data(db_user=participant, db_campaign=db_campaign),
                         'last_heartbeat_time': utils.timestamp_to_readable_string(timestamp_ms=db.get_participant_heartbeat_timestamp(db_user=participant, db_campaign=db_campaign)),
@@ -146,7 +148,7 @@ def handle_participants_data_list(request):
                             request=request,
                             template_name='page_participant_data_sources_stats.html',
                             context={
-                                'title': "Data from participant ID=%d" % db_participant_user['id'],
+                                'title': f'Data submitted by {db_participant_user["name"]} (ID = {db_participant_user["id"]})',
                                 'campaign': db_campaign,
                                 'participant': db_participant_user,
                                 'data_sources': data_sources

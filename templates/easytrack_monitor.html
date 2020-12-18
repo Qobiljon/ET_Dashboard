@@ -3,11 +3,11 @@
     <form id="monitor-form" action="{% url 'easytrack-monitor' %}" method="get">
         <input type="number" name="campaign_id" value="{{ campaign.id }}" hidden>
         <label for="participant_id">
-            Participant ID =
+            Participant =
             <select name="participant_id" form="monitor-form">
                 <option value="all" {% if plot_participant.id == 'all' %}selected{% endif %}>All campaign participants combined</option>
                 {% for participant in participants %}
-                    <option value="{{ participant.id }}" {% if plot_participant.id == participant.id %}selected{% endif %}>{{ participant.id }}</option>
+                    <option value="{{ participant.id }}" {% if plot_participant.id == participant.id %}selected{% endif %}>ID={{ participant.id }}. {{ participant.name }}</option>
                 {% endfor %}
             </select>
         </label>
