@@ -145,7 +145,7 @@ def handle_participants_data_list(request):
                             }]
                         data_sources.sort(key=lambda x: x['name'])
                         unprocessed_data_size = 0
-                        dir_path = os.path.join(settings.raw_data_dir, f'{db_campaign["id"]}-{db_user["id"]}')
+                        dir_path = os.path.join(settings.raw_data_dir, f'{db_campaign["id"]}-{db_participant_user["id"]}')
                         if not os.path.exists(dir_path):
                             os.mkdir(dir_path)
                         for filename in os.listdir(dir_path):
