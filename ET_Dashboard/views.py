@@ -188,7 +188,10 @@ def handle_raw_samples_list(request):
                                     if value_len > 5 * 1024:  # 5KB (e.g., binary files)
                                         value = f'[ {value_len:,} byte data record ]'
                                     else:
-                                        value = str(record['value'], encoding='utf-8')
+                                        try:
+                                            value = str(record['value'], encoding='utf-8')
+                                        except UnicodeDecodeError:
+                                            value = f'[ {value_len:,} byte data record ]'
                                     records += [{
                                         'row': row + 1,
                                         'timestamp': utils.timestamp_to_readable_string(timestamp_ms=record['timestamp']),
