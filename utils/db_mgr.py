@@ -3,6 +3,7 @@ from utils import settings
 from utils import utils
 import psycopg2
 import json
+import os
 
 
 # region common part
@@ -349,6 +350,40 @@ def dump_data(db_campaign, db_user):
     file_path = utils.get_download_file_path(f'{db_campaign["id"]}-{db_user["id"]}.bin.tmp')
     cur.execute(f'copy (select "id", "timestamp", "value", "data_source_id" from "data"."{db_campaign["id"]}-{db_user["id"]}") to %s with binary;', (file_path,))
 
+    cur.close()
+    return file_path
+
+
+def dump_csv_data(db_campaign, db_user=None, db_data_source=None):
+    cur = get_db_connection().cursor(cursor_factory=psycopg2_extras.DictCursor)
+
+    if db_user is not None:
+        file_path = utils.get_download_file_path(f'{db_campaign["id"]}-{db_user["id"]}.csv')
+        cur.execute(f'copy (select "id", "timestamp", "value", "data_source_id" from "data"."{db_campaign["id"]}-{db_user["id"]}") to %s delimiter \',\' csv header;', (file_path,))
+    elif db_data_source is not None:
+        file_path = utils.get_download_file_path(f'campaign-{db_campaign["id"]}-data_source-{db_data_source["id"]}.csv')
+        for index, db_user in enumerate(get_campaign_participants(db_campaign=db_campaign)):
+            sub_file_path = utils.get_download_file_path(f'{db_campaign["id"]}-{db_user["id"]}.csv')
+            cur.execute(f'copy (select "id", "timestamp", "value", "data_source_id" from "data"."{db_campaign["id"]}-{db_user["id"]}") where "data_source_id"={db_data_source["id"]} to %s delimiter \',\' csv header;', (sub_file_path,))
+            with open(file_path, 'a') as w, open(sub_file_path, 'r') as r:
+                rows = r.readlines()
+                if index == 0:
+                    w.write(f'user_id,{rows[0]}')
+                for line in rows[1:]:
+                    w.write(f'{db_user["id"]},{line}')
+            os.remove(sub_file_path)
+    else:
+        file_path = utils.get_download_file_path(f'{db_campaign["id"]}.csv')
+        for index, db_user in enumerate(get_campaign_participants(db_campaign=db_campaign)):
+            sub_file_path = utils.get_download_file_path(f'{db_campaign["id"]}-{db_user["id"]}.csv')
+            cur.execute(f'copy (select "id", "timestamp", "value", "data_source_id" from "data"."{db_campaign["id"]}-{db_user["id"]}") to %s delimiter \',\' csv header;', (sub_file_path,))
+            with open(file_path, 'a') as w, open(sub_file_path, 'r') as r:
+                rows = r.readlines()
+                if index == 0:
+                    w.write(f'user_id,{rows[0]}')
+                for line in rows[1:]:
+                    w.write(f'{db_user["id"]},{line}')
+            os.remove(sub_file_path)
     cur.close()
     return file_path
 
