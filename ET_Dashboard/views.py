@@ -661,7 +661,7 @@ def handle_download_csv_api(request):
         if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
             db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
             if db_campaign is not None:
-                if 'user_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
+                if 'user_id' in request.GET and utils.is_numeric(request.GET['user_id']):
                     db_participant_user = db.get_user(user_id=int(request.GET['user_id']))
                     if db_participant_user is not None:
                         dump_file_path = db.dump_csv_data(db_campaign=db_campaign, db_user=db_participant_user)
