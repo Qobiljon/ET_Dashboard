@@ -151,6 +151,8 @@ def handle_participants_data_list(request):
                         unprocessed_data_size = 0
                         dir_path = os.path.join(settings.raw_data_dir, f'{db_campaign["id"]}-{db_participant_user["id"]}')
                         if not os.path.exists(dir_path):
+                            if not os.path.exists(settings.raw_data_dir):
+                                os.mkdir(settings.raw_data_dir)
                             os.mkdir(dir_path)
                         for filename in os.listdir(dir_path):
                             unprocessed_data_size += os.path.getsize(os.path.join(dir_path, filename))
