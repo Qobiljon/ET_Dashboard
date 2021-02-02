@@ -1,40 +1,73 @@
 {% extends 'base.html' %}
 {% block content %}
+    {% load staticfiles %}
     <h3>Data sources ({{ data_sources|length }})</h3>
     <table>
         <tr>
-            <th>#</th>
-            <th>Data source name</th>
-            <th>Data source ID</th>
+            <th class="id_column">ID</th>
+            <th class="data_source_name_column">Data source name</th>
+            <th class="download_csv_column">Download CSV</th>
         </tr>
         {% load humanize %}
         {% for data_source in data_sources %}
             <tr class="table-content">
-                <td>{{ forloop.counter }}</td>
-                <td>{{ data_source.name }}</td>
-                <td>{{ data_source.data_source_id }}</td>
+                <td class="id_column">{{ data_source.data_source_id }}</td>
+                <td class="data_source_name_column">{{ data_source.name }}</td>
+                <td class="download_csv_column">
+                    <a title="Download {{ data_source.name }} dataset at this state" href="{% url 'download-csv' %}?campaign_id={{ campaign.id }}&data_source_id={{ data_source.data_source_id }}">
+                        <img class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
+                    </a>
+                </td>
             </tr>
         {% endfor %}
+        {% if data_sources|length > 0 %}
+            <tr class="table-content">
+                <td class="id_column"></td>
+                <td class="data_source_name_column">ALL</td>
+                <td class="download_csv_column">
+                    <a title="Download the dataset at this state" href="{% url 'download-csv' %}?campaign_id={{ campaign.id }}">
+                        <img class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
+                    </a>
+                </td>
+            </tr>
+        {% endif %}
     </table>
 
     <h3>Participants ({{ participants|length }})</h3>
     <table>
         <tr>
-            <th>#</th>
-            <th>Full name</th>
-            <th>Email address</th>
-            <th>User ID</th>
+            <th class="id_column">ID</th>
+            <th class="user_name_column">Full name</th>
+            <th class="user_email_column">Email address</th>
+            <th class="download_csv_column">Download CSV</th>
         </tr>
         {% load humanize %}
         {% for participant in participants %}
             <tr class="table-content">
-                <td>{{ forloop.counter }}</td>
-                <td>{{ participant.full_name }}</td>
-                <td>{{ participant.email }}</td>
-                <td>{{ participant.id }}</td>
+                <td class="id_column">{{ participant.id }}</td>
+                <td class="user_name_column">{{ participant.name }}</td>
+                <td class="user_email_column">{{ participant.email }}</td>
+                <td class="download_csv_column">
+                    <a title="Download {{ participant.email }} dataset at this state" href="{% url 'download-csv' %}?campaign_id={{ campaign.id }}&user_id={{ participant.id }}">
+                        <img class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
+                    </a>
+                </td>
             </tr>
         {% endfor %}
+        {% if participants|length > 0 %}
+            <tr class="table-content">
+                <td class="id_column"></td>
+                <td class="user_name_column">ALL</td>
+                <td class="user_email_column">ALL</td>
+                <td class="download_csv_column">
+                    <a title="Download the dataset at this state" href="{% url 'download-csv' %}?campaign_id={{ campaign.id }}">
+                        <img class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
+                    </a>
+                </td>
+            </tr>
+        {% endif %}
     </table>
+
 
     <style>
         table {
@@ -45,6 +78,27 @@
             border-spacing: 0;
             margin-bottom: 20px;
             text-align: center;
+            table-layout: fixed;
+        }
+
+        .id_column {
+            width: 10%;
+        }
+
+        .user_name_column {
+            width: 30%;
+        }
+
+        .user_email_column {
+            width: 35%
+        }
+
+        .data_source_name_column {
+            width: 75%;
+        }
+
+        .download_csv_column {
+            width: 15%;
         }
 
         table tr:first-child {
@@ -61,6 +115,28 @@
 
         table tr.table-content:nth-child(odd) td {
             background: #DFDFDF;
+        }
+
+        table tr td a {
+            text-decoration: none;
+        }
+
+        img.action_button_green {
+            background: #2ecc71;
+            vertical-align: middle;
+            padding: 3px;
+            margin: 2px 0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: larger;
+            cursor: pointer;
+        {#transition: all 0.3s;#}
+        }
+
+        img.action_button_green:hover {
+            background: #4285F4;
+            color: black;
         }
     </style>
 {% endblock %}

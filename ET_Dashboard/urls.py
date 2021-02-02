@@ -18,13 +18,11 @@ from django.urls import path, re_path, include
 from ET_Dashboard import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('google43e44b3701ba10c8.html', views.handle_google_verification),
-    path('google-auth/', include('social_django.urls', namespace='social')),
-
+    # authentication
     path('login/', views.handle_login_api, name='login'),
     path('logout/', views.handle_logout_api, name='logout'),
 
+    # dashboard navigation
     path('', views.handle_campaigns_list, name='campaigns-list'),
     path('campaign/', views.handle_participants_list, name='participants-list'),
     path('participant/', views.handle_participants_data_list, name='participant'),
@@ -32,8 +30,18 @@ urlpatterns = [
     path('edit/', views.handle_campaign_editor, name='campaign-editor'),
     path('notifications/', views.handle_notifications_list, name='notifications'),
 
+    # API (e.g., download file)
     path('dataset-info', views.handle_dataset_info, name='dataset-info'),
     path('download-dataset', views.handle_download_dataset_api, name='download-dataset'),
     path('delete/', views.handle_delete_campaign_api, name='delete-campaign'),
     path('download-data/', views.handle_download_data_api, name='download-data'),
+    path('download-csv/', views.handle_download_csv_api, name='download-csv'),
+
+    # visuals (e.g., DQ)
+    path('et-monitor/', views.handle_easytrack_monitor, name='easytrack-monitor'),
+
+    # others
+    path('admin/', admin.site.urls),
+    path('google43e44b3701ba10c8.html', views.handle_google_verification),
+    path('google-auth/', include('social_django.urls', namespace='social')),
 ]

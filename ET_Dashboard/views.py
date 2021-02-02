@@ -1,20 +1,27 @@
-import json
-import datetime
-import csv
+from wsgiref.util import FileWrapper
+
+import plotly.graph_objects as go
 from json import JSONDecodeError
+from utils import settings
+import mimetypes
+import datetime
+import zipfile
+import plotly
+import json
+import os
+import re
 
 # Django
 from django.contrib.auth import logout as dj_logout
 from django.contrib.auth.decorators import login_required
-from django.http import StreamingHttpResponse, JsonResponse
+from django.http import HttpResponse
+from django.http import StreamingHttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
-# gRPC
-from et_grpcs import et_service_pb2
-
 # EasyTrack
-from ET_Dashboard import models as et_models
+from ET_Dashboard.models import EnhancedDataSource
+from utils import db_mgr as db
 from utils import utils
 
 
@@ -25,16 +32,16 @@ def handle_google_verification(request):
 @require_http_methods(['GET', 'POST'])
 def handle_login_api(request):
     if request.user.is_authenticated:
-        grpc_req = et_service_pb2.LoginDashboard.Request(email=request.user.email, name=request.user.get_full_name(), dashboardKey='ETd@$#b0@rd')
-        stub, channel = utils.get_stub_and_channel()
-        grpc_res = stub.loginDashboard(grpc_req)
-        channel.close()
-        if grpc_res.success:
-            et_models.GrpcUserIds.create_or_update(email=request.user.email, user_id=grpc_res.userId)
-            print('%s logged in' % request.user.email)
-            return redirect(to='campaigns-list')
+        db_user = db.get_user(email=request.user.email)
+        if db_user is None:
+            print('new user : ', end='')
+            db_user = db.create_user(id_token=None, name=request.user.get_full_name(), email=request.user.email)
+            if db_user is None:
+                dj_logout(request=request)
+            else:
+                return redirect(to='campaigns-list')
         else:
-            dj_logout(request=request)
+            return redirect(to='campaigns-list')
     return render(
         request=request,
         template_name='page_authentication.html',
@@ -52,469 +59,684 @@ def handle_logout_api(request):
 @login_required
 @require_http_methods(['GET'])
 def handle_campaigns_list(request):
-    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if grpc_user_id is not None:
-        load_unread_notifications(grpc_user_id=grpc_user_id, email=request.user.email)
-        grpc_req = et_service_pb2.RetrieveCampaigns.Request(userId=grpc_user_id, email=request.user.email, myCampaignsOnly=True)
-        stub, channel = utils.get_stub_and_channel()
-        grpc_res = stub.retrieveCampaigns(grpc_req)
-        channel.close()
-        if grpc_res.success:
-            for campaign_id, name, notes, start_timestamp, end_timestamp, remove_inactive_users_timeout, creator_email, config_json, participant_count in zip(grpc_res.campaignId, grpc_res.name, grpc_res.notes, grpc_res.startTimestamp, grpc_res.endTimestamp, grpc_res.removeInactiveUsersTimeout,
-                                                                                                                                                              grpc_res.creatorEmail, grpc_res.configJson, grpc_res.participantCount):
-                et_models.Campaign.create_or_update(
-                    campaign_id=campaign_id,
-                    requester_email=request.user.email,
-                    name=name,
-                    notes=notes,
-                    start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp,
-                    remove_inactive_users_timeout=remove_inactive_users_timeout,
-                    creator_email=creator_email,
-                    config_json=config_json,
-                    participant_count=participant_count
-                )
-            print('%s opened the main page' % request.user.email)
-        campaigns = et_models.Campaign.objects.filter(requester_email=request.user.email).order_by('name')
-        notifications = {}
-        for campaign in campaigns:
-            notifications[campaign.campaign_id] = et_models.Notifications.objects.filter(campaign_id=campaign.campaign_id).order_by('-timestamp')
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        my_campaigns = []
+        for db_campaign in db.get_campaigns(db_creator_user=db_user):
+            my_campaigns += [{
+                'id': db_campaign['id'],
+                'name': db_campaign['name'],
+                'notes': db_campaign['notes'],
+                'participants': db.get_campaign_participants_count(db_campaign=db_campaign)
+            }]
+        print('%s opened the main page' % request.user.email)
+        my_campaigns.sort(key=lambda x: x['id'])
         return render(
             request=request,
             template_name='page_campaigns.html',
             context={
                 'title': "%s's campaigns" % request.user.get_full_name(),
-                'campaigns': campaigns,
-                'notifications': notifications
+                'my_campaigns': my_campaigns,
             }
         )
     else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
 @login_required
 @require_http_methods(['GET'])
 def handle_participants_list(request):
-    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if grpc_user_id is None:
-        return redirect(to='login')
-    campaign = None
-    if 'id' in request.GET and str(request.GET['id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=request.GET['id'], requester_email=request.user.email).exists():
-        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['id']), requester_email=request.user.email)
-    if campaign is None:
-        return redirect(to='campaigns-list')
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'id' in request.GET and str(request.GET['id']).isdigit():
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['id']), db_creator_user=db_user)
+            if db_campaign is not None:
+                # campaign dashboard page
+                participants = []
+                for participant in db.get_campaign_participants(db_campaign=db_campaign):
+                    participants += [{
+                        'id': participant['id'],
+                        'name': participant['name'],
+                        'email': participant['email'],
+                        'day_no': utils.calculate_day_number(join_timestamp=db.get_participant_join_timestamp(db_user=participant, db_campaign=db_campaign)),
+                        'amount_of_data': db.get_participants_amount_of_data(db_user=participant, db_campaign=db_campaign),
+                        'last_heartbeat_time': utils.timestamp_to_readable_string(timestamp_ms=db.get_participant_heartbeat_timestamp(db_user=participant, db_campaign=db_campaign)),
+                        'last_sync_time': utils.timestamp_to_readable_string(timestamp_ms=db.get_participant_last_sync_timestamp(db_user=participant, db_campaign=db_campaign)),
+                    }]
+                participants.sort(key=lambda x: x['id'])
+                return render(
+                    request=request,
+                    template_name='page_campaign_participants.html',
+                    context={
+                        'title': "%s's participants" % db_campaign['name'],
+                        'campaign': db_campaign,
+                        'participants': participants
+                    }
+                )
+            else:
+                return redirect(to='campaigns-list')
+        else:
+            return redirect(to='campaigns-list')
     else:
-        # campaign dashboard page
-        grpc_req = et_service_pb2.RetrieveParticipants.Request(
-            userId=grpc_user_id,
-            email=request.user.email,
-            campaignId=campaign.campaign_id
-        )
-        stub, channel = utils.get_stub_and_channel()
-        grpc_res = stub.retrieveParticipants(grpc_req)
-        if grpc_res.success:
-            grpc_req = et_service_pb2.RetrieveParticipants.Request(
-                userId=grpc_user_id,
-                email=request.user.email,
-                campaignId=campaign.campaign_id
-            )
-            grpc_res = stub.retrieveParticipants(grpc_req)
-            if grpc_res.success:
-                success = len(grpc_res.name) == 0
-                for name, email in zip(grpc_res.name, grpc_res.email):
-                    sub_grpc_req = et_service_pb2.RetrieveParticipantStats.Request(
-                        userId=grpc_user_id,
-                        email=request.user.email,
-                        targetEmail=email,
-                        targetCampaignId=campaign.campaign_id
-                    )
-                    sub_grpc_res = stub.retrieveParticipantStats(sub_grpc_req)
-                    success |= sub_grpc_res.success
-                    if sub_grpc_res.success:
-                        et_models.Participant.create_or_update(
-                            email=email,
-                            campaign=campaign,
-                            full_name=name,
-                            day_no=utils.calculate_day_number(join_timestamp=sub_grpc_res.campaignJoinTimestamp),
-                            amount_of_data=sub_grpc_res.amountOfSubmittedDataSamples,
-                            last_heartbeat_time=utils.timestamp_to_readable_string(sub_grpc_res.lastHeartbeatTimestamp),
-                            last_sync_time=utils.timestamp_to_readable_string(sub_grpc_res.lastSyncTimestamp),
-                            data_source_ids=sub_grpc_res.dataSourceId,
-                            per_data_source_amount_of_data=sub_grpc_res.perDataSourceAmountOfData,
-                            per_data_source_last_sync_time=[utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms) for timestamp_ms in sub_grpc_res.perDataSourceLastSyncTimestamp]
-                        )
-                if success:
-                    return render(
-                        request=request,
-                        template_name='page_campaign_participants.html',
-                        context={
-                            'title': "%s's participants" % campaign.name,
-                            'campaign': campaign,
-                            'participants': et_models.Participant.objects.filter(campaign=campaign).order_by('full_name')
-                        }
-                    )
-        channel.close()
-        return redirect(to='campaigns-list')
+        dj_logout(request=request)
+        return redirect(to='login')
 
 
 @login_required
 @require_http_methods(['GET'])
 def handle_participants_data_list(request):
-    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if grpc_user_id is None:
-        return redirect(to='login')
-    target_campaign = None
-    target_participant = None
-    if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
-        target_campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
-    if target_campaign is not None and 'email' in request.GET and et_models.Participant.objects.filter(email=request.GET['email'], campaign__campaign_id=request.GET['campaign_id']).exists():
-        target_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=target_campaign)
-    if target_campaign is None or target_participant is None:
-        return redirect(to='campaigns-list')
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit():
+            db_campaign = db.get_campaign(campaign_id=request.GET['campaign_id'], db_creator_user=db_user)
+            if db_campaign is not None:
+                campaign_data_source_configs = {}
+                for data_source in json.loads(s=db_campaign['config_json']):
+                    campaign_data_source_configs[data_source['data_source_id']] = data_source['config_json']
+                if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
+                    db_participant_user = db.get_user(user_id=request.GET['participant_id'])
+                    if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
+                        data_sources = []
+                        for db_data_source, amount_of_data, last_sync_time in db.get_participants_per_data_source_stats(db_user=db_participant_user, db_campaign=db_campaign):
+                            data_sources += [{
+                                'id': db_data_source['id'],
+                                'name': db_data_source['name'],
+                                'icon_name': db_data_source['icon_name'],
+                                'config_json': campaign_data_source_configs[db_data_source['id']],
+                                'amount_of_data': amount_of_data,
+                                'last_sync_time': utils.timestamp_to_readable_string(timestamp_ms=last_sync_time)
+                            }]
+                        data_sources.sort(key=lambda x: x['name'])
+                        unprocessed_data_size = 0
+                        dir_path = os.path.join(settings.raw_data_dir, f'{db_campaign["id"]}-{db_participant_user["id"]}')
+                        if not os.path.exists(dir_path):
+                            os.mkdir(dir_path)
+                        for filename in os.listdir(dir_path):
+                            unprocessed_data_size += os.path.getsize(os.path.join(dir_path, filename))
+                        return render(
+                            request=request,
+                            template_name='page_participant_data_sources_stats.html',
+                            context={
+                                'title': f'Data submitted by {db_participant_user["name"]}, {db_participant_user["email"]} (ID = {db_participant_user["id"]})',
+                                'campaign': db_campaign,
+                                'participant': db_participant_user,
+                                'unprocessed_data_size': unprocessed_data_size,
+                                'data_sources': data_sources
+                            }
+                        )
+                    else:
+                        return redirect(to='campaigns-list')
+                else:
+                    return redirect(to='campaigns-list')
+            else:
+                return redirect(to='campaigns-list')
+        else:
+            return redirect(to='campaigns-list')
     else:
-        grpc_req = et_service_pb2.RetrieveParticipantStats.Request(
-            userId=grpc_user_id,
-            email=request.user.email,
-            targetEmail=target_participant.email,
-            targetCampaignId=target_campaign.campaign_id
-        )
-        stub, channel = utils.get_stub_and_channel()
-        grpc_res = stub.retrieveParticipantStats(grpc_req)
-        channel.close()
-        if grpc_res.success:
-            et_models.Participant.create_or_update(
-                email=target_participant.email,
-                campaign=target_campaign,
-                full_name=target_participant.full_name,
-                day_no=utils.calculate_day_number(join_timestamp=grpc_res.campaignJoinTimestamp),
-                amount_of_data=grpc_res.amountOfSubmittedDataSamples,
-                last_heartbeat_time=utils.timestamp_to_readable_string(grpc_res.lastHeartbeatTimestamp),
-                last_sync_time=utils.timestamp_to_readable_string(grpc_res.lastSyncTimestamp),
-                data_source_ids=grpc_res.dataSourceId,
-                per_data_source_amount_of_data=grpc_res.perDataSourceAmountOfData,
-                per_data_source_last_sync_time=[utils.timestamp_to_readable_string(timestamp_ms=timestamp_ms) for timestamp_ms in grpc_res.perDataSourceLastSyncTimestamp]
-            )
-        # participant's data list (data sources)
-        target_campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
-        trg_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=target_campaign)
-        return render(
-            request=request,
-            template_name='page_participant_data_sources_stats.html',
-            context={
-                'title': "%s's data" % trg_participant.full_name,
-                'campaign': target_campaign,
-                'participant': trg_participant,
-                'data_sources': et_models.DataSource.participants_data_sources_details(campaign=target_campaign, trg_participant=trg_participant)
-            }
-        )
+        dj_logout(request=request)
+        return redirect(to='login')
 
 
 @login_required
 @require_http_methods(['GET'])
 def handle_raw_samples_list(request):
-    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if grpc_user_id is None:
-        return redirect(to='login')
-    target_campaign = None
-    target_participant = None
-    if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
-        target_campaign = et_models.Campaign.objects.get(campaign_id=request.GET['campaign_id'], requester_email=request.user.email)
-    if target_campaign is not None and 'email' in request.GET and et_models.Participant.objects.filter(email=request.GET['email'], campaign=target_campaign).exists():
-        target_participant = et_models.Participant.objects.get(email=request.GET['email'], campaign=target_campaign)
-    if target_campaign is None or target_participant is None or 'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit() or 'from_time' not in request.GET \
-            or not (len(request.GET['from_time']) > 1 and str(request.GET['from_time'][1:]).isdigit()):
-        return redirect(to='campaigns-list')
-    else:
-        from_time = int(request.GET['from_time'])
-        data_source_id = int(request.GET['data_source_id'])
-        grpc_req = et_service_pb2.Retrieve100DataRecords.Request(
-            userId=grpc_user_id,
-            email=request.user.email,
-            targetEmail=target_participant.email,
-            targetCampaignId=target_campaign.campaign_id,
-            targetDataSourceId=data_source_id,
-            fromTimestamp=from_time
-        )
-        stub, channel = utils.get_stub_and_channel()
-        grpc_res = stub.retrieve100DataRecords(grpc_req)
-        channel.close()
-        if grpc_res.success:
-            records = []
-            for timestamp, value in zip(grpc_res.timestamp, grpc_res.value):
-                records += [et_models.Record(timestamp_ms=timestamp, value=value)]
-                from_time = timestamp
-            data_source_name = None
-            for data_source in json.loads(s=et_models.Campaign.objects.get(requester_email=request.user.email, campaign_id=target_campaign.campaign_id).config_json):
-                if data_source['data_source_id'] == data_source_id:
-                    data_source_name = data_source['name']
-                    break
-            return render(
-                request=request,
-                template_name='page_raw_data_view.html',
-                context={
-                    'title': data_source_name,
-                    'records': records,
-                    'from_time': from_time
-                }
-            )
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit():
+            db_campaign = db.get_campaign(campaign_id=request.GET['campaign_id'], db_creator_user=db_user)
+            if db_campaign is not None:
+                if 'email' in request.GET:
+                    db_participant_user = db.get_user(email=request.GET['email'])
+                    if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
+                        if 'from_timestamp' in request.GET and 'data_source_id' in request.GET and utils.is_numeric(request.GET['from_timestamp']) and utils.is_numeric(request.GET['data_source_id']):
+                            from_timestamp = int(request.GET['from_timestamp'])
+                            db_data_source = db.get_data_source(data_source_id=int(request.GET['data_source_id']))
+                            if db_data_source is not None:
+                                records = []
+                                for row, record in enumerate(db.get_filtered_data_records(db_user=db_participant_user, db_campaign=db_campaign, db_data_source=db_data_source, from_timestamp=from_timestamp)):
+                                    value_len = len(record['value'])
+                                    if value_len > 5 * 1024:  # 5KB (e.g., binary files)
+                                        value = f'[ {value_len:,} byte data record ]'
+                                    else:
+                                        try:
+                                            value = str(record['value'], encoding='utf-8')
+                                        except UnicodeDecodeError:
+                                            value = f'[ {value_len:,} byte data record ]'
+                                    records += [{
+                                        'row': row + 1,
+                                        'timestamp': utils.timestamp_to_readable_string(timestamp_ms=record['timestamp']),
+                                        'value': value
+                                    }]
+                                    from_timestamp = record['timestamp']
+                                return render(
+                                    request=request,
+                                    template_name='page_raw_data_view.html',
+                                    context={
+                                        'title': db_data_source['name'],
+                                        'records': records,
+                                        'from_timestamp': from_timestamp
+                                    }
+                                )
+                            else:
+                                return redirect(to='campaigns-list')
+                        else:
+                            return redirect(to='campaigns-list')
+                    else:
+                        return redirect(to='campaigns-list')
+                else:
+                    return redirect(to='campaigns-list')
+            else:
+                return redirect(to='campaigns-list')
         else:
             return redirect(to='campaigns-list')
+    else:
+        dj_logout(request=request)
+        return redirect(to='login')
 
 
 @login_required
 @require_http_methods(['GET', 'POST'])
 def handle_campaign_editor(request):
-    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if grpc_user_id is not None:
-        if request.method == 'POST':
-            config_json = []
-            # first validate the user input JSON configurations
-            data_sources = []
-            for elem in request.POST:
-                if str(elem).startswith("config_json_"):
-                    _name = str(elem)[12:]
-                    _icon_name = request.POST['icon_name_%s' % _name]
-                    _config_json = request.POST['config_json_%s' % _name]
-                    data_sources += [et_models.DataSource(
-                        data_source_id=-1,
-                        name=_name,
-                        icon_name=_icon_name,
-                        amount_of_data=-1,
-                        config_json=_config_json,
-                        last_sync_time=None
-                    )]
-            for elem in data_sources:
-                try:
-                    json.loads(s=elem.config_json)
-                except JSONDecodeError:
-                    referer = request.META.get('HTTP_REFERER')
-                    if referer:
-                        return redirect(to=referer)
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if request.method == 'GET':
+            # request to open the campaign editor
+            db_data_sources = db.get_all_data_sources()
+            if 'edit' in request.GET and 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit():
+                # edit an existing campaign
+                db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']), db_creator_user=db_user)
+                if db_campaign is not None:
+                    campaign_db_data_sources = []
+                    campaign_data_source_configs = {}
+                    for campaign_data_source in json.loads(s=db_campaign['config_json']):
+                        db_data_source = db.get_data_source(data_source_id=campaign_data_source['data_source_id'])
+                        campaign_db_data_sources += [db_data_source]
+                        campaign_data_source_configs[db_data_source['id']] = campaign_data_source['config_json']
+                    campaign_data_sources = []
+                    for db_data_source in db_data_sources:
+                        selected = db_data_source in campaign_db_data_sources
+                        campaign_data_sources += [{
+                            'name': db_data_source['name'],
+                            'icon_name': db_data_source['icon_name'],
+                            'selected': selected,
+                            'config_json': campaign_data_source_configs[db_data_source['id']] if selected else None
+                        }]
+                    campaign_data_sources.sort(key=lambda key: key['name'])
+                    return render(
+                        request=request,
+                        template_name='page_campaign_editor.html',
+                        context={
+                            'edit_mode': True,
+                            'title': '"%s" Campaign Editor' % db_campaign['name'],
+                            'campaign': db_campaign,
+                            'campaign_start_time': utils.timestamp_to_web_string(timestamp_ms=db_campaign['start_timestamp']),
+                            'campaign_end_time': utils.timestamp_to_web_string(timestamp_ms=db_campaign['end_timestamp']),
+                            'data_sources': campaign_data_sources
+                        }
+                    )
+                else:
+                    return redirect(to='campaigns-list')
+            else:
+                # edit for a new campaign
+                campaign_data_sources = []
+                for db_data_source in db_data_sources:
+                    campaign_data_sources += [{
+                        'name': db_data_source['name'],
+                        'icon_name': db_data_source['icon_name']
+                    }]
+                campaign_data_sources.sort(key=lambda key: key['name'])
+                return render(
+                    request=request,
+                    template_name='page_campaign_editor.html',
+                    context={
+                        'title': 'New campaign',
+                        'data_sources': campaign_data_sources,
+                    }
+                )
+        elif request.method == 'POST':
+            def prepare_campaign_params():
+                def is_date_time(string):
+                    return re.search(pattern=r'^\d{4}-\d{1,2}-\d{1,2}T\d{1,2}:\d{1,2}$', string=string) is not None
+
+                def get_campaign_data_sources_as_list():
+                    # parse data sources from POST request
+                    _campaign_data_sources = []
+                    for _data_source in request.POST:
+                        if str(_data_source).startswith("config_json_"):
+                            _data_source_name = str(_data_source)[12:]
+                            if 'icon_name_%s' % _data_source_name in request.POST and 'config_json_%s' % _data_source_name in request.POST:
+                                _data_source_icon_name = request.POST['icon_name_%s' % _data_source_name]
+                                if len(_data_source_icon_name) > 0:
+                                    try:  # validate JSON format
+                                        _data_source_config_json = json.loads(s=request.POST['config_json_%s' % _data_source_name])
+                                        _campaign_data_sources += [{
+                                            'name': _data_source_name,
+                                            'icon_name': _data_source_icon_name,
+                                            'config_json': _data_source_config_json
+                                        }]
+                                    except JSONDecodeError:
+                                        return None
+
+                    # bind the data sources and attach data source ids
+                    for _index, _data_source in enumerate(_campaign_data_sources):
+                        _id = db.get_data_source_id(data_source_name=_data_source['name'])
+                        if _id is None:  # create a new data source
+                            _id = db.register_data_source(db_creator_user=db_user, name=_data_source['name'], icon_name=_data_source['icon_name'])
+                        _campaign_data_sources[_index]['data_source_id'] = _id
+                    return _campaign_data_sources
+
+                if 'name' in request.POST and 'notes' in request.POST and 'startTime' in request.POST and 'endTime' and 'remove_inactive_users_timeout' in request.POST:
+                    _campaign_name = str(request.POST['name'])
+                    if utils.is_numeric(request.POST['remove_inactive_users_timeout']) and is_date_time(request.POST['startTime']) and is_date_time(request.POST['endTime']):
+                        return {
+                            'name': _campaign_name,
+                            'notes': str(request.POST['notes']),
+                            'configurations': json.dumps(get_campaign_data_sources_as_list()),
+                            'start_timestamp': utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['startTime'], "%Y-%m-%dT%H:%M")),
+                            'end_timestamp': utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['endTime'], "%Y-%m-%dT%H:%M")),
+                            'remove_inactive_users_timeout': int(request.POST['remove_inactive_users_timeout']) if int(request.POST['remove_inactive_users_timeout']) > 0 else -1
+                        }
+                    else:
+                        return None
+                else:
+                    return None
+
+            if 'campaign_id' in request.POST and utils.is_numeric(request.POST['campaign_id']):
+                db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
+                if db_campaign is None:
+                    # request to create a new campaign
+                    campaign_params = prepare_campaign_params()
+                    if campaign_params is not None:
+                        db.register_new_campaign(
+                            db_user_creator=db_user,
+                            name=campaign_params['name'],
+                            notes=campaign_params['notes'],
+                            configurations=campaign_params['configurations'],
+                            start_timestamp=campaign_params['start_timestamp'],
+                            end_timestamp=campaign_params['end_timestamp'],
+                            remove_inactive_users_timeout=campaign_params['remove_inactive_users_timeout']
+                        )
+                        return redirect(to='campaigns-list')
                     else:
                         return redirect(to='campaigns-list')
-            for elem in data_sources:
-                grpc_req = et_service_pb2.BindDataSource.Request(
-                    userId=grpc_user_id,
-                    email=request.user.email,
-                    name=elem.name,
-                    iconName=elem.icon_name
-                )
-                stub, channel = utils.get_stub_and_channel()
-                grpc_res = stub.bindDataSource(grpc_req)
-                channel.close()
-                config_json += [{'name': elem.name, 'data_source_id': grpc_res.dataSourceId, 'icon_name': elem.icon_name, 'config_json': elem.config_json}]
-            grpc_req = et_service_pb2.RegisterCampaign.Request(
-                userId=grpc_user_id,
-                email=request.user.email,
-                campaignId=int(request.POST['campaign_id']),
-                name=request.POST['name'],
-                notes=request.POST['notes'],
-                startTimestamp=utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['startTime'], "%Y-%m-%dT%H:%M")),
-                endTimestamp=utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['endTime'], "%Y-%m-%dT%H:%M")),
-                removeInactiveUsersTimeout=int(request.POST['remove_inactive_users_timeout']) if int(request.POST['remove_inactive_users_timeout']) > 0 else -1,
-                configJson=json.dumps(obj=config_json)
-            )
-            stub, channel = utils.get_stub_and_channel()
-            grpc_res = stub.registerCampaign(grpc_req)
-            channel.close()
-            if grpc_res.success:
+                elif db_campaign['creator_id'] == db_user['id']:
+                    # request to edit an existing campaign
+                    campaign_params = prepare_campaign_params()
+                    if campaign_params is not None:
+                        db.update_campaign(
+                            db_campaign=db_campaign,
+                            name=campaign_params['name'],
+                            notes=campaign_params['notes'],
+                            configurations=campaign_params['configurations'],
+                            start_timestamp=campaign_params['start_timestamp'],
+                            end_timestamp=campaign_params['end_timestamp'],
+                            remove_inactive_users_timeout=campaign_params['remove_inactive_users_timeout']
+                        )
+                        return redirect(to='campaigns-list')
+                    else:
+                        return redirect(to='campaigns-list')
+                else:
+                    return redirect(to='campaigns-list')
+            else:
                 return redirect(to='campaigns-list')
-            else:
-                return render(
-                    request=request,
-                    template_name='page_campaign_editor.html',
-                    context={
-                        'error': True,
-                        'title': 'New campaign',
-                        'android': et_models.DataSource.android_sensors,
-                        'tizen': et_models.DataSource.tizen_sensors,
-                        'others': et_models.DataSource.others
-                    }
-                )
-        elif request.method == 'GET':
-            data_source_dict = et_models.DataSource.all_data_sources_no_details(user_id=grpc_user_id, email=request.user.email, map_with_name=True)
-            if 'edit' in request.GET and 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=int(request.GET['campaign_id']), creator_email=request.user.email).exists():
-                campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['campaign_id']), creator_email=request.user.email)
-                for config_json in json.loads(s=campaign.config_json):
-                    data_source_dict[config_json['name']].selected = True
-                    data_source_dict[config_json['name']].name = config_json['name']
-                    data_source_dict[config_json['name']].icon_name = config_json['icon_name']
-                    data_source_dict[config_json['name']].config_json = config_json['config_json']
-                data_source_list = []
-                for name in data_source_dict:
-                    data_source_list += [data_source_dict[name]]
-                data_source_list.sort(key=lambda key: key.name)
-                return render(
-                    request=request,
-                    template_name='page_campaign_editor.html',
-                    context={
-                        'edit_mode': True,
-                        'title': '"%s" Campaign Editor' % campaign.name,
-                        'campaign': campaign,
-                        'data_sources': data_source_list
-                    }
-                )
-            else:
-                data_source_list = []
-                for name in data_source_dict:
-                    data_source_list += [data_source_dict[name]]
-                data_source_list.sort(key=lambda key: key.name)
-                return render(
-                    request=request,
-                    template_name='page_campaign_editor.html',
-                    context={
-                        'title': 'New campaign',
-                        'data_sources': data_source_list,
-                    }
-                )
         else:
             return redirect(to='campaigns-list')
     else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
 @login_required
 @require_http_methods(['GET'])
-def handle_delete_campaign_api(request):
-    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if grpc_user_id is not None:
-        if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit() and et_models.Campaign.objects.filter(campaign_id=int(request.GET['campaign_id'])).exists():
-            campaign_id = int(request.GET['campaign_id'])
-            grpc_req = et_service_pb2.DeleteCampaign.Request(
-                userId=grpc_user_id,
-                email=request.user.email,
-                campaignId=campaign_id
-            )
-            stub, channel = utils.get_stub_and_channel()
-            grpc_res = stub.deleteCampaign(grpc_req)
-            channel.close()
-            if grpc_res.success:
-                et_models.Campaign.objects.get(campaign_id=campaign_id).delete()
-            return redirect(to='campaigns-list')
-        else:
-            referer = request.META.get('HTTP_REFERER')
-            if referer:
-                return redirect(to=referer)
+def handle_easytrack_monitor(request):
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
+            db_campaign_data_sources = db.get_campaign_data_sources(db_campaign=db_campaign)
+            db_campaign_participant_users = db.get_campaign_participants(db_campaign=db_campaign)
+            if db_campaign is not None:
+                from_datetime = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+                till_datetime = from_datetime + datetime.timedelta(hours=24)
+
+                if 'plot_date' in request.GET:
+                    plot_date_str = str(request.GET['plot_date'])
+                    if re.search(r'\d{4}-\d{1,2}-\d{1,2}', plot_date_str) is not None:
+                        year, month, day = plot_date_str.split('-')
+                        from_datetime = datetime.datetime(year=int(year), month=int(month), day=int(day), hour=0, minute=0, second=0, microsecond=0)
+                        till_datetime = from_datetime + datetime.timedelta(hours=24)
+
+                till_timestamp = utils.datetime_to_timestamp_ms(till_datetime)
+                from_timestamp = utils.datetime_to_timestamp_ms(from_datetime)
+                window = 3600000  # 1 hour jump
+
+                if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
+                    db_participant_user = db.get_user(user_id=request.GET['participant_id'])
+                    if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
+                        plot_participant = db_participant_user
+                    else:
+                        plot_participant = {'id': 'all'}
+                else:
+                    plot_participant = {'id': 'all'}
+
+                if 'data_source_name' in request.GET:
+                    data_source_name = request.GET['data_source_name']
+                    db_data_source = db.get_data_source(data_source_name=data_source_name)
+                    if data_source_name == 'all':
+                        hourly_stats = {}
+                        # region compute hourly stats
+                        for db_participant_user in (db_campaign_participant_users if plot_participant['id'] == 'all' else [plot_participant]):
+                            for db_data_source in db_campaign_data_sources:
+                                _from_timestamp = from_timestamp
+                                _till_timestamp = _from_timestamp + window
+                                while _from_timestamp < till_timestamp:
+                                    hour = utils.get_timestamp_hour(timestamp_ms=_from_timestamp)
+                                    amount = db.get_filtered_amount_of_data(
+                                        db_campaign=db_campaign,
+                                        db_user=db_participant_user,
+                                        from_timestamp=_from_timestamp,
+                                        till_timestamp=_till_timestamp,
+                                        db_data_source=db_data_source
+                                    )
+                                    if hour in hourly_stats:
+                                        hourly_stats[hour] += amount
+                                    else:
+                                        hourly_stats[hour] = amount
+                                    _from_timestamp += window
+                                    _till_timestamp += window
+                        # endregion
+
+                        plot_data_source = {'name': 'all campaign data sources combined'}
+                        # region plot hourly stats
+                        x = []
+                        y = []
+                        max_amount = 10
+                        hours = list(hourly_stats.keys())
+                        hours.sort()
+                        for hour in hours:
+                            amount = hourly_stats[hour]
+                            if hour < 13:
+                                hour = f'{hour} {"pm" if hour == 12 else "am"}'
+                            else:
+                                hour = f'{hour % 12} pm'
+                            x += [hour]
+                            y += [amount]
+                            max_amount = max(max_amount, amount)
+                        fig = go.Figure([go.Bar(x=x, y=y)])
+                        fig.update_yaxes(range=[0, max_amount])
+                        plot_str = plotly.offline.plot(fig, auto_open=False, output_type="div")
+                        plot_data_source['plot'] = plot_str
+                        # endregion
+
+                        return render(
+                            request=request,
+                            template_name='easytrack_monitor.html',
+                            context={
+                                'title': 'EasyTracker',
+                                'campaign': db_campaign,
+                                'plot_date': f'{from_datetime.year}-{from_datetime.month:02}-{from_datetime.day:02}',
+
+                                'participants': db_campaign_participant_users,
+                                'plot_participant': plot_participant,
+
+                                'all_data_sources': db_campaign_data_sources,
+                                'plot_data_source': plot_data_source
+                            }
+                        )
+                    elif db_data_source is not None:
+                        hourly_stats = {}
+                        # region compute hourly stats
+                        for db_participant_user in (db_campaign_participant_users if plot_participant['id'] == 'all' else [plot_participant]):
+                            _from_timestamp = from_timestamp
+                            _till_timestamp = _from_timestamp + window
+                            while _from_timestamp < till_timestamp:
+                                hour = utils.get_timestamp_hour(timestamp_ms=_from_timestamp)
+                                amount = db.get_filtered_amount_of_data(
+                                    db_campaign=db_campaign,
+                                    db_user=db_participant_user,
+                                    from_timestamp=_from_timestamp,
+                                    till_timestamp=_till_timestamp,
+                                    db_data_source=db_data_source
+                                )
+                                if hour in hourly_stats:
+                                    hourly_stats[hour] += amount
+                                else:
+                                    hourly_stats[hour] = amount
+                                _from_timestamp += window
+                                _till_timestamp += window
+                        # endregion
+
+                        plot_data_source = EnhancedDataSource(db_data_source=db_data_source)
+                        # region plot hourly stats
+                        x = []
+                        y = []
+                        max_amount = 10
+                        hours = list(hourly_stats.keys())
+                        hours.sort()
+                        for hour in hours:
+                            amount = hourly_stats[hour]
+                            if hour < 13:
+                                hour = f'{hour} {"pm" if hour == 12 else "am"}'
+                            else:
+                                hour = f'{hour % 12} pm'
+                            x += [hour]
+                            y += [amount]
+                            max_amount = max(max_amount, amount)
+                        fig = go.Figure([go.Bar(x=x, y=y)])
+                        fig.update_yaxes(range=[0, max_amount])
+                        plot_str = plotly.offline.plot(fig, auto_open=False, output_type="div")
+                        plot_data_source.attach_plot(plot_str=plot_str)
+                        # endregion
+
+                        return render(
+                            request=request,
+                            template_name='easytrack_monitor.html',
+                            context={
+                                'title': 'EasyTracker',
+                                'campaign': db_campaign,
+                                'plot_date': f'{from_datetime.year}-{from_datetime.month:02}-{from_datetime.day:02}',
+
+                                'participants': db_campaign_participant_users,
+                                'plot_participant': plot_participant,
+
+                                'all_data_sources': db_campaign_data_sources,
+                                'plot_data_source': plot_data_source
+                            }
+                        )
+                    else:
+                        return redirect(to='campaigns-list')
+                else:
+                    return redirect(to='campaigns-list')
             else:
                 return redirect(to='campaigns-list')
+        else:
+            return redirect(to='campaigns-list')
     else:
+        dj_logout(request=request)
         return redirect(to='login')
 
 
 @login_required
 @require_http_methods(['GET'])
 def handle_dataset_info(request):
-    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if grpc_user_id is None:
-        return redirect(to='login')
-    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
-        referer = request.META.get('HTTP_REFERER')
-        if referer:
-            return redirect(to=referer)
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
+            if db_campaign is not None:
+                campaign_data_sources = list(json.loads(s=db_campaign['config_json']))
+                campaign_data_sources.sort(key=lambda x: x['name'])
+                participants = list(db.get_campaign_participants(db_campaign=db_campaign))
+                participants.sort(key=lambda x: x['id'])
+                return render(
+                    request=request,
+                    template_name='page_dataset_configs.html',
+                    context={
+                        'campaign': db_campaign,
+                        'data_sources': campaign_data_sources,
+                        'participants': participants
+                    }
+                )
+            else:
+                return redirect(to='campaigns-list')
         else:
             return redirect(to='campaigns-list')
     else:
-        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['campaign_id']), requester_email=request.user.email)
-        data_sources = json.loads(s=campaign.config_json)
-        return render(
-            request=request,
-            template_name='page_dataset_configs.html',
-            context={
-                'data_sources': data_sources,
-                'participants': et_models.Participant.objects.filter(campaign=campaign).order_by('full_name')
-            }
-        )
+        dj_logout(request=request)
+        return redirect(to='login')
 
 
 @login_required
 @require_http_methods(['GET'])
-def handle_download_dataset(request):
-    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if grpc_user_id is None:
-        return redirect(to='login')
-    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists():
-        referer = request.META.get('HTTP_REFERER')
-        if referer:
-            return redirect(to=referer)
+def handle_delete_campaign_api(request):
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
+            if db_campaign is not None:
+                db.delete_campaign(db_campaign=db_campaign)
+                return redirect(to='campaigns-list')
+            else:
+                return redirect(to='campaigns-list')
         else:
             return redirect(to='campaigns-list')
     else:
-        campaign = et_models.Campaign.objects.get(campaign_id=int(request.GET['campaign_id']), requester_email=request.user.email)
-        data_sources = json.loads(s=campaign.config_json)
-        res = {}
-        for data_source in data_sources:
-            res[data_source['name']] = data_source['data_source_id']
-        return JsonResponse(data=res)
-
-
-@login_required
-def handle_download_data_api(request):
-    grpc_user_id = et_models.GrpcUserIds.get_id(email=request.user.email)
-    if grpc_user_id is None:
+        dj_logout(request=request)
         return redirect(to='login')
-    elif 'campaign_id' not in request.GET or not str(request.GET['campaign_id']).isdigit() or not et_models.Campaign.objects.filter(campaign_id=request.GET['campaign_id'], requester_email=request.user.email).exists() or \
-            'email' not in request.GET or 'data_source_id' not in request.GET or not str(request.GET['data_source_id']).isdigit():
-        return redirect(to='campaigns-list')
-    else:
-        campaign_id = int(request.GET['campaign_id'])
-        email = request.user.email
-        data_source_id = int(request.GET['data_source_id'])
-
-        def load_next_100rows(pseudo_buffer):
-            writer = csv.writer(pseudo_buffer)
-            from_time = -999999999
-            data_available = True
-            while data_available:
-                grpc_req = et_service_pb2.Retrieve100DataRecords.Request(
-                    userId=grpc_user_id,
-                    email=email,
-                    targetEmail=request.GET['email'],
-                    targetCampaignId=campaign_id,
-                    targetDataSourceId=data_source_id,
-                    fromTimestamp=from_time
-                )
-                stub, channel = utils.get_stub_and_channel()
-                grpc_res = stub.retrieve100DataRecords(grpc_req)
-                channel.close()
-                if grpc_res.success:
-                    for timestamp, value in zip(grpc_res.timestamp, grpc_res.value):
-                        from_time = timestamp
-                        yield writer.writerow([str(timestamp), value])
-                data_available = grpc_res.success and grpc_res.moreDataAvailable
-
-        res = StreamingHttpResponse(
-            streaming_content=(row for row in load_next_100rows(pseudo_buffer=et_models.Echo())),
-            content_type='text/csv'
-        )
-        data_source_name = None
-        for data_source in json.loads(s=et_models.Campaign.objects.get(campaign_id=campaign_id).config_json):
-            if data_source['data_source_id'] == data_source_id:
-                data_source_name = data_source['name']
-                break
-        res['Content-Disposition'] = 'attachment; filename="{0}-{1}-{2}.csv"'.format(
-            request.GET['email'],
-            data_source_name.replace('/', '-'),
-            utils.timestamp_to_readable_string(utils.timestamp_now_ms()).replace('/', '-').replace(' ', '_')
-        )
-        return res
 
 
 @login_required
+@require_http_methods(['GET'])
+def handle_download_data_api(request):
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
+            if db_campaign is not None:
+                if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
+                    db_participant_user = db.get_user(user_id=request.GET['participant_id'])
+                    if db_participant_user is not None:
+                        # dump db data
+                        dump_file_path = db.dump_data(db_campaign=db_campaign, db_user=db_participant_user)
+                        with open(dump_file_path, 'rb') as r:
+                            dump_content = bytes(r.read())
+                        os.remove(dump_file_path)
+
+                        # archive the dump content
+                        now = datetime.datetime.now()
+                        file_name = f'et data {db_participant_user["email"]} {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.zip'
+                        file_path = utils.get_download_file_path(file_name=file_name)
+                        fp = zipfile.ZipFile(file_path, 'w', zipfile.ZIP_STORED)
+                        with open(os.path.join(settings.STATIC_DIR, 'restoring_postgres_data.txt'), 'r') as r:
+                            fp.writestr('!README.txt', r.read())
+                        fp.writestr('!info.txt', f'campaign_id : {db_campaign["id"]}')
+                        fp.writestr(f'{db_participant_user["email"]}.bin', dump_content)
+                        fp.close()
+                        with open(file_path, 'rb') as r:
+                            content = r.read()
+                        os.remove(file_path)
+
+                        res = HttpResponse(content=content, content_type='application/x-binary')
+                        res['Content-Disposition'] = f'attachment; filename={file_name}'
+                        return res
+                    else:
+                        return redirect(to='campaigns-list')
+                else:
+                    return redirect(to='campaigns-list')
+            else:
+                return redirect(to='campaigns-list')
+        else:
+            return redirect(to='campaigns-list')
+    else:
+        dj_logout(request=request)
+        return redirect(to='login')
+
+
+@login_required
+@require_http_methods(['GET'])
+def handle_download_csv_api(request):
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
+            if db_campaign is not None:
+                if 'user_id' in request.GET and utils.is_numeric(request.GET['user_id']):
+                    db_participant_user = db.get_user(user_id=int(request.GET['user_id']))
+                    if db_participant_user is not None:
+                        dump_file_path = db.dump_csv_data(db_campaign=db_campaign, db_user=db_participant_user)
+                    else:
+                        return redirect(to='campaigns-list')
+                elif 'data_source_id' in request.GET and utils.is_numeric(request.GET['data_source_id']):
+                    db_data_source = db.get_data_source(data_source_id=int(request.GET['data_source_id']))
+                    if db_data_source is not None:
+                        dump_file_path = db.dump_csv_data(db_campaign=db_campaign, db_data_source=db_data_source)
+                    else:
+                        return redirect(to='campaigns-list')
+                else:
+                    dump_file_path = db.dump_csv_data(db_campaign=db_campaign)
+
+                filename = os.path.basename(dump_file_path)
+                chunk_size = 8192
+                res = StreamingHttpResponse(
+                    streaming_content=FileWrapper(open(dump_file_path, 'rb'), chunk_size),
+                    content_type=mimetypes.guess_type(dump_file_path)[0],
+                )
+                res['Content-Length'] = os.path.getsize(dump_file_path)
+                res['Content-Disposition'] = f'attachment; filename={filename}'
+                return res
+            else:
+                return redirect(to='campaigns-list')
+        else:
+            return redirect(to='campaigns-list')
+    else:
+        dj_logout(request=request)
+        return redirect(to='login')
+
+
+@login_required
+@require_http_methods(['GET'])
 def handle_download_dataset_api(request):
-    return render(request=request, template_name='page_coming_soon.html')
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
+            if db_campaign is not None:
+                # archive
+                now = datetime.datetime.now()
+                file_name = f'et data campaign {db_campaign["id"]} {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.zip'
+                file_path = utils.get_download_file_path(file_name=file_name)
+                fp = zipfile.ZipFile(file_path, 'w', zipfile.ZIP_STORED)
+                with open(os.path.join(settings.STATIC_DIR, 'restoring_postgres_data.txt'), 'r') as r:
+                    fp.writestr('!README.txt', r.read())
+                fp.writestr('!info.txt', f'campaign_id : {db_campaign["id"]}')
+
+                for db_participant_user in db.get_campaign_participants(db_campaign=db_campaign):
+                    # dump db data
+                    dump_file_path = db.dump_data(db_campaign=db_campaign, db_user=db_participant_user)
+                    with open(dump_file_path, 'rb') as r:
+                        dump_content = bytes(r.read())
+                    os.remove(dump_file_path)
+                    # archive the dump content
+                    fp.writestr(f'{db_participant_user["email"]}.bin', dump_content)
+                fp.close()
+                with open(file_path, 'rb') as r:
+                    content = r.read()
+                os.remove(file_path)
+
+                res = HttpResponse(content=content, content_type='application/x-binary')
+                res['Content-Disposition'] = f'attachment; filename={file_name}'
+                return res
+            else:
+                return redirect(to='campaigns-list')
+        else:
+            return redirect(to='campaigns-list')
+    else:
+        dj_logout(request=request)
+        return redirect(to='login')
 
 
 @login_required
 @require_http_methods(['GET'])
 def handle_notifications_list(request):
     return None
-
-
-def load_unread_notifications(grpc_user_id, email):
-    grpc_req = et_service_pb2.RetrieveUnreadNotifications.Request(userId=grpc_user_id, email=email)
-    stub, channel = utils.get_stub_and_channel()
-    grpc_res = stub.retrieveUnreadNotifications(grpc_req)
-    channel.close()
-    if grpc_res.success:
-        for notification_id, campaign_id, timestamp, subject, content in zip(grpc_res.notificationId, grpc_res.campaignId, grpc_res.timestamp, grpc_res.subject, grpc_res.content):
-            et_models.Notifications.objects.create(notification_id=notification_id, campaign_id=campaign_id, timestamp=timestamp, subject=subject, content=content).save()

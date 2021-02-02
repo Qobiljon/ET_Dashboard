@@ -9,23 +9,29 @@
             <input type="number" name="campaign_id" value="{{ request.GET.campaign_id }}" hidden>
             <input type="email" name="email" value="{{ request.GET.email }}" hidden>
             <input type="number" name="data_source_id" value="{{ request.GET.data_source_id }}" hidden>
-            <input type="number" name="from_time" id="from_time" value="{{ from_time }}" hidden/>
+            <input type="number" name="from_timestamp" id="from_timestamp" value="{{ from_timestamp }}" hidden/>
             <label>
                 From time:
                 <input type="datetime-local" id="datetime_picker" oninput="onDateTimeInput()">
             </label>
-            <input class="action_button" type="submit" value="Fetch next 100 data records">
+            <input class="action_button" type="submit" value="Fetch next 500 data records">
         </form>
 
         <table id="value_table">
             <tr>
-                <th>Time</th>
-                <th>Value</th>
+                <th class="row_column">Row</th>
+                <th class="time_column">Time</th>
+                <th class="value_column">Value</th>
             </tr>
             {% for record in records %}
                 <tr class="data_source">
-                    <td>{{ record.time }}</td>
-                    <td>{{ record.value }}</td>
+                    <td>{{ record.row }}</td>
+                    <td>{{ record.timestamp }}</td>
+                    {% if record.value|length <= 512 %}
+                        <td title="{{ record.value }}">{{ record.value|truncatechars:256 }}</td>
+                    {% else %}
+                        <td>[ <i>{{ record.value|length }} byte data record</i> ]</td>
+                    {% endif %}
                 </tr>
             {% endfor %}
         </table>
@@ -36,12 +42,12 @@
         let dateTimeWasPicked = false;
 
         document.addEventListener("DOMContentLoaded", () => {
-            fromTimeMs = document.getElementById("from_time");
+            fromTimeMs = document.getElementById("from_timestamp");
             dateTimePicker = document.getElementById("datetime_picker");
             viewDataForm = document.getElementById("view_data_submit_form");
 
-            let fromTimestamp = parseInt(fromTimeMs.value.toString());
-            if (fromTimestamp !== 0) {
+            let fromTimestamp = {% if from_timestamp %} {{ from_timestamp }} {% else %} 0 {% endif %};
+            if (fromTimestamp > 0) {
                 let date = new Date(fromTimestamp);
                 let datePart = [date.getFullYear().toString().padStart(2, '0'), (date.getMonth() + 1).toString().padStart(2, '0'), date.getDate().toString().padStart(2, '0')].join('-');
                 let timePart = [date.getHours().toString().padStart(2, '0'), date.getMinutes().toString().padStart(2, '0')].join(':');
@@ -76,6 +82,16 @@
             margin-bottom: 20px;
             text-align: center;
             table-layout: fixed;
+        }
+
+        .row_column {
+            width: 10%;
+        }
+        .time_column {
+            width: 20%;
+        }
+        .value_column {
+            width: 70%
         }
 
         #value_table tr:first-child {
