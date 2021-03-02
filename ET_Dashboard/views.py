@@ -144,12 +144,6 @@ def handle_participants_data_list(request):
                                 'last_sync_time': utils.timestamp_to_readable_string(timestamp_ms=last_sync_time)
                             }]
                         data_sources.sort(key=lambda x: x['name'])
-                        unprocessed_data_size = 0
-                        dir_path = os.path.join(settings.raw_data_dir, f'{db_campaign["id"]}-{db_participant_user["id"]}')
-                        if not os.path.exists(dir_path):
-                            os.mkdir(dir_path)
-                        for filename in os.listdir(dir_path):
-                            unprocessed_data_size += os.path.getsize(os.path.join(dir_path, filename))
                         return render(
                             request=request,
                             template_name='page_participant_data_sources_stats.html',
@@ -157,7 +151,6 @@ def handle_participants_data_list(request):
                                 'title': f'Data submitted by {db_participant_user["name"]}, {db_participant_user["email"]} (ID = {db_participant_user["id"]})',
                                 'campaign': db_campaign,
                                 'participant': db_participant_user,
-                                'unprocessed_data_size': unprocessed_data_size,
                                 'data_sources': data_sources
                             }
                         )
