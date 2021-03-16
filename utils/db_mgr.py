@@ -343,6 +343,24 @@ def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timesta
     return data_records
 
 
+def get_amount_of_filtered_data_records(db_user, db_campaign, db_data_source, from_timestamp=0, till_timestamp=-1):
+    cur = get_db_connection().cursor(cursor_factory=psycopg2_extras.DictCursor)
+    if till_timestamp > 0:
+        cur.execute(f'select count(*) as "amount" from "data"."{db_campaign["id"]}-{db_user["id"]}" where "data_source_id"=%s and "timestamp">=%s and "timestamp"<%s order by "timestamp" asc;', (
+            db_data_source['id'],
+            from_timestamp,
+            till_timestamp
+        ))
+    else:
+        cur.execute(f'select count(*) as "amount" from "data"."{db_campaign["id"]}-{db_user["id"]}" where "data_source_id"=%s and "timestamp">=%s order by "timestamp" asc limit 500;', (
+            db_data_source['id'],
+            from_timestamp
+        ))
+    count = cur.fetchone()['amount']
+    cur.close()
+    return count
+
+
 def dump_data(db_campaign, db_user):
     cur = get_db_connection().cursor(cursor_factory=psycopg2_extras.DictCursor)
 

@@ -73,3 +73,13 @@ def is_numeric(string, floating=False):
         return re.search(pattern=r'^[+-]?\d+\.\d+$', string=string) is not None
     else:
         return re.search(pattern=r'^[+-]?\d+$', string=string) is not None
+
+
+def param_check(request_body, params: dict):
+    for param in params:
+        param_type = params[param]
+        if param not in request_body:
+            return False
+        if type(request_body[param]) is not param_type:
+            return False
+    return True
