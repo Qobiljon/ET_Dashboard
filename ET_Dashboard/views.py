@@ -766,7 +766,7 @@ def huno_json_steps(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_total_reward(request):
-    if not utils.param_check(request.POST, ['campaign_id', 'participant_id', 'data_source_id', 'from_timestamp', 'till_timestamp']):
+    if not utils.param_check(request.POST, ['campaign_id', 'participant_id', 'data_source_id']):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
@@ -789,7 +789,7 @@ def huno_json_ema_resp_rate(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_participant_stats(request):
-    if not utils.param_check(request.POST, ['campaign_id', 'participant_id', 'data_source_id', 'from_timestamp', 'till_timestamp']):
+    if not utils.param_check(request.POST, ['campaign_id', 'participant_id']):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
