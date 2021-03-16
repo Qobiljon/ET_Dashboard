@@ -801,9 +801,9 @@ def huno_json_participant_stats(request):
     stats = db.get_participants_per_data_source_stats(db_user=db_participant, db_campaign=db_campaign)
     amount_of_samples = {}
     sync_timestamps = {}
-    for stat in stats:
-        amount_of_samples[stat['data_source_id']] = stat['amount_of_samples']
-        sync_timestamps[stat['data_source_id']] = stat['sync_timestamps']
+    for _db_data_source, _amount_of_samples, _sync_timestamp in stats:
+        amount_of_samples[_db_data_source['id']] = _amount_of_samples
+        sync_timestamps[_db_data_source['id']] = _sync_timestamp
 
     return JsonResponse(data={
         'success': True,
