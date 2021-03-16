@@ -690,7 +690,6 @@ def handle_notifications_list(request):
     return None
 
 
-@login_required
 @require_http_methods(['POST'])
 def huno_json_total_ema_score(request):
     if not utils.param_check(request.POST, {'campaign_id': int, 'participant_id': int, 'data_source_id': int, 'from_timestamp': int, 'till_timestamp': int}):
@@ -713,7 +712,6 @@ def huno_json_total_ema_score(request):
     return JsonResponse(data=res)
 
 
-@login_required
 @require_http_methods(['POST'])
 def huno_json_hr(request):
     if not utils.param_check(request.POST, {'campaign_id': int, 'participant_id': int, 'data_source_id': int, 'from_timestamp': int, 'till_timestamp': int}):
@@ -737,13 +735,11 @@ def huno_json_hr(request):
     return JsonResponse(data=res)
 
 
-@login_required
 @require_http_methods(['POST'])
 def huno_json_sleep(request):
     return JsonResponse(data={'success': False, 'err_msg': 'not implemented'})
 
 
-@login_required
 @require_http_methods(['POST'])
 def huno_json_steps(request):
     if not utils.param_check(request.POST, {'campaign_id': int, 'participant_id': int, 'data_source_id': int, 'from_timestamp': int, 'till_timestamp': int}):
@@ -762,7 +758,6 @@ def huno_json_steps(request):
     return JsonResponse(data=res)
 
 
-@login_required
 @require_http_methods(['POST'])
 def huno_json_total_reward(request):
     if not utils.param_check(request.POST, {'campaign_id': int, 'participant_id': int, 'data_source_id': int}):
@@ -779,13 +774,11 @@ def huno_json_total_reward(request):
     return JsonResponse(data=res)
 
 
-@login_required
 @require_http_methods(['POST'])
 def huno_json_ema_resp_rate(request):
     return JsonResponse(data={'success': False, 'err_msg': 'not implemented'})
 
 
-@login_required
 @require_http_methods(['POST'])
 def huno_json_participant_stats(request):
     if not utils.param_check(request.POST, {'campaign_id': int, 'participant_id': int}):
