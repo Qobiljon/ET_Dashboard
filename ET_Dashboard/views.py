@@ -12,6 +12,7 @@ import re
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as dj_logout
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -690,6 +691,7 @@ def handle_notifications_list(request):
     return None
 
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_total_ema_score(request):
     if not utils.param_check(request.POST, {'campaign_id': int, 'participant_id': int, 'data_source_id': int, 'from_timestamp': int, 'till_timestamp': int}):
@@ -712,6 +714,7 @@ def huno_json_total_ema_score(request):
     return JsonResponse(data=res)
 
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_hr(request):
     if not utils.param_check(request.POST, {'campaign_id': int, 'participant_id': int, 'data_source_id': int, 'from_timestamp': int, 'till_timestamp': int}):
@@ -735,11 +738,13 @@ def huno_json_hr(request):
     return JsonResponse(data=res)
 
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_sleep(request):
     return JsonResponse(data={'success': False, 'err_msg': 'not implemented'})
 
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_steps(request):
     if not utils.param_check(request.POST, {'campaign_id': int, 'participant_id': int, 'data_source_id': int, 'from_timestamp': int, 'till_timestamp': int}):
@@ -758,6 +763,7 @@ def huno_json_steps(request):
     return JsonResponse(data=res)
 
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_total_reward(request):
     if not utils.param_check(request.POST, {'campaign_id': int, 'participant_id': int, 'data_source_id': int}):
@@ -774,11 +780,13 @@ def huno_json_total_reward(request):
     return JsonResponse(data=res)
 
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_ema_resp_rate(request):
     return JsonResponse(data={'success': False, 'err_msg': 'not implemented'})
 
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_participant_stats(request):
     if not utils.param_check(request.POST, {'campaign_id': int, 'participant_id': int}):
