@@ -643,6 +643,7 @@ def handle_download_data_api(request):
         return redirect(to='login')
 
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def handle_db_mgmt_api(request):
     return JsonResponse(data={'response': 'ans'})
