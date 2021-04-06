@@ -643,6 +643,11 @@ def handle_download_data_api(request):
         return redirect(to='login')
 
 
+@require_http_methods(['POST'])
+def handle_db_mgmt_api(request):
+    return JsonResponse(data={'response': 'ans'})
+
+
 @login_required
 @require_http_methods(['GET'])
 def handle_download_dataset_api(request):
