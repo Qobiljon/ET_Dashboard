@@ -646,7 +646,11 @@ def handle_download_data_api(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def handle_db_mgmt_api(request):
-    return JsonResponse(data={'response': 'ans'})
+    counts = []
+    for db_campaign in db.get_campaigns():
+        count = db.get_campaign_participants_count(db_campaign=db_campaign)
+        counts += [count]
+    return JsonResponse(data={'counts': counts})
 
 
 @login_required
