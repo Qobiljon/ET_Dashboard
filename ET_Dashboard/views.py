@@ -646,12 +646,12 @@ def handle_download_data_api(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def handle_db_mgmt_api(request):
-    for db_campaign in db.get_campaigns():
-        max_count = db.get_campaign_participants_count(db_campaign=db_campaign)
-        count = 1
-        for db_participant in db.get_campaign_participants(db_campaign=db_campaign):
-            print(f'{db_campaign["id"]}-{db_participant["id"]} ({count} / {max_count})')
-            db.rescue_data_table(db_campaign=db_campaign, db_participant=db_participant)
+    # for db_campaign in db.get_campaigns():
+    #     max_count = db.get_campaign_participants_count(db_campaign=db_campaign)
+    #     count = 1
+    #     for db_participant in db.get_campaign_participants(db_campaign=db_campaign):
+    #         print(f'{db_campaign["id"]}-{db_participant["id"]} ({count} / {max_count})')
+    #         db.rescue_data_table(db_campaign=db_campaign, db_participant=db_participant)
     return JsonResponse(data={'rescued': True})
 
 
