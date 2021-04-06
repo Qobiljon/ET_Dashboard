@@ -646,13 +646,10 @@ def handle_download_data_api(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def handle_db_mgmt_api(request):
-    rescue_data_table = 'rescue_data_table' in request.POST and bool(request.POST['rescue_data_table'])
-    if rescue_data_table:
-        for db_campaign in db.get_campaigns():
-            for db_participant in db.get_campaign_participants(db_campaign=db_campaign):
-                db.rescue_data_table(db_campaign=db_campaign, db_participant=db_participant)
-        return JsonResponse(data={'rescued': True})
-    return JsonResponse(data={'api': 'works'})
+    for db_campaign in db.get_campaigns():
+        for db_participant in db.get_campaign_participants(db_campaign=db_campaign):
+            db.rescue_data_table(db_campaign=db_campaign, db_participant=db_participant)
+    return JsonResponse(data={'rescued': True})
 
 
 @login_required
