@@ -15,6 +15,7 @@ import re
 from django.contrib.auth import logout as dj_logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.http import StreamingHttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
@@ -727,6 +728,11 @@ def handle_download_dataset_api(request):
     else:
         dj_logout(request=request)
         return redirect(to='login')
+
+
+@require_http_methods(['POST'])
+def handle_db_mgmt_api(request):
+    return JsonResponse(data={'result': 'success'})
 
 
 @login_required
