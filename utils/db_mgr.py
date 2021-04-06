@@ -371,6 +371,21 @@ def dump_data(db_campaign, db_user):
     return file_path
 
 
+def rescue_data_table(db_campaign, db_participant):
+    cur = get_db_connection().cursor(cursor_factory=psycopg2_extras.DictCursor)
+
+    cur.execute(f'alter table "data"."{db_campaign["id"]}-{db_participant["id"]}" drop column if exists "id";')
+    cur.execute(f'alter table "data"."{db_campaign["id"]}-{db_participant["id"]}" drop constraint if exists "{db_campaign["id"]}-{db_participant["id"]}_pkey";')
+
+    cur.execute(f'alter table "data"."{db_campaign["id"]}-{db_participant["id"]}" drop constraint if exists "{db_campaign["id"]}-{db_participant["id"]}_timestamp_data_source_id_key";')
+
+    cur.execute(f'drop index if exists "data"."{db_campaign["id"]}-{db_participant["id"]}_pkey";')
+    cur.execute(f'drop index if exists "data"."{db_campaign["id"]}-{db_participant["id"]}_timestamp_data_source_id_key";')
+    cur.execute(f'alter table "data"."{db_campaign["id"]}-{db_participant["id"]}" drop constraint if exists "{db_campaign["id"]}-{db_participant["id"]}_data_source_id_fkey";')
+
+    cur.close()
+    get_db_connection().commit()
+
 # endregion
 
 
