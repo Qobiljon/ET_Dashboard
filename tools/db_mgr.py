@@ -276,7 +276,7 @@ def dump_data(db_campaign, db_user):
 # region 5. communication management
 def create_direct_message(db_source_user, db_target_user, subject, content):
     session = get_cassandra_session()
-    session.execute('insert into "et"."directMessage"("id", "sourceUserId", "targetUserId", "timestamp", "subject", "content")  values (%s,%s,%s,%s,%s);', (
+    db_direct_message = session.execute('insert into "et"."directMessage"("id", "sourceUserId", "targetUserId", "timestamp", "subject", "content")  values (%s,%s,%s,%s,%s);', (
         get_next_id(session=session, table_name='et.directMessage'),
         db_source_user.id,
         db_target_user.id,
@@ -284,6 +284,7 @@ def create_direct_message(db_source_user, db_target_user, subject, content):
         subject,
         content
     ))
+    return db_direct_message
 
 
 def get_unread_direct_messages(db_user):
@@ -295,7 +296,7 @@ def get_unread_direct_messages(db_user):
 
 def create_notification(db_target_user, db_campaign, timestamp, subject, content):
     session = get_cassandra_session()
-    session.execute('insert into "et"."notification"("id", "targetUserId", "campaignId", "timestamp", "subject", "content") values (%s,%s,%s,%s,%s)', (
+    db_notification = session.execute('insert into "et"."notification"("id", "targetUserId", "campaignId", "timestamp", "subject", "content") values (%s,%s,%s,%s,%s)', (
         get_next_id(session=session, table_name='et.notification'),
         db_target_user.id,
         db_campaign.id,
@@ -303,6 +304,7 @@ def create_notification(db_target_user, db_campaign, timestamp, subject, content
         subject,
         content
     ))
+    return db_notification
 
 
 def get_unread_notifications(db_user):
