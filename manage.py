@@ -2,10 +2,6 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-import signal
-import grpc
-from utils import utils
-from et_grpcs import et_service_pb2_grpc
 
 
 def main():

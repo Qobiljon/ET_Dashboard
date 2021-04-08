@@ -1,6 +1,6 @@
 import plotly.graph_objects as go
 from json import JSONDecodeError
-from utils import settings
+from tools import settings
 import datetime
 import zipfile
 import plotly
@@ -19,8 +19,8 @@ from django.http import JsonResponse
 
 # EasyTrack
 from ET_Dashboard.models import EnhancedDataSource
-from utils import db_mgr as db
-from utils import utils
+from tools import db_mgr as db
+from tools import utils
 
 
 def handle_google_verification(request):
@@ -33,7 +33,8 @@ def handle_login_api(request):
         db_user = db.get_user(email=request.user.email)
         if db_user is None:
             print('new user : ', end='')
-            db_user = db.create_user(id_token=None, name=request.user.get_full_name(), email=request.user.email)
+            session_key = utils.md5(value=f'{request.user.email}{utils.now_us()}')
+            db_user = db.create_user(name=request.user.get_full_name(), email=request.user.email, session_key=session_key)
             if db_user is None:
                 dj_logout(request=request)
             else:
