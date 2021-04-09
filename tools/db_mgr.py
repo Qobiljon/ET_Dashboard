@@ -92,7 +92,7 @@ def bind_participant_to_campaign(db_user, db_campaign):
 
 
 # region 2. campaign management
-def create_or_update_campaign(db_user_creator, db_campaign, name, notes, configurations, start_timestamp, end_timestamp, remove_inactive_users_timeout):
+def create_or_update_campaign(db_user_creator, name, notes, configurations, start_timestamp, end_timestamp, remove_inactive_users_timeout, db_campaign=None):
     session = get_cassandra_session()
     if db_campaign is None:
         session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "config_json", "start_timestamp", "end_timestamp", "remove_inactive_users_timeout") values (%s,%s,%s,%s,%s,%s,%s);', (
@@ -246,9 +246,9 @@ def get_next_k_data_records(db_user, db_campaign, from_timestamp, db_data_source
     return k_records
 
 
-def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timestamp, till_timestamp):
+def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timestamp, till_timestamp=None):
     session = get_cassandra_session()
-    if till_timestamp > 0:
+    if till_timestamp:
         data_records = session.execute(f'select * from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s order by "timestamp" asc allow filtering;', (
             db_data_source.id,
             from_timestamp,
