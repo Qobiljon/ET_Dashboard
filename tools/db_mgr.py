@@ -146,8 +146,7 @@ def get_campaigns(db_creator_user=None):
 
 def get_campaign_participants(db_campaign):
     session = get_cassandra_session()
-    db_participants = session.execute('select * from "et"."user" where "id" in (select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering) allow filtering;', (db_campaign.id,)).all()
-    return db_participants
+    return session.execute('select * from "et"."user" where "id" in (select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering) allow filtering;', (db_campaign.id,)).all()
 
 
 def get_campaign_participants_count(db_campaign):
@@ -180,20 +179,15 @@ def get_data_source(data_source_name=None, data_source_id=None):
             data_source_name,
         )).one()
     elif data_source_id is not None:
-        db_data_source = session.execute('select * from "et"."dataSource" where "id"=%s allow filtering;', (
-            data_source_id,
-        )).one()
+        db_data_source = session.execute('select * from "et"."dataSource" where "id"=%s allow filtering;', (data_source_id,)).one()
     elif data_source_name is not None:
-        db_data_source = session.execute('select * from "et"."dataSource" where "name"=%s allow filtering;', (
-            data_source_name,
-        )).one()
+        db_data_source = session.execute('select * from "et"."dataSource" where "name"=%s allow filtering;', (data_source_name,)).one()
     return db_data_source
 
 
 def get_all_data_sources():
     session = get_cassandra_session()
-    session.execute('select * from "et"."dataSource";')
-    return session
+    return session.execute('select * from "et"."dataSource";').all()
 
 
 def get_campaign_data_sources(db_campaign):
@@ -292,7 +286,7 @@ def create_direct_message(db_source_user, db_target_user, subject, content):
 
 def get_unread_direct_messages(db_user):
     session = get_cassandra_session()
-    db_direct_messages = session.execute('select * from "et"."directMessage" where "targetUserId"=%s and "read"=FALSE allow filtering;', (db_user.id,))
+    db_direct_messages = session.execute('select * from "et"."directMessage" where "targetUserId"=%s and "read"=FALSE allow filtering;', (db_user.id,)).all()
     session.execute('update "et"."directMessage" set "read"=TRUE where targetUserId=%s;', (db_user.id,))
     return db_direct_messages
 
@@ -308,12 +302,12 @@ def create_notification(db_target_user, db_campaign, timestamp, subject, content
         subject,
         content
     ))
-    return session.execute('select * from "et"."notification" where "id"=%s;', (next_id,))
+    return session.execute('select * from "et"."notification" where "id"=%s;', (next_id,)).one()
 
 
 def get_unread_notifications(db_user):
     session = get_cassandra_session()
-    db_notifications = session.execute('select * from "et"."notification" where "targetUserId"=%s and "read"=FALSE allow filtering;', (db_user.id,))
+    db_notifications = session.execute('select * from "et"."notification" where "targetUserId"=%s and "read"=FALSE allow filtering;', (db_user.id,)).all()
     session.execute('update "et"."notification" set "read"=TRUE where "targetUserId"=%s;', (db_user.id,))
     return db_notifications
 
