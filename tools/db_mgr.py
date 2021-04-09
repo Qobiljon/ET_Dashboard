@@ -43,17 +43,17 @@ def get_user(user_id=None, email=None, session_key=None):
     session = get_cassandra_session()
     db_user = None
     if None not in [user_id, email, session_key]:
-        db_user = session.execute('select * from "et"."user" where "id"=%s and "email"=%s and "sessionKey"=%s;', (
+        db_user = session.execute('select * from "et"."user" where "id"=%s and "email"=%s and "sessionKey"=%s allow filtering;', (
             user_id,
             email,
             session_key
         )).one()
     elif user_id is not None:
-        db_user = session.execute('select * from "et"."user" where "id"=%s', (user_id,)).one()
+        db_user = session.execute('select * from "et"."user" where "id"=%s allow filtering;', (user_id,)).one()
     elif email is not None:
-        db_user = session.execute('select * from "et"."user" where "email"=%s', (email,)).one()
+        db_user = session.execute('select * from "et"."user" where "email"=%s allow filtering;', (email,)).one()
     elif session_key is not None:
-        db_user = session.execute('select * from "et"."user" where "sessionKey"=%s', (session_key,)).one()
+        db_user = session.execute('select * from "et"."user" where "sessionKey"=%s allow filtering;', (session_key,)).one()
     return db_user
 
 
@@ -67,7 +67,7 @@ def update_session_key(db_user, session_key):
 
 def user_is_bound_to_campaign(db_user, db_campaign):
     session = get_cassandra_session()
-    count = session.execute('select count(*) from "stats"."campaignParticipantStats" where "campaignId"=%s and "userId"=%s;', (
+    count = session.execute('select count(*) from "stats"."campaignParticipantStats" where "campaignId"=%s and "userId"=%s allow filtering;', (
         db_campaign.id,
         db_user.id
     )).one()[0]
@@ -120,9 +120,9 @@ def create_or_update_campaign(db_user_creator, db_campaign, name, notes, configu
 def get_campaign(campaign_id, db_creator_user=None):
     session = get_cassandra_session()
     if db_creator_user is None:
-        db_campaign = session.execute('select * from "et"."campaign" where "id"=%s;', (campaign_id,)).one()
+        db_campaign = session.execute('select * from "et"."campaign" where "id"=%s allow filtering;', (campaign_id,)).one()
     else:
-        db_campaign = session.execute('select * from "et"."campaign" where "id"=%s and "creatorId"=%s;', (
+        db_campaign = session.execute('select * from "et"."campaign" where "id"=%s and "creatorId"=%s allow filtering;', (
             campaign_id,
             db_creator_user.id
         )).one()
@@ -139,19 +139,19 @@ def get_campaigns(db_creator_user=None):
     if db_creator_user is None:
         db_campaigns = session.execute('select * from "et"."campaign";').all()
     else:
-        db_campaigns = session.execute('select * from "et"."campaign" where "creatorId"=%s;', (db_creator_user.id,)).all()
+        db_campaigns = session.execute('select * from "et"."campaign" where "creatorId"=%s allow filtering;', (db_creator_user.id,)).all()
     return db_campaigns
 
 
 def get_campaign_participants(db_campaign):
     session = get_cassandra_session()
-    db_participants = session.execute('select * from "et"."user" where "id" in (select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s);', (db_campaign.id,)).all()
+    db_participants = session.execute('select * from "et"."user" where "id" in (select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering) allow filtering;', (db_campaign.id,)).all()
     return db_participants
 
 
 def get_campaign_participants_count(db_campaign):
     session = get_cassandra_session()
-    participants_count = session.execute('select count(*) from "et"."user" where "id" in (select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s);', (db_campaign.id,)).one()[0]
+    participants_count = session.execute('select count(*) from "et"."user" where "id" in (select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering) allow filtering;', (db_campaign.id,)).one()[0]
     return participants_count
 
 
@@ -173,16 +173,16 @@ def get_data_source(data_source_name=None, data_source_id=None):
     session = get_cassandra_session()
     db_data_source = None
     if None not in [data_source_id, data_source_name]:
-        db_data_source = session.execute('select * from "et"."dataSource" where "id"=%s and "name"=%s;', (
+        db_data_source = session.execute('select * from "et"."dataSource" where "id"=%s and "name"=%s allow filtering;', (
             data_source_id,
             data_source_name,
         )).one()
     elif data_source_id is not None:
-        db_data_source = session.execute('select * from "et"."dataSource" where "id"=%s;', (
+        db_data_source = session.execute('select * from "et"."dataSource" where "id"=%s allow filtering;', (
             data_source_id,
         )).one()
     elif data_source_name is not None:
-        db_data_source = session.execute('select * from "et"."dataSource" where "name"=%s;', (
+        db_data_source = session.execute('select * from "et"."dataSource" where "name"=%s allow filtering;', (
             data_source_name,
         )).one()
     return db_data_source
@@ -237,7 +237,7 @@ def store_data_records(db_user, db_campaign, timestamp_list, data_source_id_list
 
 def get_next_k_data_records(db_user, db_campaign, from_timestamp, db_data_source, k):
     session = get_cassandra_session()
-    k_records = session.execute(f'select * from "data"."{db_campaign.id}-{db_user.id}" where "timestamp">=%s and "dataSourceId"=%s order by "timestamp" asc limit {k};', (
+    k_records = session.execute(f'select * from "data"."{db_campaign.id}-{db_user.id}" where "timestamp">=%s and "dataSourceId"=%s order by "timestamp" asc limit {k} allow filtering;', (
         from_timestamp,
         db_data_source.id
     )).all()
@@ -247,13 +247,13 @@ def get_next_k_data_records(db_user, db_campaign, from_timestamp, db_data_source
 def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timestamp, till_timestamp):
     session = get_cassandra_session()
     if till_timestamp > 0:
-        data_records = session.execute(f'select * from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s order by "timestamp" asc;', (
+        data_records = session.execute(f'select * from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s order by "timestamp" asc allow filtering;', (
             db_data_source.id,
             from_timestamp,
             till_timestamp
         )).all()
     else:
-        data_records = session.execute(f'select * from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s order by "timestamp" asc limit 500;', (
+        data_records = session.execute(f'select * from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s order by "timestamp" asc limit 500 allow filtering;', (
             db_data_source.id,
             from_timestamp
         )).all()
@@ -264,7 +264,7 @@ def dump_data(db_campaign, db_user):
     session = get_cassandra_session()
 
     file_path = utils.get_download_file_path(f'{db_campaign.id}-{db_user.id}.bin.tmp')
-    session.execute(f'copy (select "id", "timestamp", "value", "dataSourceId" from "data"."{db_campaign.id}-{db_user.id}") to %s with binary;', (file_path,))
+    session.execute(f'copy (select "id", "timestamp", "value", "dataSourceId" from "data"."{db_campaign.id}-{db_user.id}" allow filtering) to %s with binary;', (file_path,))
 
     session.close()
     return file_path
@@ -289,7 +289,7 @@ def create_direct_message(db_source_user, db_target_user, subject, content):
 
 def get_unread_direct_messages(db_user):
     session = get_cassandra_session()
-    db_direct_messages = session.execute('select * from "et"."directMessage" where "targetUserId"=%s and "read"=FALSE;', (db_user.id,))
+    db_direct_messages = session.execute('select * from "et"."directMessage" where "targetUserId"=%s and "read"=FALSE allow filtering;', (db_user.id,))
     session.execute('update "et"."directMessage" set "read"=TRUE where targetUserId=%s;', (db_user.id,))
     return db_direct_messages
 
@@ -309,7 +309,7 @@ def create_notification(db_target_user, db_campaign, timestamp, subject, content
 
 def get_unread_notifications(db_user):
     session = get_cassandra_session()
-    db_notifications = session.execute('select * from "et"."notification" where "targetUserId"=%s and "read"=FALSE;', (db_user.id,))
+    db_notifications = session.execute('select * from "et"."notification" where "targetUserId"=%s and "read"=FALSE allow filtering;', (db_user.id,))
     session.execute('update "et"."notification" set "read"=TRUE where "targetUserId"=%s;', (db_user.id,))
     return db_notifications
 
@@ -320,7 +320,7 @@ def get_unread_notifications(db_user):
 # region 6. statistics
 def get_participant_join_timestamp(db_user, db_campaign):
     session = get_cassandra_session()
-    res = session.execute('select "join_timestamp" from "stats"."campaignParticipantStats" where "userId"=%s and "campaignId"=%s;', (
+    res = session.execute('select "join_timestamp" from "stats"."campaignParticipantStats" where "userId"=%s and "campaignId"=%s allow filtering;', (
         db_user.id,
         db_campaign.id
     )).one()
@@ -329,7 +329,7 @@ def get_participant_join_timestamp(db_user, db_campaign):
 
 def get_participant_last_sync_timestamp(db_user, db_campaign):
     session = get_cassandra_session()
-    res = session.execute('select max("syncTimestamp") from "stats"."perDataSourceStats" where "campaignId"=%s and "userId"=%s;', (
+    res = session.execute('select max("syncTimestamp") from "stats"."perDataSourceStats" where "campaignId"=%s and "userId"=%s allow filtering;', (
         db_campaign.id,
         db_user.id,
     )).one()[0]
@@ -338,7 +338,7 @@ def get_participant_last_sync_timestamp(db_user, db_campaign):
 
 def get_participant_heartbeat_timestamp(db_user, db_campaign):
     session = get_cassandra_session()
-    res = session.execute('select "lastHeartbeatTimestamp" from "stats"."campaignParticipantStats" where "userId" = %s and "campaignId" = %s;', (
+    res = session.execute('select "lastHeartbeatTimestamp" from "stats"."campaignParticipantStats" where "userId" = %s and "campaignId" = %s allow filtering;', (
         db_user.id,
         db_campaign.id
     )).one()
@@ -347,7 +347,7 @@ def get_participant_heartbeat_timestamp(db_user, db_campaign):
 
 def get_participants_amount_of_data(db_user, db_campaign):
     cur = get_cassandra_session()
-    amount_of_samples = cur.execute(f'select sum("amountOfSamples") from "stats"."perDataSourceStats" where "campaignId"=%s and "userId"=%s;', (
+    amount_of_samples = cur.execute(f'select sum("amountOfSamples") from "stats"."perDataSourceStats" where "campaignId"=%s and "userId"=%s allow filtering;', (
         db_campaign.id,
         db_user.id,
     )).one()[0]
@@ -359,13 +359,13 @@ def get_participants_per_data_source_stats(db_user, db_campaign):
     db_data_sources = get_campaign_data_sources(db_campaign=db_campaign)
     res_stats = []
     for db_data_source in db_data_sources:
-        res = cur.execute(f'select "amountOfSamples" from "stats"."perDataSourceStats" where "campaignId"=%s and "userId"=%s and "dataSourceId"=%s;', (
+        res = cur.execute(f'select "amountOfSamples" from "stats"."perDataSourceStats" where "campaignId"=%s and "userId"=%s and "dataSourceId"=%s allow filtering;', (
             db_campaign.id,
             db_user.id,
             db_data_source.id,
         )).one()
         amount_of_samples = 0 if res is None else res.amountOfSamples
-        res = cur.execute(f'select "syncTimestamp" from "stats"."perDataSourceStats" where "campaignId"=%s and "userId"=%s and "dataSourceId"=%s;', (
+        res = cur.execute(f'select "syncTimestamp" from "stats"."perDataSourceStats" where "campaignId"=%s and "userId"=%s and "dataSourceId"=%s allow filtering;', (
             db_campaign.id,
             db_user.id,
             db_data_source.id,
@@ -398,7 +398,7 @@ def remove_participant_from_campaign(db_user, db_campaign):
 
 def get_participants_data_source_sync_timestamps(db_user, db_campaign, db_data_source):
     session = get_cassandra_session()
-    res = session.execute(f'select "syncTimestamp" from "stats"."perDataSourceStats" where "campaignId"=%s and "userId"=%s and "dataSourceId"=%s;', (
+    res = session.execute(f'select "syncTimestamp" from "stats"."perDataSourceStats" where "campaignId"=%s and "userId"=%s and "dataSourceId"=%s allow filtering;', (
         db_campaign.id,
         db_user.id,
         db_data_source.id,
