@@ -63,9 +63,9 @@ def handle_campaigns_list(request):
         my_campaigns = []
         for db_campaign in db.get_campaigns(db_creator_user=db_user):
             my_campaigns += [{
-                'id': db_campaign['id'],
-                'name': db_campaign['name'],
-                'notes': db_campaign['notes'],
+                'id': db_campaign.id,
+                'name': db_campaign.name,
+                'notes': db_campaign.notes,
                 'participants': db.get_campaign_participants_count(db_campaign=db_campaign)
             }]
         print('%s opened the main page' % request.user.email)
@@ -95,9 +95,9 @@ def handle_participants_list(request):
                 participants = []
                 for participant in db.get_campaign_participants(db_campaign=db_campaign):
                     participants += [{
-                        'id': participant['id'],
-                        'name': participant['name'],
-                        'email': participant['email'],
+                        'id': participant.id,
+                        'name': participant.name,
+                        'email': participant.email,
                         'day_no': utils.calculate_day_number(join_timestamp=db.get_participant_join_timestamp(db_user=participant, db_campaign=db_campaign)),
                         'amount_of_data': db.get_participants_amount_of_data(db_user=participant, db_campaign=db_campaign),
                         'last_heartbeat_time': utils.timestamp_to_readable_string(timestamp_ms=db.get_participant_heartbeat_timestamp(db_user=participant, db_campaign=db_campaign)),
@@ -108,7 +108,7 @@ def handle_participants_list(request):
                     request=request,
                     template_name='page_campaign_participants.html',
                     context={
-                        'title': "%s's participants" % db_campaign['name'],
+                        'title': "%s's participants" % db_campaign.name,
                         'campaign': db_campaign,
                         'participants': participants
                     }
@@ -131,7 +131,7 @@ def handle_participants_data_list(request):
             db_campaign = db.get_campaign(campaign_id=request.GET['campaign_id'], db_creator_user=db_user)
             if db_campaign is not None:
                 campaign_data_source_configs = {}
-                for data_source in json.loads(s=db_campaign['config_json']):
+                for data_source in json.loads(s=db_campaign.configJson):
                     campaign_data_source_configs[data_source['data_source_id']] = data_source['config_json']
                 if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
                     db_participant_user = db.get_user(user_id=request.GET['participant_id'])
@@ -139,10 +139,10 @@ def handle_participants_data_list(request):
                         data_sources = []
                         for db_data_source, amount_of_data, last_sync_time in db.get_participants_per_data_source_stats(db_user=db_participant_user, db_campaign=db_campaign):
                             data_sources += [{
-                                'id': db_data_source['id'],
-                                'name': db_data_source['name'],
-                                'icon_name': db_data_source['icon_name'],
-                                'config_json': campaign_data_source_configs[db_data_source['id']],
+                                'id': db_data_source.id,
+                                'name': db_data_source.name,
+                                'icon_name': db_data_source.iconName,
+                                'config_json': campaign_data_source_configs[db_data_source.id],
                                 'amount_of_data': amount_of_data,
                                 'last_sync_time': utils.timestamp_to_readable_string(timestamp_ms=last_sync_time)
                             }]
@@ -151,7 +151,7 @@ def handle_participants_data_list(request):
                             request=request,
                             template_name='page_participant_data_sources_stats.html',
                             context={
-                                'title': f'Data submitted by {db_participant_user["name"]}, {db_participant_user["email"]} (ID = {db_participant_user["id"]})',
+                                'title': f'Data submitted by {db_participant_user.name}, {db_participant_user.email} (ID = {db_participant_user.id})',
                                 'campaign': db_campaign,
                                 'participant': db_participant_user,
                                 'data_sources': data_sources
@@ -187,25 +187,25 @@ def handle_raw_samples_list(request):
                             if db_data_source is not None:
                                 records = []
                                 for row, record in enumerate(db.get_filtered_data_records(db_user=db_participant_user, db_campaign=db_campaign, db_data_source=db_data_source, from_timestamp=from_timestamp)):
-                                    value_len = len(record['value'])
+                                    value_len = len(record.value)
                                     if value_len > 5 * 1024:  # 5KB (e.g., binary files)
                                         value = f'[ {value_len:,} byte data record ]'
                                     else:
                                         try:
-                                            value = str(record['value'], encoding='utf-8')
+                                            value = str(record.value, encoding='utf-8')
                                         except UnicodeDecodeError:
                                             value = f'[ {value_len:,} byte data record ]'
                                     records += [{
                                         'row': row + 1,
-                                        'timestamp': utils.timestamp_to_readable_string(timestamp_ms=record['timestamp']),
+                                        'timestamp': utils.timestamp_to_readable_string(timestamp_ms=record.timestamp),
                                         'value': value
                                     }]
-                                    from_timestamp = record['timestamp']
+                                    from_timestamp = record.timestamp
                                 return render(
                                     request=request,
                                     template_name='page_raw_data_view.html',
                                     context={
-                                        'title': db_data_source['name'],
+                                        'title': db_data_source.name,
                                         'records': records,
                                         'from_timestamp': from_timestamp
                                     }
@@ -241,18 +241,18 @@ def handle_campaign_editor(request):
                 if db_campaign is not None:
                     campaign_db_data_sources = []
                     campaign_data_source_configs = {}
-                    for campaign_data_source in json.loads(s=db_campaign['config_json']):
+                    for campaign_data_source in json.loads(s=db_campaign.configJson):
                         db_data_source = db.get_data_source(data_source_id=campaign_data_source['data_source_id'])
                         campaign_db_data_sources += [db_data_source]
-                        campaign_data_source_configs[db_data_source['id']] = campaign_data_source['config_json']
+                        campaign_data_source_configs[db_data_source.id] = campaign_data_source['config_json']
                     campaign_data_sources = []
                     for db_data_source in db_data_sources:
                         selected = db_data_source in campaign_db_data_sources
                         campaign_data_sources += [{
-                            'name': db_data_source['name'],
-                            'icon_name': db_data_source['icon_name'],
+                            'name': db_data_source.name,
+                            'icon_name': db_data_source.iconName,
                             'selected': selected,
-                            'config_json': campaign_data_source_configs[db_data_source['id']] if selected else None
+                            'config_json': campaign_data_source_configs[db_data_source.id] if selected else None
                         }]
                     campaign_data_sources.sort(key=lambda key: key['name'])
                     return render(
@@ -260,7 +260,7 @@ def handle_campaign_editor(request):
                         template_name='page_campaign_editor.html',
                         context={
                             'edit_mode': True,
-                            'title': '"%s" Campaign Editor' % db_campaign['name'],
+                            'title': '"%s" Campaign Editor' % db_campaign.name,
                             'campaign': db_campaign,
                             'campaign_start_time': utils.timestamp_to_web_string(timestamp_ms=db_campaign['start_timestamp']),
                             'campaign_end_time': utils.timestamp_to_web_string(timestamp_ms=db_campaign['end_timestamp']),
@@ -274,8 +274,8 @@ def handle_campaign_editor(request):
                 campaign_data_sources = []
                 for db_data_source in db_data_sources:
                     campaign_data_sources += [{
-                        'name': db_data_source['name'],
-                        'icon_name': db_data_source['icon_name']
+                        'name': db_data_source.name,
+                        'icon_name': db_data_source.iconName
                     }]
                 campaign_data_sources.sort(key=lambda key: key['name'])
                 return render(
@@ -312,9 +312,9 @@ def handle_campaign_editor(request):
 
                     # bind the data sources and attach data source ids
                     for _index, _data_source in enumerate(_campaign_data_sources):
-                        _id = db.get_data_source_id(data_source_name=_data_source['name'])
+                        _id = db.get_data_source(data_source_name=_data_source['name']).id
                         if _id is None:  # create a new data source
-                            _id = db.register_data_source(db_creator_user=db_user, name=_data_source['name'], icon_name=_data_source['icon_name'])
+                            _id = db.create_data_source(db_creator_user=db_user, name=_data_source['name'], icon_name=_data_source['icon_name'])
                         _campaign_data_sources[_index]['data_source_id'] = _id
                     return _campaign_data_sources
 
@@ -340,7 +340,7 @@ def handle_campaign_editor(request):
                     # request to create a new campaign
                     campaign_params = prepare_campaign_params()
                     if campaign_params is not None:
-                        db.register_new_campaign(
+                        db.create_or_update_campaign(
                             db_user_creator=db_user,
                             name=campaign_params['name'],
                             notes=campaign_params['notes'],
@@ -356,14 +356,15 @@ def handle_campaign_editor(request):
                     # request to edit an existing campaign
                     campaign_params = prepare_campaign_params()
                     if campaign_params is not None:
-                        db.update_campaign(
-                            db_campaign=db_campaign,
+                        db.create_or_update_campaign(
+                            db_user_creator=db_user,
                             name=campaign_params['name'],
                             notes=campaign_params['notes'],
                             configurations=campaign_params['configurations'],
                             start_timestamp=campaign_params['start_timestamp'],
                             end_timestamp=campaign_params['end_timestamp'],
-                            remove_inactive_users_timeout=campaign_params['remove_inactive_users_timeout']
+                            remove_inactive_users_timeout=campaign_params['remove_inactive_users_timeout'],
+                            db_campaign=db_campaign
                         )
                         return redirect(to='campaigns-list')
                     else:
@@ -418,7 +419,7 @@ def handle_easytrack_monitor(request):
                     if data_source_name == 'all':
                         hourly_stats = {}
                         # region compute hourly stats
-                        for db_participant_user in (db_campaign_participant_users if plot_participant['id'] == 'all' else [plot_participant]):
+                        for db_participant_user in (db_campaign_participant_users if plot_participant.id == 'all' else [plot_participant]):
                             for db_data_source in db_campaign_data_sources:
                                 _from_timestamp = from_timestamp
                                 _till_timestamp = _from_timestamp + window
@@ -479,7 +480,7 @@ def handle_easytrack_monitor(request):
                     elif db_data_source is not None:
                         hourly_stats = {}
                         # region compute hourly stats
-                        for db_participant_user in (db_campaign_participant_users if plot_participant['id'] == 'all' else [plot_participant]):
+                        for db_participant_user in (db_campaign_participant_users if plot_participant.id == 'all' else [plot_participant]):
                             _from_timestamp = from_timestamp
                             _till_timestamp = _from_timestamp + window
                             while _from_timestamp < till_timestamp:
@@ -557,16 +558,16 @@ def handle_dataset_info(request):
         if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
             db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
             if db_campaign is not None:
-                campaign_data_sources = list(json.loads(s=db_campaign['config_json']))
+                campaign_data_sources = list(json.loads(s=db_campaign.configJson))
                 campaign_data_sources.sort(key=lambda x: x['name'])
-                participants = list(db.get_campaign_participants(db_campaign=db_campaign))
-                participants.sort(key=lambda x: x['id'])
+                db_participants = list(db.get_campaign_participants(db_campaign=db_campaign))
+                db_participants.sort(key=lambda db_participant: db_participant.id)
                 return render(
                     request=request,
                     template_name='page_dataset_configs.html',
                     context={
                         'data_sources': campaign_data_sources,
-                        'participants': participants
+                        'participants': db_participants
                     }
                 )
             else:
@@ -616,13 +617,13 @@ def handle_download_data_api(request):
 
                         # archive the dump content
                         now = datetime.datetime.now()
-                        file_name = f'et data {db_participant_user["email"]} {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.zip'
+                        file_name = f'et data {db_participant_user.email} {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.zip'
                         file_path = utils.get_download_file_path(file_name=file_name)
                         fp = zipfile.ZipFile(file_path, 'w', zipfile.ZIP_STORED)
                         with open(os.path.join(settings.STATIC_DIR, 'restoring_postgres_data.txt'), 'r') as r:
                             fp.writestr('!README.txt', r.read())
-                        fp.writestr('!info.txt', f'campaign_id : {db_campaign["id"]}')
-                        fp.writestr(f'{db_participant_user["email"]}.bin', dump_content)
+                        fp.writestr('!info.txt', f'campaign_id : {db_campaign.id}')
+                        fp.writestr(f'{db_participant_user.email}.bin', dump_content)
                         fp.close()
                         with open(file_path, 'rb') as r:
                             content = r.read()
@@ -651,7 +652,7 @@ def handle_db_mgmt_api(request):
     #     max_count = db.get_campaign_participants_count(db_campaign=db_campaign)
     #     count = 1
     #     for db_participant in db.get_campaign_participants(db_campaign=db_campaign):
-    #         print(f'{db_campaign["id"]}-{db_participant["id"]} ({count} / {max_count})')
+    #         print(f'{db_campaign.id}-{db_participant["id"]} ({count} / {max_count})')
     #         db.rescue_data_table(db_campaign=db_campaign, db_participant=db_participant)
     return JsonResponse(data={'rescued': True})
 
@@ -666,12 +667,12 @@ def handle_download_dataset_api(request):
             if db_campaign is not None:
                 # archive
                 now = datetime.datetime.now()
-                file_name = f'et data campaign {db_campaign["id"]} {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.zip'
+                file_name = f'et data campaign {db_campaign.id} {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.zip'
                 file_path = utils.get_download_file_path(file_name=file_name)
                 fp = zipfile.ZipFile(file_path, 'w', zipfile.ZIP_STORED)
                 with open(os.path.join(settings.STATIC_DIR, 'restoring_postgres_data.txt'), 'r') as r:
                     fp.writestr('!README.txt', r.read())
-                fp.writestr('!info.txt', f'campaign_id : {db_campaign["id"]}')
+                fp.writestr('!info.txt', f'campaign_id : {db_campaign.id}')
 
                 for db_participant_user in db.get_campaign_participants(db_campaign=db_campaign):
                     # dump db data
@@ -680,7 +681,7 @@ def handle_download_dataset_api(request):
                         dump_content = bytes(r.read())
                     os.remove(dump_file_path)
                     # archive the dump content
-                    fp.writestr(f'{db_participant_user["email"]}.bin', dump_content)
+                    fp.writestr(f'{db_participant_user.email}.bin', dump_content)
                 fp.close()
                 with open(file_path, 'rb') as r:
                     content = r.read()
@@ -772,7 +773,7 @@ def huno_json_steps(request):
     if None in [db_campaign, db_participant, db_data_source, from_ts, till_ts]:
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
-    res = {'success': True, 'amount': db.get_amount_of_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source)}
+    res = {'success': True, 'amount': db.get_filtered_amount_of_data(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source)}
     return JsonResponse(data=res)
 
 
@@ -789,7 +790,7 @@ def huno_json_total_reward(request):
     if None in [db_campaign, db_participant, db_data_source]:
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
-    res = {'success': True, 'reward': db.get_amount_of_filtered_data_records(db_campaign=db_campaign, db_user=db_participant, db_data_source=db_data_source) * 250}
+    res = {'success': True, 'reward': db.get_filtered_amount_of_data(db_campaign=db_campaign, db_user=db_participant, db_data_source=db_data_source) * 250}
     return JsonResponse(data=res)
 
 
@@ -815,8 +816,8 @@ def huno_json_participant_stats(request):
     amount_of_samples = {}
     sync_timestamps = {}
     for _db_data_source, _amount_of_samples, _sync_timestamp in stats:
-        amount_of_samples[_db_data_source['id']] = _amount_of_samples
-        sync_timestamps[_db_data_source['id']] = _sync_timestamp
+        amount_of_samples[_db_data_source.id] = _amount_of_samples
+        sync_timestamps[_db_data_source.id] = _sync_timestamp
 
     return JsonResponse(data={
         'success': True,

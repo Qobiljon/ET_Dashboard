@@ -91,7 +91,7 @@ def bind_participant_to_campaign(db_user, db_campaign):
 
 
 # region 2. campaign management
-def create_or_update_campaign(db_user_creator, db_campaign, name, notes, configurations, start_timestamp, end_timestamp, remove_inactive_users_timeout):
+def create_or_update_campaign(db_user_creator, name, notes, configurations, start_timestamp, end_timestamp, remove_inactive_users_timeout, db_campaign=None):
     session = get_cassandra_session()
     if db_campaign is None:
         session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "config_json", "start_timestamp", "end_timestamp", "remove_inactive_users_timeout") values (%s,%s,%s,%s,%s,%s,%s);', (
@@ -244,9 +244,9 @@ def get_next_k_data_records(db_user, db_campaign, from_timestamp, db_data_source
     return k_records
 
 
-def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timestamp, till_timestamp):
+def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timestamp, till_timestamp=None):
     session = get_cassandra_session()
-    if till_timestamp > 0:
+    if till_timestamp:
         data_records = session.execute(f'select * from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s order by "timestamp" asc allow filtering;', (
             db_data_source.id,
             from_timestamp,
@@ -404,5 +404,45 @@ def get_participants_data_source_sync_timestamps(db_user, db_campaign, db_data_s
         db_data_source.id,
     ))
     return 0 if res is None else res.syncTimestamp
+
+
+def get_filtered_amount_of_data(db_campaign, from_timestamp=0, till_timestamp=9999999999999, db_user=None, db_data_source=None):
+    session = get_cassandra_session()
+    amount = 0
+
+    if db_user is None:
+        # all users
+        if db_data_source is None:
+            # all data sources
+            for db_participant_user in get_campaign_participants(db_campaign=db_campaign):
+                amount += session.execute(f'select count(*) from "data"."{db_campaign.id}-{db_participant_user.id}" where "timestamp">=%s and "timestamp"<%s allow filtering;', (
+                    from_timestamp,
+                    till_timestamp
+                )).one()[0]
+        else:
+            # single data source
+            for db_participant_user in get_campaign_participants(db_campaign=db_campaign):
+                amount += session.execute(f'select count(*) from "data"."{db_campaign.id}-{db_participant_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s allow filtering;', (
+                    db_data_source['id'],
+                    from_timestamp,
+                    till_timestamp
+                )).one()[0]
+    else:
+        # single user
+        if db_data_source is None:
+            # all data sources
+            amount += session.execute(f'select count(*) from "data"."{db_campaign.id}-{db_user.id}" where "timestamp">=%s and "timestamp"<%s;', (
+                from_timestamp,
+                till_timestamp
+            )).one()[0]
+        else:
+            # single data source
+            # f'select count(*) as "amount" from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"={db_data_source["id"]} and "timestamp">={from_timestamp} and "timestamp"<{till_timestamp};'
+            amount += session.execute(f'select count(*) from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s allow filtering;', (
+                db_data_source['id'],
+                from_timestamp,
+                till_timestamp
+            )).one()[0]
+    return amount
 
 # endregion
