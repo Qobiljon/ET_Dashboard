@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'social_django',
+    'django_cassandra_engine',
     'ET_Dashboard',
 ]
 
@@ -89,13 +90,25 @@ WSGI_APPLICATION = 'ET_Dashboard.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'easytrack_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'ENGINE': 'django_cassandra_engine',
+        'NAME': 'et_django_db',
+        'TEST_NAME': 'test_et_django_db',
         'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'OPTIONS': {
+            'replication': {
+                'strategy_class': 'SimpleStrategy',
+                'replication_factor': 1
+            }
+        }
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': 'easytrack_db',
+    #     'USER': 'postgres',
+    #     'PASSWORD': 'postgres',
+    #     'HOST': '127.0.0.1',
+    #     'PORT': '5432',
+    # }
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
     #     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
