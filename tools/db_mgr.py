@@ -190,8 +190,8 @@ def get_data_source(data_source_name=None, data_source_id=None):
 
 def get_all_data_sources():
     session = get_cassandra_session()
-    session.execute('select * from "et"."dataSource";')
-    return session
+    db_data_sources = session.execute('select * from "et"."dataSource";')
+    return db_data_sources
 
 
 def get_campaign_data_sources(db_campaign):
