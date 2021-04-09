@@ -95,7 +95,7 @@ def bind_participant_to_campaign(db_user, db_campaign):
 def create_or_update_campaign(db_user_creator, name, notes, configurations, start_timestamp, end_timestamp, remove_inactive_users_timeout, db_campaign=None):
     session = get_cassandra_session()
     if db_campaign is None:
-        session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "config_json", "start_timestamp", "end_timestamp", "remove_inactive_users_timeout") values (%s,%s,%s,%s,%s,%s,%s);', (
+        session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "config_json", "start_timestamp", "end_timestamp", "remove_inactive_users_timeout") values (%s,%s,%s,%s,%s,%s,%s,%s);', (
             get_next_id(session=session, table_name='et.campaign'),
             db_user_creator.id,
             name,
