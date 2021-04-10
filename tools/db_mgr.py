@@ -145,14 +145,14 @@ def get_campaigns(db_creator_user=None):
 def get_campaign_participants(db_campaign):
     session = get_cassandra_session()
     db_participants = []
-    for participant_id in session.execute('select distinct "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all():
+    for participant_id in session.execute('select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all():
         db_participants += [get_user(user_id=participant_id)]
     return db_participants
 
 
 def get_campaign_participants_count(db_campaign):
     session = get_cassandra_session()
-    return session.execute('select distinct "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all().count()
+    return session.execute('select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all().count()
 
 
 # endregion
