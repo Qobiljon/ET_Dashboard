@@ -351,7 +351,7 @@ def handle_campaign_editor(request):
                         return redirect(to='campaigns-list')
                     else:
                         return redirect(to='campaigns-list')
-                elif db_campaign['creator_id'] == db_user['id']:
+                elif db_campaign.creatorId == db_user.id:
                     # request to edit an existing campaign
                     campaign_params = prepare_campaign_params()
                     if campaign_params is not None:
