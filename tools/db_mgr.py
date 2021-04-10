@@ -368,7 +368,7 @@ def get_participants_per_data_source_stats(db_user, db_campaign):
         )).one()
         sync_timestamp = 0 if res is None else res.syncTimestamp
         res_stats += [(
-            db_data_source.id,
+            db_data_source,
             amount_of_samples,
             sync_timestamp
         )]
