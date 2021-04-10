@@ -92,10 +92,10 @@ def bind_participant_to_campaign(db_user, db_campaign):
 
 
 # region 2. campaign management
-def create_or_update_campaign(db_user_creator, name, notes, configurations, start_timestamp, end_timestamp, remove_inactive_users_timeout, db_campaign=None):
+def create_or_update_campaign(db_user_creator, name, notes, configurations, start_timestamp, end_timestamp, db_campaign=None):
     session = get_cassandra_session()
     if db_campaign is None:
-        session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "config_json", "start_timestamp", "end_timestamp", "remove_inactive_users_timeout") values (%s,%s,%s,%s,%s,%s,%s,%s);', (
+        session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "configJson", "startTimestamp", "endTimestamp") values (%s,%s,%s,%s,%s,%s,%s);', (
             get_next_id(session=session, table_name='et.campaign'),
             db_user_creator.id,
             name,
@@ -103,17 +103,15 @@ def create_or_update_campaign(db_user_creator, name, notes, configurations, star
             configurations,
             start_timestamp,
             end_timestamp,
-            remove_inactive_users_timeout
         ))
     elif db_campaign.creatorId == db_user_creator.id:
-        session.execute('update "et"."campaign" set "creatorId" = %s, "name" = %s, "notes" = %s, "config_json" = %s, "start_timestamp" = %s, "end_timestamp" = %s, "remove_inactive_users_timeout" = %s where "id"=%s;', (
+        session.execute('update "et"."campaign" set "creatorId" = %s, "name" = %s, "notes" = %s, "configJson" = %s, "startTimestamp" = %s, "endTimestamp" = %s where "id"=%s;', (
             db_user_creator.id,
             name,
             notes,
             configurations,
             start_timestamp,
             end_timestamp,
-            remove_inactive_users_timeout,
             db_campaign.id
         ))
 

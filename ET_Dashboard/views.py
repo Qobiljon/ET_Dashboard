@@ -346,8 +346,7 @@ def handle_campaign_editor(request):
                             notes=campaign_params['notes'],
                             configurations=campaign_params['configurations'],
                             start_timestamp=campaign_params['start_timestamp'],
-                            end_timestamp=campaign_params['end_timestamp'],
-                            remove_inactive_users_timeout=campaign_params['remove_inactive_users_timeout']
+                            end_timestamp=campaign_params['end_timestamp']
                         )
                         return redirect(to='campaigns-list')
                     else:
@@ -363,7 +362,6 @@ def handle_campaign_editor(request):
                             configurations=campaign_params['configurations'],
                             start_timestamp=campaign_params['start_timestamp'],
                             end_timestamp=campaign_params['end_timestamp'],
-                            remove_inactive_users_timeout=campaign_params['remove_inactive_users_timeout'],
                             db_campaign=db_campaign
                         )
                         return redirect(to='campaigns-list')
