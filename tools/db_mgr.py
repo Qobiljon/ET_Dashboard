@@ -152,7 +152,7 @@ def get_campaign_participants(db_campaign):
 
 def get_campaign_participants_count(db_campaign):
     session = get_cassandra_session()
-    return session.execute('select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all().count()
+    return len(session.execute('select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all())
 
 
 # endregion
