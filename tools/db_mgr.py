@@ -105,13 +105,13 @@ def create_or_update_campaign(db_user_creator, name, notes, configurations, star
             end_timestamp,
         ))
     elif db_campaign.creatorId == db_user_creator.id:
-        session.execute('update "et"."campaign" set "creatorId" = %s, "name" = %s, "notes" = %s, "configJson" = %s, "startTimestamp" = %s, "endTimestamp" = %s where "id"=%s;', (
-            db_user_creator.id,
+        session.execute('update "et"."campaign" set "name" = %s, "notes" = %s, "configJson" = %s, "startTimestamp" = %s, "endTimestamp" = %s where "creatorId"=%s and "id"=%s;', (
             name,
             notes,
             configurations,
             start_timestamp,
             end_timestamp,
+            db_user_creator.id,
             db_campaign.id
         ))
 
