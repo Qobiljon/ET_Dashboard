@@ -128,7 +128,7 @@ def get_campaign(campaign_id, db_creator_user=None):
 
 def delete_campaign(db_campaign):
     session = get_cassandra_session()
-    session.execute(f'delete from "et"."campaign" where id=%s;', (db_campaign.id,))
+    session.execute(f'delete from "et"."campaign" where "creatorId"=%s and "id"=%s;', (db_campaign.creatorId, db_campaign.id,))
 
 
 def get_campaigns(db_creator_user=None):
