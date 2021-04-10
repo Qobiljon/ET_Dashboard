@@ -128,13 +128,13 @@ def handle_participants_data_list(request):
     db_user = db.get_user(email=request.user.email)
     if db_user is not None:
         if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit():
-            db_campaign = db.get_campaign(campaign_id=request.GET['campaign_id'], db_creator_user=db_user)
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']), db_creator_user=db_user)
             if db_campaign is not None:
                 campaign_data_source_configs = {}
                 for data_source in json.loads(s=db_campaign.configJson):
                     campaign_data_source_configs[data_source['data_source_id']] = data_source['config_json']
                 if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
-                    db_participant_user = db.get_user(user_id=request.GET['participant_id'])
+                    db_participant_user = db.get_user(user_id=int(request.GET['participant_id']))
                     if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
                         data_sources = []
                         for db_data_source, amount_of_data, last_sync_time in db.get_participants_per_data_source_stats(db_user=db_participant_user, db_campaign=db_campaign):
@@ -176,7 +176,7 @@ def handle_raw_samples_list(request):
     db_user = db.get_user(email=request.user.email)
     if db_user is not None:
         if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit():
-            db_campaign = db.get_campaign(campaign_id=request.GET['campaign_id'], db_creator_user=db_user)
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']), db_creator_user=db_user)
             if db_campaign is not None:
                 if 'email' in request.GET:
                     db_participant_user = db.get_user(email=request.GET['email'])
@@ -403,7 +403,7 @@ def handle_easytrack_monitor(request):
                 window = 3600000  # 1 hour jump
 
                 if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
-                    db_participant_user = db.get_user(user_id=request.GET['participant_id'])
+                    db_participant_user = db.get_user(user_id=int(request.GET['participant_id']))
                     if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
                         plot_participant = db_participant_user
                     else:
@@ -605,7 +605,7 @@ def handle_download_data_api(request):
             db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
             if db_campaign is not None:
                 if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
-                    db_participant_user = db.get_user(user_id=request.GET['participant_id'])
+                    db_participant_user = db.get_user(user_id=int(request.GET['participant_id']))
                     if db_participant_user is not None:
                         # dump db data
                         dump_file_path = db.dump_data(db_campaign=db_campaign, db_user=db_participant_user)
