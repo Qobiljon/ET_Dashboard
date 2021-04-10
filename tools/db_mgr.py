@@ -81,7 +81,7 @@ def bind_participant_to_campaign(db_user, db_campaign):
             db_campaign.id,
             utils.get_timestamp_ms()
         ))
-        session.execute(f'create table if not exists "data"."{db_campaign.id}-{db_user.id}"("dataSourceId" int, "timestamp" bigint, "value" blob, primary key ("dataSourceId", "timestamp"));')
+        session.execute(f'create table if not exists "data"."cmp{db_campaign.id}_usr{db_user.id}"("dataSourceId" int, "timestamp" bigint, "value" blob, primary key ("dataSourceId", "timestamp"));')
         return True  # new binding
     return False  # old binding
 
@@ -204,7 +204,7 @@ def get_campaign_data_sources(db_campaign):
 # region 4. data management
 def store_data_record(db_user, db_campaign, db_data_source, timestamp, value):
     session = get_cassandra_session()
-    session.execute(f'insert into "data"."{db_campaign.id}-{db_user.id}"("timestamp", "value", "dataSourceId") values (%s,%s,%s) on conflict do nothing returning true;', (
+    session.execute(f'insert into "data"."cmp{db_campaign.id}_usr{db_user.id}"("timestamp", "value", "dataSourceId") values (%s,%s,%s) on conflict do nothing returning true;', (
         timestamp,
         value,
         db_data_source.id,
@@ -231,7 +231,7 @@ def store_data_records(db_user, db_campaign, timestamp_list, data_source_id_list
 
 def get_next_k_data_records(db_user, db_campaign, from_timestamp, db_data_source, k):
     session = get_cassandra_session()
-    k_records = session.execute(f'select * from "data"."{db_campaign.id}-{db_user.id}" where "timestamp">=%s and "dataSourceId"=%s order by "timestamp" asc limit {k} allow filtering;', (
+    k_records = session.execute(f'select * from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "timestamp">=%s and "dataSourceId"=%s order by "timestamp" asc limit {k} allow filtering;', (
         from_timestamp,
         db_data_source.id
     )).all()
@@ -241,13 +241,13 @@ def get_next_k_data_records(db_user, db_campaign, from_timestamp, db_data_source
 def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timestamp, till_timestamp=None):
     session = get_cassandra_session()
     if till_timestamp:
-        data_records = session.execute(f'select * from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s order by "timestamp" asc allow filtering;', (
+        data_records = session.execute(f'select * from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s order by "timestamp" asc allow filtering;', (
             db_data_source.id,
             from_timestamp,
             till_timestamp
         )).all()
     else:
-        data_records = session.execute(f'select * from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s order by "timestamp" asc limit 500 allow filtering;', (
+        data_records = session.execute(f'select * from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s order by "timestamp" asc limit 500 allow filtering;', (
             db_data_source.id,
             from_timestamp
         )).all()
@@ -257,8 +257,8 @@ def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timesta
 def dump_data(db_campaign, db_user):
     session = get_cassandra_session()
 
-    file_path = utils.get_download_file_path(f'{db_campaign.id}-{db_user.id}.bin.tmp')
-    session.execute(f'copy (select "id", "timestamp", "value", "dataSourceId" from "data"."{db_campaign.id}-{db_user.id}" allow filtering) to %s with binary;', (file_path,))
+    file_path = utils.get_download_file_path(f'cmp{db_campaign.id}_usr{db_user.id}.bin.tmp')
+    session.execute(f'copy (select "id", "timestamp", "value", "dataSourceId" from "data"."cmp{db_campaign.id}_usr{db_user.id}" allow filtering) to %s with binary;', (file_path,))
 
     session.close()
     return file_path
@@ -427,14 +427,14 @@ def get_filtered_amount_of_data(db_campaign, from_timestamp=0, till_timestamp=99
         # single user
         if db_data_source is None:
             # all data sources
-            amount += session.execute(f'select count(*) from "data"."{db_campaign.id}-{db_user.id}" where "timestamp">=%s and "timestamp"<%s;', (
+            amount += session.execute(f'select count(*) from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "timestamp">=%s and "timestamp"<%s;', (
                 from_timestamp,
                 till_timestamp
             )).one()[0]
         else:
             # single data source
-            # f'select count(*) as "amount" from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"={db_data_source["id"]} and "timestamp">={from_timestamp} and "timestamp"<{till_timestamp};'
-            amount += session.execute(f'select count(*) from "data"."{db_campaign.id}-{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s allow filtering;', (
+            # f'select count(*) as "amount" from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "dataSourceId"={db_data_source["id"]} and "timestamp">={from_timestamp} and "timestamp"<{till_timestamp};'
+            amount += session.execute(f'select count(*) from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s allow filtering;', (
                 db_data_source['id'],
                 from_timestamp,
                 till_timestamp
