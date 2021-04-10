@@ -204,10 +204,10 @@ def get_campaign_data_sources(db_campaign):
 # region 4. data management
 def store_data_record(db_user, db_campaign, db_data_source, timestamp, value):
     session = get_cassandra_session()
-    session.execute(f'insert into "data"."cmp{db_campaign.id}_usr{db_user.id}"("timestamp", "value", "dataSourceId") values (%s,%s,%s) on conflict do nothing returning true;', (
-        timestamp,
-        value,
+    session.execute(f'insert into "data"."cmp{db_campaign.id}_usr{db_user.id}"("dataSourceId", "timestamp", "value") values (%s,%s,%s);', (
         db_data_source.id,
+        timestamp,
+        value
     ))
 
 
