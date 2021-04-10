@@ -81,7 +81,7 @@ def bind_participant_to_campaign(db_user, db_campaign):
             db_campaign.id,
             utils.get_timestamp_ms()
         ))
-        session.execute(f'create table if not exists "data"."{db_campaign.id}-{db_user.id}"("timestamp" bigint, "value" blob, "dataSourceId" int);')
+        session.execute(f'create table if not exists "data"."{db_campaign.id}-{db_user.id}"("dataSourceId" int, "timestamp" bigint, "value" blob, primary key ("dataSourceId", "timestamp"));')
         return True  # new binding
     return False  # old binding
 
