@@ -76,7 +76,7 @@ def user_is_bound_to_campaign(db_user, db_campaign):
 def bind_participant_to_campaign(db_user, db_campaign):
     session = get_cassandra_session()
     if not user_is_bound_to_campaign(db_user=db_user, db_campaign=db_campaign):
-        session.execute('insert into "stats"."campaignParticipantStats"("userId", "campaignId", "join_timestamp")  values (%s,%s,%s);', (
+        session.execute('insert into "stats"."campaignParticipantStats"("userId", "campaignId", "joinTimestamp")  values (%s,%s,%s);', (
             db_user.id,
             db_campaign.id,
             utils.get_timestamp_ms()
@@ -143,8 +143,8 @@ def get_campaigns(db_creator_user=None):
 def get_campaign_participants(db_campaign):
     session = get_cassandra_session()
     db_participants = []
-    for participant_id in session.execute('select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all():
-        db_participants += [get_user(user_id=participant_id)]
+    for row in session.execute('select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all():
+        db_participants += [get_user(user_id=row.userId)]
     return db_participants
 
 
@@ -316,7 +316,7 @@ def get_unread_notifications(db_user):
 # region 6. statistics
 def get_participant_join_timestamp(db_user, db_campaign):
     session = get_cassandra_session()
-    res = session.execute('select "join_timestamp" from "stats"."campaignParticipantStats" where "userId"=%s and "campaignId"=%s allow filtering;', (
+    res = session.execute('select "joinTimestamp" from "stats"."campaignParticipantStats" where "userId"=%s and "campaignId"=%s allow filtering;', (
         db_user.id,
         db_campaign.id
     )).one()
