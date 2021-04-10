@@ -40,28 +40,26 @@ def create_user(name, email, session_key):
     return session.execute('select * from "et"."user" where "id"=%s;', (next_id,)).one()
 
 
-def get_user(user_id=None, email=None, session_key=None):
+def get_user(user_id=None, email=None):
     session = get_cassandra_session()
     db_user = None
-    if None not in [user_id, email, session_key]:
-        db_user = session.execute('select * from "et"."user" where "id"=%s and "email"=%s and "sessionKey"=%s allow filtering;', (
+    if None not in [user_id, email]:
+        db_user = session.execute('select * from "et"."user" where "id"=%s and "email"=%s allow filtering;', (
             user_id,
-            email,
-            session_key
+            email
         )).one()
     elif user_id is not None:
         db_user = session.execute('select * from "et"."user" where "id"=%s allow filtering;', (user_id,)).one()
     elif email is not None:
         db_user = session.execute('select * from "et"."user" where "email"=%s allow filtering;', (email,)).one()
-    elif session_key is not None:
-        db_user = session.execute('select * from "et"."user" where "sessionKey"=%s allow filtering;', (session_key,)).one()
     return db_user
 
 
 def update_session_key(db_user, session_key):
     session = get_cassandra_session()
-    session.execute('update "et"."user" set "sessionKey" = %s where "email" = %s;', (
+    session.execute('update "et"."user" set "sessionKey" = %s where "id" = %s and "email" = %s;', (
         session_key,
+        db_user.id,
         db_user.email
     ))
 
