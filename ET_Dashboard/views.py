@@ -407,9 +407,9 @@ def handle_easytrack_monitor(request):
                     if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
                         plot_participant = db_participant_user
                     else:
-                        plot_participant = {'id': 'all'}
+                        plot_participant = None
                 else:
-                    plot_participant = {'id': 'all'}
+                    plot_participant = None
 
                 if 'data_source_name' in request.GET:
                     data_source_name = request.GET['data_source_name']
@@ -417,7 +417,7 @@ def handle_easytrack_monitor(request):
                     if data_source_name == 'all':
                         hourly_stats = {}
                         # region compute hourly stats
-                        for db_participant_user in (db_campaign_participant_users if plot_participant.id == 'all' else [plot_participant]):
+                        for db_participant_user in (db_campaign_participant_users if plot_participant is None else [plot_participant]):
                             for db_data_source in db_campaign_data_sources:
                                 _from_timestamp = from_timestamp
                                 _till_timestamp = _from_timestamp + window
