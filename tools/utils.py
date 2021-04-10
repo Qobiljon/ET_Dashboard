@@ -29,7 +29,7 @@ def calculate_day_number(join_timestamp):
 
 
 def timestamp_to_readable_string(timestamp_ms):
-    if timestamp_ms == 0:
+    if timestamp_ms is None or timestamp_ms == 0:
         return "N/A"
     else:
         return datetime.datetime.fromtimestamp(float(timestamp_ms) / 1000).strftime('%m/%d (%a), %I:%M %p')
