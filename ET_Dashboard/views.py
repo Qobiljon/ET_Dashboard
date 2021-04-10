@@ -263,7 +263,7 @@ def handle_campaign_editor(request):
                             'title': '"%s" Campaign Editor' % db_campaign.name,
                             'campaign': db_campaign,
                             'campaign_start_time': utils.timestamp_to_web_string(timestamp_ms=db_campaign.startTimestamp),
-                            'campaign_end_time': utils.timestamp_to_web_string(timestamp_ms=db_campaign.endTZimestamp),
+                            'campaign_end_time': utils.timestamp_to_web_string(timestamp_ms=db_campaign.endTimestamp),
                             'data_sources': campaign_data_sources
                         }
                     )
