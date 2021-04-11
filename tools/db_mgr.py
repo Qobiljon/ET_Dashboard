@@ -423,7 +423,7 @@ def get_filtered_amount_of_data(db_campaign, from_timestamp=0, till_timestamp=99
             # single data source
             for db_participant_user in get_campaign_participants(db_campaign=db_campaign):
                 amount += session.execute(f'select count(*) from "data"."{db_campaign.id}-{db_participant_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s allow filtering;', (
-                    db_data_source['id'],
+                    db_data_source.id,
                     from_timestamp,
                     till_timestamp
                 )).one()[0]
@@ -439,7 +439,7 @@ def get_filtered_amount_of_data(db_campaign, from_timestamp=0, till_timestamp=99
             # single data source
             # f'select count(*) as "amount" from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "dataSourceId"={db_data_source["id"]} and "timestamp">={from_timestamp} and "timestamp"<{till_timestamp};'
             amount += session.execute(f'select count(*) from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s allow filtering;', (
-                db_data_source['id'],
+                db_data_source.id,
                 from_timestamp,
                 till_timestamp
             )).one()[0]
