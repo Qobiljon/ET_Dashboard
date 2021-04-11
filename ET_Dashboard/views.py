@@ -682,7 +682,7 @@ def handle_db_mgmt_api(request):
     # 2. copy data sources
     cur.execute('select * from "et"."data_source";')
     for pg_data_source in cur.fetchall():
-        session.execute('insert into "et"."dataSource"("id", "creatorId", "name", "icon_name") values (%s,%s,%s,%s);', (
+        session.execute('insert into "et"."dataSource"("id", "creatorId", "name", "iconName") values (%s,%s,%s,%s);', (
             pg_data_source['id'],
             0,
             61,

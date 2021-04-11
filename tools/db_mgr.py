@@ -163,7 +163,7 @@ def get_campaign_participants_count(db_campaign):
 def create_data_source(db_creator_user, name, icon_name):
     session = get_cassandra_session()
     next_id = get_next_id(session=session, table_name='et.dataSource')
-    session.execute('insert into "et"."dataSource"("id", "creatorId", "name", "icon_name") values (%s,%s,%s,%s);', (
+    session.execute('insert into "et"."dataSource"("id", "creatorId", "name", "iconName") values (%s,%s,%s,%s);', (
         next_id,
         db_creator_user.id,
         name,
