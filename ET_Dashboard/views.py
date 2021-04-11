@@ -911,11 +911,14 @@ def huno_json_participant_stats(request):
         amount_of_samples[_db_data_source.id] = _amount_of_samples
         sync_timestamps[_db_data_source.id] = _sync_timestamp
 
+    last_sync_timestamps = [sync_timestamps[x] for x in sync_timestamps]
+    while None in last_sync_timestamps:
+        last_sync_timestamps.remove(None)
     return JsonResponse(data={
         'success': True,
         'participation_days': utils.calculate_day_number(join_timestamp=db.get_participant_join_timestamp(db_user=db_participant, db_campaign=db_campaign)),
         'total_amount': sum([amount_of_samples[x] for x in amount_of_samples]),
-        'last_sync_ts': max([sync_timestamps[x] for x in sync_timestamps]),
+        'last_sync_ts': max(last_sync_timestamps) if len(last_sync_timestamps) > 0 else 'N/A',
         'per_data_source_amount': {x: amount_of_samples[x] for x in amount_of_samples},
         'per_data_source_last_sync_ts': {x: sync_timestamps[x] for x in sync_timestamps}
     })
