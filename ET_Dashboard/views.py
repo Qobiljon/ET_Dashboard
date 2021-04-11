@@ -677,6 +677,7 @@ def handle_db_mgmt_api(request):
         pg_campaign['start_timestamp'],
         pg_campaign['end_timestamp']
     ))
+    cs_campaign = db.get_campaign(campaign_id=next_id, db_creator_user=cs_creator_user)
     print('1. campaign copied')
 
     # 2. copy data sources
