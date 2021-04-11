@@ -740,7 +740,8 @@ def handle_db_mgmt_api(request):
     db_campaign = db.get_campaign(campaign_id=0)
     db_data_source = db.get_data_source(data_source_id=11)
     for db_participant in db.get_campaign_participants(db_campaign=db_campaign):
-        for data in cur.execute(f'select * from "data"."{db_campaign.id}-{db_participant.id}" where "data_source_id"=%s;', (db_data_source.id,)):
+        cur.execute(f'select * from "data"."4-{db_participant.id}" where "data_source_id"=11;')
+        for data in cur.fetchall():
             db.store_data_record(db_user=db_participant, db_campaign=db_campaign, db_data_source=db_data_source, timestamp=data['timestamp'], value=data['value'])
     cur.close()
     conn.close()
