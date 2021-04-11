@@ -814,7 +814,7 @@ def huno_json_total_ema_score(request):
 
     res = {'success': True, 'scores': {}}
     for ema in db.get_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source):
-        cells = str(bytes(ema['value']), encoding='utf8').split(' ')
+        cells = str(bytes(ema.value), encoding='utf8').split(' ')
         res['scores'][int(cells[0])] = sum([int(x) for x in cells[1:]])
 
     return JsonResponse(data=res)
@@ -837,7 +837,7 @@ def huno_json_hr(request):
 
     hrs = []
     for hr in db.get_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source):
-        cells = str(bytes(hr['value']), encoding='utf8').split(' ')
+        cells = str(bytes(hr.value), encoding='utf8').split(' ')
         hrs += [int(cells[1])]
     res = {'success': True, 'hr': 'n/a' if len(hrs) == 0 else sum(hrs) / len(hrs)}
 
