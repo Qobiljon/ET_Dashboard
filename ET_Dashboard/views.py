@@ -663,14 +663,27 @@ def handle_db_mgmt_api(request):
     cur = conn.cursor(cursor_factory=psycopg2_extras.DictCursor)
     session = db.get_cassandra_session()
 
+    # 0. copy users
+    cur.execute('select * from "et"."user"')
+    cs_creator_user = None
+    for pg_user in cur.fetchall():
+        session.execute('insert into "et"."user"("id", "email", "sessionKey", "name") values (%s,%s,%s,%s);', (
+            pg_user['id'],
+            pg_user['email'],
+            utils.md5(value=f'{pg_user["email"]}{utils.now_us()}'),
+            pg_user['name']
+        ))
+        if pg_user['email'] == 'nsl.stdd@gmail.com':
+            cs_creator_user = session.execute('select * from "et"."user" where "id"=%s;', (pg_user['id'],)).one()
+    print('0. users copied')
+
     # 1. copy campaign
     cur.execute('select * from "et"."campaign" where "id"=4;')
     pg_campaign = cur.fetchone()
-    cs_creator_user = db.get_user(user_id=0)
     next_id = db.get_next_id(session=session, table_name='et.campaign')
     session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "configJson", "startTimestamp", "endTimestamp") values (%s,%s,%s,%s,%s,%s,%s);', (
         next_id,
-        61,
+        cs_creator_user.id,
         pg_campaign['name'],
         pg_campaign['notes'],
         pg_campaign['config_json'],
@@ -685,7 +698,7 @@ def handle_db_mgmt_api(request):
     for pg_data_source in cur.fetchall():
         session.execute('insert into "et"."dataSource"("id", "creatorId", "name", "iconName") values (%s,%s,%s,%s);', (
             pg_data_source['id'],
-            61,
+            cs_creator_user.id,
             pg_data_source['name'],
             pg_data_source['icon_name']
         ))
@@ -699,13 +712,11 @@ def handle_db_mgmt_api(request):
     count = 1
     for pg_stat in pg_stats:
         # 3.1. copy participant
-        cur.execute('select * from "et"."user" where "id"=%s;', (pg_stat['user_id'],))
-        pg_participant = cur.fetchone()
-        cs_participant = db.create_user(name=pg_participant['name'], email=pg_participant['email'], session_key=utils.md5(value=f'{pg_participant["email"]}{utils.now_us()}'))
+        cs_participant = db.get_user(pg_stat['user_id'])
         print(f'   ({count}/{max_count}) participant copied (name = {cs_participant.name})')
         # 3.2. copy data
         db.bind_participant_to_campaign(db_user=cs_participant, db_campaign=cs_campaign)
-        cur.execute(f'select * from "data"."{pg_campaign["id"]}-{pg_participant["id"]}" limit 1000;')
+        cur.execute(f'select * from "data"."{pg_campaign["id"]}-{cs_participant.id}" limit 1000;')
         for pg_value in cur.fetchall():
             if pg_value['data_source_id'] not in cs_data_sources:
                 cs_data_sources[pg_value['data_source_id']] = db.get_data_source(data_source_id=pg_value['data_source_id'])
