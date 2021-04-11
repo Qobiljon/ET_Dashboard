@@ -908,7 +908,7 @@ def huno_json_participant_stats(request):
     amount_of_samples = {}
     sync_timestamps = {}
     for _db_data_source, _amount_of_samples, _sync_timestamp in stats:
-        amount_of_samples[_db_data_source.id] = _amount_of_samples
+        amount_of_samples[_db_data_source.id] = _amount_of_samples if _amount_of_samples is not None else 0
         sync_timestamps[_db_data_source.id] = _sync_timestamp
 
     last_sync_timestamps = [sync_timestamps[x] for x in sync_timestamps]
