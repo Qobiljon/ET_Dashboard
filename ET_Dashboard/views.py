@@ -652,6 +652,82 @@ def handle_db_mgmt_api(request):
     #     for db_participant in db.get_campaign_participants(db_campaign=db_campaign):
     #         print(f'{db_campaign.id}-{db_participant["id"]} ({count} / {max_count})')
     #         db.rescue_data_table(db_campaign=db_campaign, db_participant=db_participant)
+    # import psycopg2
+    # from psycopg2 import extras as psycopg2_extras
+    # conn = psycopg2.connect(
+    #     host='127.0.0.1',
+    #     database='easytrack_db',
+    #     user='postgres',
+    #     password='postgres'
+    # )
+    # cur = conn.cursor(cursor_factory=psycopg2_extras.DictCursor)
+    # session = db.get_cassandra_session()
+    #
+    # # 0. copy users
+    # cur.execute('select * from "et"."user"')
+    # cs_creator_user = None
+    # for pg_user in cur.fetchall():
+    #     session.execute('insert into "et"."user"("id", "email", "sessionKey", "name") values (%s,%s,%s,%s);', (
+    #         pg_user['id'],
+    #         pg_user['email'],
+    #         utils.md5(value=f'{pg_user["email"]}{utils.now_us()}'),
+    #         pg_user['name']
+    #     ))
+    #     if pg_user['email'] == 'nsl.stdd@gmail.com':
+    #         cs_creator_user = session.execute('select * from "et"."user" where "id"=%s;', (pg_user['id'],)).one()
+    # print('0. users copied')
+    #
+    # # 1. copy campaign
+    # cur.execute('select * from "et"."campaign" where "id"=4;')
+    # pg_campaign = cur.fetchone()
+    # next_id = db.get_next_id(session=session, table_name='et.campaign')
+    # session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "configJson", "startTimestamp", "endTimestamp") values (%s,%s,%s,%s,%s,%s,%s);', (
+    #     next_id,
+    #     cs_creator_user.id,
+    #     pg_campaign['name'],
+    #     pg_campaign['notes'],
+    #     pg_campaign['config_json'],
+    #     pg_campaign['start_timestamp'],
+    #     pg_campaign['end_timestamp']
+    # ))
+    # cs_campaign = db.get_campaign(campaign_id=next_id, db_creator_user=cs_creator_user)
+    # print('1. campaign copied')
+    #
+    # # 2. copy data sources
+    # cur.execute('select * from "et"."data_source";')
+    # for pg_data_source in cur.fetchall():
+    #     session.execute('insert into "et"."dataSource"("id", "creatorId", "name", "iconName") values (%s,%s,%s,%s);', (
+    #         pg_data_source['id'],
+    #         cs_creator_user.id,
+    #         pg_data_source['name'],
+    #         pg_data_source['icon_name']
+    #     ))
+    # print('2. data sources copied')
+    #
+    # # 3. copy participants and data
+    # cur.execute('select * from "stats"."campaign_participant_stats" where "campaign_id"=4;')
+    # pg_stats = cur.fetchall()
+    # cs_data_sources = {}
+    # max_count = len(pg_stats)
+    # count = 1
+    # for pg_stat in pg_stats:
+    #     # 3.1. copy participant
+    #     cs_participant = db.get_user(pg_stat['user_id'])
+    #     print(f'   ({count}/{max_count}) participant copied (name = {cs_participant.name})')
+    #     # 3.2. copy data
+    #     db.bind_participant_to_campaign(db_user=cs_participant, db_campaign=cs_campaign)
+    #     cur.execute(f'select * from "data"."{pg_campaign["id"]}-{cs_participant.id}" limit 1000;')
+    #     for pg_value in cur.fetchall():
+    #         if pg_value['data_source_id'] not in cs_data_sources:
+    #             cs_data_sources[pg_value['data_source_id']] = db.get_data_source(data_source_id=pg_value['data_source_id'])
+    #         db.store_data_record(db_user=cs_participant, db_campaign=cs_campaign, db_data_source=cs_data_sources[pg_value['data_source_id']], timestamp=pg_value['timestamp'], value=bytes(pg_value['value']))
+    #     print(f'   ({count}/{max_count}) user data copied (name = {cs_participant.name})')
+    #     count += 1
+    #
+    # print('3. all done')
+    # cur.close()
+    # conn.close()
+
     import psycopg2
     from psycopg2 import extras as psycopg2_extras
     conn = psycopg2.connect(
@@ -661,72 +737,14 @@ def handle_db_mgmt_api(request):
         password='postgres'
     )
     cur = conn.cursor(cursor_factory=psycopg2_extras.DictCursor)
-    session = db.get_cassandra_session()
-
-    # 0. copy users
-    cur.execute('select * from "et"."user"')
-    cs_creator_user = None
-    for pg_user in cur.fetchall():
-        session.execute('insert into "et"."user"("id", "email", "sessionKey", "name") values (%s,%s,%s,%s);', (
-            pg_user['id'],
-            pg_user['email'],
-            utils.md5(value=f'{pg_user["email"]}{utils.now_us()}'),
-            pg_user['name']
-        ))
-        if pg_user['email'] == 'nsl.stdd@gmail.com':
-            cs_creator_user = session.execute('select * from "et"."user" where "id"=%s;', (pg_user['id'],)).one()
-    print('0. users copied')
-
-    # 1. copy campaign
-    cur.execute('select * from "et"."campaign" where "id"=4;')
-    pg_campaign = cur.fetchone()
-    next_id = db.get_next_id(session=session, table_name='et.campaign')
-    session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "configJson", "startTimestamp", "endTimestamp") values (%s,%s,%s,%s,%s,%s,%s);', (
-        next_id,
-        cs_creator_user.id,
-        pg_campaign['name'],
-        pg_campaign['notes'],
-        pg_campaign['config_json'],
-        pg_campaign['start_timestamp'],
-        pg_campaign['end_timestamp']
-    ))
-    cs_campaign = db.get_campaign(campaign_id=next_id, db_creator_user=cs_creator_user)
-    print('1. campaign copied')
-
-    # 2. copy data sources
-    cur.execute('select * from "et"."data_source";')
-    for pg_data_source in cur.fetchall():
-        session.execute('insert into "et"."dataSource"("id", "creatorId", "name", "iconName") values (%s,%s,%s,%s);', (
-            pg_data_source['id'],
-            cs_creator_user.id,
-            pg_data_source['name'],
-            pg_data_source['icon_name']
-        ))
-    print('2. data sources copied')
-
-    # 3. copy participants and data
-    cur.execute('select * from "stats"."campaign_participant_stats" where "campaign_id"=4;')
-    pg_stats = cur.fetchall()
-    cs_data_sources = {}
-    max_count = len(pg_stats)
-    count = 1
-    for pg_stat in pg_stats:
-        # 3.1. copy participant
-        cs_participant = db.get_user(pg_stat['user_id'])
-        print(f'   ({count}/{max_count}) participant copied (name = {cs_participant.name})')
-        # 3.2. copy data
-        db.bind_participant_to_campaign(db_user=cs_participant, db_campaign=cs_campaign)
-        cur.execute(f'select * from "data"."{pg_campaign["id"]}-{cs_participant.id}" limit 1000;')
-        for pg_value in cur.fetchall():
-            if pg_value['data_source_id'] not in cs_data_sources:
-                cs_data_sources[pg_value['data_source_id']] = db.get_data_source(data_source_id=pg_value['data_source_id'])
-            db.store_data_record(db_user=cs_participant, db_campaign=cs_campaign, db_data_source=cs_data_sources[pg_value['data_source_id']], timestamp=pg_value['timestamp'], value=bytes(pg_value['value']))
-        print(f'   ({count}/{max_count}) user data copied (name = {cs_participant.name})')
-        count += 1
-
-    print('3. all done')
+    db_campaign = db.get_campaign(campaign_id=0)
+    db_data_source = db.get_data_source(data_source_id=11)
+    for db_participant in db.get_campaign_participants(db_campaign=db_campaign):
+        for data in cur.execute(f'select * from "data"."{db_campaign.id}-{db_participant.id}" where "data_source_id"=%s;', (db_data_source.id,)):
+            db.store_data_record(db_user=db_participant, db_campaign=db_campaign, db_data_source=db_data_source, timestamp=data['timestamp'], value=data['value'])
     cur.close()
     conn.close()
+
     return JsonResponse(data={'rescued': True})
 
 
