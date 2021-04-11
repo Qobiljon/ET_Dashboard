@@ -18,16 +18,16 @@ def end():
     settings.cassandra_cluster.shutdown()
 
 
-# endregion
-
-
-# region 1. user management
 def get_next_id(session, table_name):
     res = session.execute(f'select max("id") from {table_name};')
     last_id = res.one()[0]
     return 0 if last_id is None else last_id + 1
 
 
+# endregion
+
+
+# region 1. user management
 def create_user(name, email, session_key):
     session = get_cassandra_session()
     next_id = get_next_id(session=session, table_name='et.user')
@@ -90,28 +90,31 @@ def bind_participant_to_campaign(db_user, db_campaign):
 
 
 # region 2. campaign management
-def create_or_update_campaign(db_user_creator, name, notes, configurations, start_timestamp, end_timestamp, db_campaign=None):
+def create_or_update_campaign(db_creator_user, name, notes, configurations, start_timestamp, end_timestamp, db_campaign=None):
     session = get_cassandra_session()
     if db_campaign is None:
+        next_id = get_next_id(session=session, table_name='et.campaign')
         session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "configJson", "startTimestamp", "endTimestamp") values (%s,%s,%s,%s,%s,%s,%s);', (
-            get_next_id(session=session, table_name='et.campaign'),
-            db_user_creator.id,
+            next_id,
+            db_creator_user.id,
             name,
             notes,
             configurations,
             start_timestamp,
             end_timestamp,
         ))
-    elif db_campaign.creatorId == db_user_creator.id:
+        return get_campaign(campaign_id=next_id, db_creator_user=db_creator_user)
+    elif db_campaign.creatorId == db_creator_user.id:
         session.execute('update "et"."campaign" set "name" = %s, "notes" = %s, "configJson" = %s, "startTimestamp" = %s, "endTimestamp" = %s where "creatorId"=%s and "id"=%s;', (
             name,
             notes,
             configurations,
             start_timestamp,
             end_timestamp,
-            db_user_creator.id,
+            db_creator_user.id,
             db_campaign.id
         ))
+        return db_campaign
 
 
 def get_campaign(campaign_id, db_creator_user=None):

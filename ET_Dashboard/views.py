@@ -341,7 +341,7 @@ def handle_campaign_editor(request):
                     campaign_params = prepare_campaign_params()
                     if campaign_params is not None:
                         db.create_or_update_campaign(
-                            db_user_creator=db_user,
+                            db_creator_user=db_user,
                             name=campaign_params['name'],
                             notes=campaign_params['notes'],
                             configurations=campaign_params['configurations'],
@@ -356,7 +356,7 @@ def handle_campaign_editor(request):
                     campaign_params = prepare_campaign_params()
                     if campaign_params is not None:
                         db.create_or_update_campaign(
-                            db_user_creator=db_user,
+                            db_creator_user=db_user,
                             name=campaign_params['name'],
                             notes=campaign_params['notes'],
                             configurations=campaign_params['configurations'],
@@ -652,6 +652,64 @@ def handle_db_mgmt_api(request):
     #     for db_participant in db.get_campaign_participants(db_campaign=db_campaign):
     #         print(f'{db_campaign.id}-{db_participant["id"]} ({count} / {max_count})')
     #         db.rescue_data_table(db_campaign=db_campaign, db_participant=db_participant)
+    import psycopg2
+    from psycopg2 import extras as psycopg2_extras
+    conn = psycopg2.connect(
+        host='127.0.0.1',
+        database='easytrack_db',
+        user='postgres',
+        password='postgres'
+    )
+    cur = conn.cursor(cursor_factory=psycopg2_extras.DictCursor)
+    session = db.get_cassandra_session()
+
+    # 1. copy campaign
+    cur.execute('select * from "et"."campaign" where "id"=4;')
+    pg_campaign = cur.fetchone()
+    cs_creator_user = db.get_user(user_id=0)
+    cs_campaign = db.create_or_update_campaign(
+        db_creator_user=cs_creator_user,
+        name=pg_campaign['name'],
+        notes=pg_campaign['notes'],
+        configurations=pg_campaign['config_json'],
+        start_timestamp=pg_campaign['start_timestamp'],
+        end_timestamp=pg_campaign['end_timestamp']
+    )
+    print('1. campaign copied')
+
+    # prepare data source map
+    cur.execute('select * from "et"."data_source";')
+    pg_data_source_ids = {}
+    for pg_data_source in cur.fetchall():
+        pg_data_source_ids[pg_data_source['name']] = pg_data_source['id']
+    data_source_id_map = {}
+    for cs_data_source in db.get_all_data_sources():
+        data_source_id_map[pg_data_source_ids[cs_data_source.name]] = cs_data_source.id
+    print('   data sources prepared')
+
+    # 2. copy participants and data
+    cur.execute('select * from "stats"."campaign_participant_stats" where "campaign_id"=4;')
+    pg_stats = cur.fetchall()
+    cs_data_sources = {}
+    for pg_stat in pg_stats:
+        # 2.1. copy participant
+        cur.execute('select * from "et"."user" where "id"=%s;', (pg_stat['user_id'],))
+        pg_participant = cur.fetchone()
+        cs_participant = db.create_user(name=pg_participant['name'], email=pg_participant['email'], session_key=utils.md5(value=f'{pg_participant["email"]}{utils.now_us()}'))
+        print(f'   participant copied (name = {cs_participant.name})')
+        # 2.2. copy data
+        db.bind_participant_to_campaign(db_user=cs_participant, db_campaign=cs_campaign)
+        cur.execute(f'select * from "data"."{pg_campaign["id"]}-{pg_participant["id"]}" limit 1000;')
+        for pg_value in cur.fetchall():
+            cs_data_source_id = data_source_id_map[pg_value['data_source_id']]
+            if cs_data_source_id not in cs_data_sources:
+                cs_data_sources[cs_data_source_id] = db.get_data_source(data_source_id=cs_data_source_id)
+            db.store_data_record(db_user=cs_participant, db_campaign=cs_campaign, db_data_source=cs_data_sources[cs_data_source_id], timestamp=pg_value['timestamp'], value=bytes(pg_value['value']))
+        print(f'   user data copied (name = {cs_participant.name})')
+
+    print('done')
+    cur.close()
+    conn.close()
     return JsonResponse(data={'rescued': True})
 
 
