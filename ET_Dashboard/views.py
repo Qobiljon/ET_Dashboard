@@ -661,24 +661,26 @@ def handle_db_mgmt_api(request):
         password='postgres'
     )
     cur = conn.cursor(cursor_factory=psycopg2_extras.DictCursor)
+    session = db.get_cassandra_session()
 
     # 1. copy campaign
     cur.execute('select * from "et"."campaign" where "id"=4;')
     pg_campaign = cur.fetchone()
     cs_creator_user = db.get_user(user_id=0)
-    cs_campaign = db.create_or_update_campaign(
-        db_creator_user=cs_creator_user,
-        name=pg_campaign['name'],
-        notes=pg_campaign['notes'],
-        configurations=pg_campaign['config_json'],
-        start_timestamp=pg_campaign['start_timestamp'],
-        end_timestamp=pg_campaign['end_timestamp']
-    )
+    next_id = db.get_next_id(session=session, table_name='et.campaign')
+    session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "configJson", "startTimestamp", "endTimestamp") values (%s,%s,%s,%s,%s,%s,%s);', (
+        next_id,
+        61,
+        pg_campaign['name'],
+        pg_campaign['notes'],
+        pg_campaign['config_json'],
+        pg_campaign['start_timestamp'],
+        pg_campaign['end_timestamp']
+    ))
     print('1. campaign copied')
 
     # 2. copy data sources
     cur.execute('select * from "et"."data_source";')
-    session = db.get_cassandra_session()
     for pg_data_source in cur.fetchall():
         session.execute('insert into "et"."dataSource"("id", "creatorId", "name", "icon_name") values (%s,%s,%s,%s);', (
             pg_data_source['id'],
