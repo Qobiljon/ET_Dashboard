@@ -293,17 +293,18 @@ def get_unread_direct_messages(db_user):
     return db_direct_messages
 
 
-def create_notification(db_target_user, db_campaign, timestamp, subject, content):
+def create_notification(db_campaign, timestamp, subject, content):
     session = get_cassandra_session()
     next_id = get_next_id(session=session, table_name='et.notification')
-    session.execute('insert into "et"."notification"("id", "targetUserId", "campaignId", "timestamp", "subject", "content") values (%s,%s,%s,%s,%s)', (
-        next_id,
-        db_target_user.id,
-        db_campaign.id,
-        timestamp,
-        subject,
-        content
-    ))
+    for db_participant in get_campaign_participants(db_campaign=db_campaign):
+        session.execute('insert into "et"."notification"("id", "targetUserId", "campaignId", "timestamp", "subject", "content") values (%s,%s,%s,%s,%s)', (
+            next_id,
+            db_participant.id,
+            db_campaign.id,
+            timestamp,
+            subject,
+            content
+        ))
     return session.execute('select * from "et"."notification" where "id"=%s;', (next_id,)).one()
 
 

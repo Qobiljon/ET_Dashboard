@@ -792,6 +792,44 @@ def handle_download_dataset_api(request):
 
 
 @login_required
+@require_http_methods(['GET', 'POST'])
+def make_announcement(request):
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if request.method == 'GET':
+            if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
+                db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
+                if db_campaign is not None:
+                    return render(
+                        request=request,
+                        template_name='page_announcement_creator.html',
+                        context={
+                            'title': 'Create announcement / notification',
+                            'campaign': db_campaign
+                        }
+                    )
+                else:
+                    return redirect(to='campaigns-list')
+            else:
+                return redirect(to='campaigns-list')
+        elif request.method == 'POST':
+            if 'campaign_id' in request.POST and utils.is_numeric(request.POST['campaign_id']):
+                db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
+                if db_campaign is not None:
+                    db.create_notification(db_campaign=db_campaign, timestamp=utils.get_timestamp_ms(), subject=request.POST['subject'], content=request.POST['content'])
+                    return redirect(to='campaigns-list')
+                else:
+                    return redirect(to='campaigns-list')
+            else:
+                return redirect(to='campaigns-list')
+        else:
+            return redirect(to='campaigns-list')
+    else:
+        dj_logout(request=request)
+        return redirect(to='login')
+
+
+@login_required
 @require_http_methods(['GET'])
 def handle_notifications_list(request):
     return None

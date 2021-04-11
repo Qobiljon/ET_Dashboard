@@ -22,6 +22,9 @@
                     <a title="View dataset's technical configurations" href="{% url 'dataset-info' %}?campaign_id={{ campaign.id }}">
                         <img class="action_button_green" src="{% static 'info_icon.png' %}" alt="download">
                     </a>
+                    <a title="Make an notification/announcement to this campaign's participants" href="{% url 'announce' %}?campaign_id={{ campaign.id }}">
+                        <img class="action_button_green" src="{% static 'announcement_icon.png' %}" alt="notification / announcement">
+                    </a>
                     <a title="Download your complete dataset at this state" href="{% url 'download-dataset' %}?campaign_id={{ campaign.id }}">
                         <img class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
                     </a>

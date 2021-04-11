@@ -31,8 +31,9 @@ urlpatterns = [
     path('notifications/', views.handle_notifications_list, name='notifications'),
 
     # API (e.g., download file)
-    path('dataset-info', views.handle_dataset_info, name='dataset-info'),
-    path('download-dataset', views.handle_download_dataset_api, name='download-dataset'),
+    path('dataset-info/', views.handle_dataset_info, name='dataset-info'),
+    path('download-dataset/', views.handle_download_dataset_api, name='download-dataset'),
+    path('announce/', views.make_announcement, name='announce'),
     path('delete/', views.handle_delete_campaign_api, name='delete-campaign'),
     path('download-data/', views.handle_download_data_api, name='download-data'),
     path('dbmgmt/', views.handle_db_mgmt_api, name='db-mgmt'),
