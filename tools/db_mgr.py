@@ -364,13 +364,13 @@ def get_participants_per_data_source_stats(db_user, db_campaign):
             db_user.id,
             db_data_source.id,
         )).one()
-        amount_of_samples = 0 if res is None else res.amountOfSamples
+        amount_of_samples = 0 if res is None or res.amountOfSamples is None else res.amountOfSamples
         res = cur.execute(f'select "syncTimestamp" from "stats"."perDataSourceStats" where "campaignId"=%s and "userId"=%s and "dataSourceId"=%s allow filtering;', (
             db_campaign.id,
             db_user.id,
             db_data_source.id,
         )).one()
-        sync_timestamp = 0 if res is None else res.syncTimestamp
+        sync_timestamp = 0 if res is None or res.syncTimestamp is None else res.syncTimestamp
         res_stats += [(
             db_data_source,
             amount_of_samples,
