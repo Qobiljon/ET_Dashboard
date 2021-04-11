@@ -3,7 +3,7 @@
     <form action="{% url 'announce' %}" method="post">
         {% csrf_token %}
         <input type="number" name="campaign_id" hidden value="{{ campaign.id }}">
-        <table>
+        <table id="inputTable">
             <tr>
                 <td><label for="subject">Subject</label>
                 <td><input name="subject" id="subject" type="text" placeholder="e.g., Resolving network issues" required></td>
