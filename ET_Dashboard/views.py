@@ -312,10 +312,10 @@ def handle_campaign_editor(request):
 
                     # bind the data sources and attach data source ids
                     for _index, _data_source in enumerate(_campaign_data_sources):
-                        _id = db.get_data_source(data_source_name=_data_source['name']).id
-                        if _id is None:  # create a new data source
-                            _id = db.create_data_source(db_creator_user=db_user, name=_data_source['name'], icon_name=_data_source['icon_name'])
-                        _campaign_data_sources[_index]['data_source_id'] = _id
+                        _db_data_source = db.get_data_source(data_source_name=_data_source['name'])
+                        if _db_data_source is None:  # create a new data source
+                            _db_data_source = db.create_data_source(db_creator_user=db_user, name=_data_source['name'], icon_name=_data_source['icon_name'])
+                        _campaign_data_sources[_index]['data_source_id'] = _db_data_source.id
                     return _campaign_data_sources
 
                 if 'name' in request.POST and 'notes' in request.POST and 'startTime' in request.POST and 'endTime' and 'remove_inactive_users_timeout' in request.POST:
@@ -850,10 +850,10 @@ def huno_json_total_ema_score(request):
     if None in [db_campaign, db_participant, db_data_source, from_ts, till_ts]:
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
-    res = {'success': True, 'scores': {}}
+    res = {'success': True, 'EMA': {}}
     for ema in db.get_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source):
         cells = str(bytes(ema.value), encoding='utf8').split(' ')
-        res['scores'][int(cells[0])] = sum([int(x) for x in cells[1:]])
+        res['EMA'][int(cells[0])] = {'ema1': int(cells[2]), 'ema2': int(cells[3]), 'ema3': int(cells[4]), 'sum': sum([int(x) for x in cells[5:-1]])}
 
     return JsonResponse(data=res)
 
@@ -885,7 +885,45 @@ def huno_json_hr(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_sleep(request):
-    return JsonResponse(data={'success': False, 'err_msg': 'not implemented'})
+    if not utils.param_check(request.POST, ['campaign_id', 'participant_id', 'data_source_id', 'from_timestamp', 'till_timestamp']):
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
+
+    db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
+    db_participant = db.get_user(user_id=int(request.POST['participant_id']))
+    db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
+    from_ts = int(request.POST['from_timestamp'])
+    till_ts = int(request.POST['till_timestamp'])
+
+    if None in [db_campaign, db_participant, db_data_source, from_ts, till_ts]:
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
+
+    res = {'success': True, 'sleep': {}}
+    for sleep_record in db.get_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source):
+        cells = str(bytes(sleep_record.value), encoding='utf8').split(' ')
+        res['sleep'][int(cells[1])] = int(cells[2])
+
+    return JsonResponse(data=res)
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def huno_json_user_info(request):
+    if not utils.param_check(request.POST, ['campaign_id', 'participant_id', 'data_source_id']):
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
+
+    db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
+    db_participant = db.get_user(user_id=int(request.POST['participant_id']))
+    db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
+
+    if None in [db_campaign, db_participant, db_data_source]:
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
+
+    res = {'success': True, 'user_info': {}}
+    for user_info_record in db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant, db_data_source=db_data_source):
+        cells = str(bytes(user_info_record.value), encoding='utf8').split(' ')
+        res['user_info'][int(cells[2])] = cells[1]
+
+    return JsonResponse(data=res)
 
 
 @csrf_exempt
@@ -920,14 +958,37 @@ def huno_json_total_reward(request):
     if None in [db_campaign, db_participant, db_data_source]:
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
-    res = {'success': True, 'reward': db.get_filtered_amount_of_data(db_campaign=db_campaign, db_user=db_participant, db_data_source=db_data_source) * 250}
+    reward_sum = 0
+    for reward_record in db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant, db_data_source=db_data_source):
+        cells = str(reward_record.value, encoding='utf8').split(' ')
+        reward_sum += int(cells[1])
+
+    res = {'success': True, 'reward': reward_sum}
     return JsonResponse(data=res)
 
 
 @csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_ema_resp_rate(request):
-    return JsonResponse(data={'success': False, 'err_msg': 'not implemented'})
+    if not utils.param_check(request.POST, ['campaign_id', 'participant_id', 'data_source_id_1', 'data_source_id_2', 'from_timestamp', 'till_timestamp']):
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
+
+    db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
+    db_participant = db.get_user(user_id=int(request.POST['participant_id']))
+    db_data_source_1 = db.get_data_source(data_source_id=int(request.POST['data_source_id_1']))
+    db_data_source_2 = db.get_data_source(data_source_id=int(request.POST['data_source_id_2']))
+    from_ts = int(request.POST['from_timestamp'])
+    till_ts = int(request.POST['till_timestamp'])
+
+    if None in [db_campaign, db_participant, db_data_source_1, db_data_source_2, from_ts, till_ts]:
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
+
+    amount_1 = db.get_filtered_amount_of_data(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source_1)
+    amount_2 = db.get_filtered_amount_of_data(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source_2)
+    return JsonResponse(data={
+        'success': True,
+        'ema_rate': round((amount_1 / amount_2) * 100)
+    })
 
 
 @csrf_exempt
@@ -957,3 +1018,26 @@ def huno_json_participant_stats(request):
         'per_data_source_amount': {x: amount_of_samples[x] for x in amount_of_samples},
         'per_data_source_last_sync_ts': {x: sync_timestamps[x] for x in sync_timestamps}
     })
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def huno_json_lottery_winners(request):
+    if not utils.param_check(request.POST, ['campaign_id', 'participant_id', 'data_source_id', 'from_timestamp', 'till_timestamp']):
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
+
+    db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
+    db_participant = db.get_user(user_id=int(request.POST['participant_id']))
+    db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
+    from_ts = int(request.POST['from_timestamp'])
+    till_ts = int(request.POST['till_timestamp'])
+
+    if None in [db_campaign, db_participant]:
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
+
+    res = {'success': True, 'winners': {}}
+    for winner_records in db.get_filtered_data_records(db_user=db_participant, db_campaign=db_campaign, db_data_source=db_data_source, from_timestamp=from_ts, till_timestamp=till_ts):
+        cells = str(winner_records.value, encoding='utf8').split(' ')
+        res['winners'][int(cells[0])] = {'id': int(cells[1]), 'name': cells[2], 'phone_number': cells[3], 'email': cells[4]}
+
+    return JsonResponse(data=res)
