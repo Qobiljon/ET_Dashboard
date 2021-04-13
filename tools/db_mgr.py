@@ -30,7 +30,7 @@ def get_next_id(session, table_name):
 # region 1. user management
 def create_user(name, email, session_key):
     session = get_cassandra_session()
-    next_id = get_next_id(session=session, table_name='et.user')
+    next_id = get_next_id(session=session, table_name='"et"."user"')
     session.execute('insert into "et"."user"("id", "email", "sessionKey", "name") values (%s,%s,%s,%s);', (
         next_id,
         email,
@@ -93,7 +93,7 @@ def bind_participant_to_campaign(db_user, db_campaign):
 def create_or_update_campaign(db_creator_user, name, notes, configurations, start_timestamp, end_timestamp, db_campaign=None):
     session = get_cassandra_session()
     if db_campaign is None:
-        next_id = get_next_id(session=session, table_name='et.campaign')
+        next_id = get_next_id(session=session, table_name='"et"."campaign"')
         session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "configJson", "startTimestamp", "endTimestamp") values (%s,%s,%s,%s,%s,%s,%s);', (
             next_id,
             db_creator_user.id,
@@ -162,7 +162,7 @@ def get_campaign_participants_count(db_campaign):
 # region 3. data source management
 def create_data_source(db_creator_user, name, icon_name):
     session = get_cassandra_session()
-    next_id = get_next_id(session=session, table_name='et.dataSource')
+    next_id = get_next_id(session=session, table_name='"et"."dataSource"')
     session.execute('insert into "et"."dataSource"("id", "creatorId", "name", "iconName") values (%s,%s,%s,%s);', (
         next_id,
         db_creator_user.id,
@@ -281,7 +281,7 @@ def dump_data(db_campaign, db_user):
 # region 5. communication management
 def create_direct_message(db_source_user, db_target_user, subject, content):
     session = get_cassandra_session()
-    next_id = get_next_id(session=session, table_name='et.directMessage')
+    next_id = get_next_id(session=session, table_name='"et"."directMessage"')
     session.execute('insert into "et"."directMessage"("id", "sourceUserId", "targetUserId", "timestamp", "subject", "content")  values (%s,%s,%s,%s,%s);', (
         next_id,
         db_source_user.id,
@@ -302,7 +302,7 @@ def get_unread_direct_messages(db_user):
 
 def create_notification(db_campaign, timestamp, subject, content):
     session = get_cassandra_session()
-    next_id = get_next_id(session=session, table_name='et.notification')
+    next_id = get_next_id(session=session, table_name='"et"."notification"')
     for db_participant in get_campaign_participants(db_campaign=db_campaign):
         session.execute('insert into "et"."notification"("id", "timestamp", "subject", "content", "read", "campaignId", "targetUserId") values (%s,%s,%s,%s,%s,%s,%s)', (
             next_id,
