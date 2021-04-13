@@ -987,7 +987,7 @@ def huno_json_ema_resp_rate(request):
     amount_2 = db.get_filtered_amount_of_data(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source_2)
     return JsonResponse(data={
         'success': True,
-        'ema_rate': round((amount_1 / amount_2) * 100)
+        'ema_rate': 'N/A (division by zero)' if amount_2 == 0 else round((amount_1 / amount_2) * 100)
     })
 
 

@@ -245,7 +245,7 @@ def get_next_k_data_records(db_user, db_campaign, from_timestamp, db_data_source
 def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timestamp=None, till_timestamp=None):
     session = get_cassandra_session()
     if None not in [till_timestamp]:
-        data_records = session.execute(f'select * from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s order by "timestamp" asc allow filtering;', (
+        data_records = session.execute(f'select * from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "dataSourceId"=%s and "timestamp">=%s and "timestamp"<%s order by "timestamp" allow filtering;', (
             db_data_source.id,
             from_timestamp,
             till_timestamp
@@ -261,7 +261,7 @@ def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timesta
             till_timestamp
         )).all()
     else:
-        data_records = session.execute(f'select * from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "dataSourceId"=%s order by "timestamp" allow filtering;', (db_data_source.id)).all()
+        data_records = session.execute(f'select * from "data"."cmp{db_campaign.id}_usr{db_user.id}" where "dataSourceId"=%s order by "timestamp" allow filtering;', (db_data_source.id,)).all()
     return data_records
 
 
