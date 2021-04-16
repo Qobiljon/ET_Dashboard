@@ -921,7 +921,7 @@ def huno_json_user_info(request):
     res = {'success': True, 'user_info': {}}
     for user_info_record in db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant, db_data_source=db_data_source):
         cells = str(bytes(user_info_record.value), encoding='utf8').split(' ')
-        res['user_info'][int(cells[2])] = cells[1]
+        res['user_info'][cells[2]] = cells[1]
 
     return JsonResponse(data=res)
 
