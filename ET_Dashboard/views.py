@@ -142,9 +142,9 @@ def handle_researchers_list(request):
                 if 'targetEmail' in request.GET and 'action' in request.GET and request.GET['action'] in ['add', 'remove']:
                     db_researcher_user = db.get_user(email=request.GET['targetEmail'])
                     if db_researcher_user is not None:
-                        if request.POST['action'] == 'add':
+                        if request.GET['action'] == 'add':
                             db.add_researcher_to_campaign(db_campaign=db_campaign, db_researcher_user=db_researcher_user)
-                        elif request.POST['action'] == 'remove':
+                        elif request.GET['action'] == 'remove':
                             db.remove_researcher_from_campaign(db_campaign=db_campaign, db_researcher_user=db_researcher_user)
                         else:
                             return redirect(to='campaigns-list')
