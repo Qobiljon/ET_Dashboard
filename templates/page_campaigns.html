@@ -27,7 +27,7 @@
                     </a>
                     {% if campaign.created_by_me %}
                         <a title="Manage researchers (i.e., add / remove)" href="{% url 'manage-researchers' %}?campaign_id={{ campaign.id }}">
-                            <img class="action_button_green" src="{% static 'admin_icon.png' %}" alt="manage">
+                            <img class="action_button_green" src="{% static 'researcher_icon.png' %}" alt="manage">
                         </a>
                     {% endif %}
                     <a title="Download your complete dataset at this state" href="{% url 'download-dataset' %}?campaign_id={{ campaign.id }}">
