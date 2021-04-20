@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
     <form id="add-researcher-form" action="{% url 'manage-researchers' %}" method="get">
-        <input type="number" name="id" value="{{ campaign.id }}" hidden>
+        <input type="number" name="campaign_id" value="{{ campaign.id }}" hidden>
+        <input type="text" name="action" value="add" hidden>
         <label for="targetEmail">
             Add new researcher. Email address =
             <input type="email" name="targetEmail" required>
@@ -20,7 +21,7 @@
                 <td class="name_column" title="{{ researcher.name }}">{{ researcher.name }}</td>
                 <td class="email_column" title="{{ researcher.email }}">{{ researcher.email }}</td>
                 <td class="action_column">
-                    <a class="action_button" href="{% url 'manage-researchers' %}?id={{ request.GET.id }}&targetEmail={{ researcher.email }}&action=remove">
+                    <a class="action_button" href="{% url 'manage-researchers' %}?campaign_id={{ request.GET.id }}&targetEmail={{ researcher.email }}&action=remove">
                         <img title="Remove researcher from campaign" class="action_button_red" src="{% static 'remove_icon.png' %}" alt="remove">
                     </a>
                 </td>
