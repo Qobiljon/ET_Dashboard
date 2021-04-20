@@ -136,10 +136,9 @@ def handle_participants_list(request):
 def handle_researchers_list(request):
     db_user = db.get_user(email=request.user.email)
     if db_user is not None:
-        if 'id' in request.GET and str(request.GET['id']).isdigit():
-            db_campaign = db.get_campaign(campaign_id=int(request.GET['id']), db_researcher_user=db_user)
+        if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit():
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']), db_researcher_user=db_user)
             if db_campaign is not None:
-                print('enter')
                 if 'targetEmail' in request.GET and 'action' in request.GET and request.GET['action'] in ['add', 'remove']:
                     db_researcher_user = db.get_user(email=request.GET['targetEmail'])
                     if db_researcher_user is not None:
@@ -148,12 +147,10 @@ def handle_researchers_list(request):
                         elif request.GET['action'] == 'remove':
                             db.remove_researcher_from_campaign(db_campaign=db_campaign, db_researcher_user=db_researcher_user)
                         else:
-                            print('action not found')
                             return redirect(to='campaigns-list')
                     else:
-                        print('researcher user not found')
                         return redirect(to='campaigns-list')
-                print('mid')
+
                 # list of researchers
                 researchers = []
                 for db_researcher_user in db.get_campaign_researchers(db_campaign=db_campaign):
