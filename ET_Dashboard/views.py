@@ -151,25 +151,23 @@ def handle_researchers_list(request):
                     else:
                         return redirect(to='campaigns-list')
 
-                # list of researchers
-                researchers = []
-                for db_researcher_user in db.get_campaign_researchers(db_campaign=db_campaign):
-                    researchers += [{
-                        'name': db_researcher_user.name,
-                        'email': db_researcher_user.email
-                    }]
-                researchers.sort(key=lambda x: x['id'])
-                return render(
-                    request=request,
-                    template_name='page_campaign_researchers.html',
-                    context={
-                        'title': "%s's researchers" % db_campaign.name,
-                        'campaign': db_campaign,
-                        'researchers': researchers
-                    }
-                )
-            else:
-                return redirect(to='campaigns-list')
+            # list of researchers
+            researchers = []
+            for db_researcher_user in db.get_campaign_researchers(db_campaign=db_campaign):
+                researchers += [{
+                    'name': db_researcher_user.name,
+                    'email': db_researcher_user.email
+                }]
+            researchers.sort(key=lambda x: x['id'])
+            return render(
+                request=request,
+                template_name='page_campaign_researchers.html',
+                context={
+                    'title': "%s's researchers" % db_campaign.name,
+                    'campaign': db_campaign,
+                    'researchers': researchers
+                }
+            )
         else:
             return redirect(to='campaigns-list')
     else:
