@@ -98,7 +98,7 @@ def get_campaign_researchers(db_campaign):
     session = get_cassandra_session()
     db_researchers = []
     for row in session.execute('select "researcherId" from "et"."campaignResearchers" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all():
-        db_researchers += [get_user(user_id=row.userId)]
+        db_researchers += [get_user(user_id=row.researcherId)]
     return db_researchers
 
 
