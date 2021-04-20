@@ -158,7 +158,7 @@ def handle_researchers_list(request):
                         'name': db_researcher_user.name,
                         'email': db_researcher_user.email
                     }]
-                researchers.sort(key=lambda x: x['id'])
+                researchers.sort(key=lambda x: x['name'])
                 return render(
                     request=request,
                     template_name='page_campaign_researchers.html',
