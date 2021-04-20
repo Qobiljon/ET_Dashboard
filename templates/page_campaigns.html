@@ -36,9 +36,11 @@
                     <a title="Monitor the campaign {{ campaign.id }}" href="{% url 'easytrack-monitor' %}?campaign_id={{ campaign.id }}&data_source_name=all">
                         <img class="action_button_green" src="{% static 'monitor_icon.png' %}" alt="EasyTracker">
                     </a>
-                    <a title="!!! Delete the campaign (including the data)" id="delete_campaign_{{ campaign.id }}_button" href="#" onclick="deleteCampaignClick(this.id);" data-href="{% url 'delete-campaign' %}?campaign_id={{ campaign.id }}">
-                        <img class="action_button_red" src="{% static 'delete_icon.png' %}" alt="download">
-                    </a>
+                    {% if campaign.created_by_me %}
+                        <a title="!!! Delete the campaign (including the data)" id="delete_campaign_{{ campaign.id }}_button" href="#" onclick="deleteCampaignClick(this.id);" data-href="{% url 'delete-campaign' %}?campaign_id={{ campaign.id }}">
+                            <img class="action_button_red" src="{% static 'delete_icon.png' %}" alt="download">
+                        </a>
+                    {% endif %}
                     {# TODO: finish this notification part #}
                     {# {% with campaign_id=campaign.id %} #}
                     {# <a class="action_button_green" href="{% url 'notifications' %}?campaign_id={{ campaign.id }}">{{ notifications.campaign_id|length }}</a> #}
