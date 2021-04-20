@@ -139,6 +139,7 @@ def handle_researchers_list(request):
         if 'id' in request.GET and str(request.GET['id']).isdigit():
             db_campaign = db.get_campaign(campaign_id=int(request.GET['id']), db_researcher_user=db_user)
             if db_campaign is not None:
+                print('enter')
                 if 'targetEmail' in request.GET and 'action' in request.GET and request.GET['action'] in ['add', 'remove']:
                     db_researcher_user = db.get_user(email=request.GET['targetEmail'])
                     if db_researcher_user is not None:
@@ -147,27 +148,31 @@ def handle_researchers_list(request):
                         elif request.GET['action'] == 'remove':
                             db.remove_researcher_from_campaign(db_campaign=db_campaign, db_researcher_user=db_researcher_user)
                         else:
+                            print('action not found')
                             return redirect(to='campaigns-list')
                     else:
+                        print('researcher user not found')
                         return redirect(to='campaigns-list')
-
-            # list of researchers
-            researchers = []
-            for db_researcher_user in db.get_campaign_researchers(db_campaign=db_campaign):
-                researchers += [{
-                    'name': db_researcher_user.name,
-                    'email': db_researcher_user.email
-                }]
-            researchers.sort(key=lambda x: x['id'])
-            return render(
-                request=request,
-                template_name='page_campaign_researchers.html',
-                context={
-                    'title': "%s's researchers" % db_campaign.name,
-                    'campaign': db_campaign,
-                    'researchers': researchers
-                }
-            )
+                print('mid')
+                # list of researchers
+                researchers = []
+                for db_researcher_user in db.get_campaign_researchers(db_campaign=db_campaign):
+                    researchers += [{
+                        'name': db_researcher_user.name,
+                        'email': db_researcher_user.email
+                    }]
+                researchers.sort(key=lambda x: x['id'])
+                return render(
+                    request=request,
+                    template_name='page_campaign_researchers.html',
+                    context={
+                        'title': "%s's researchers" % db_campaign.name,
+                        'campaign': db_campaign,
+                        'researchers': researchers
+                    }
+                )
+            else:
+                return redirect(to='campaigns-list')
         else:
             return redirect(to='campaigns-list')
     else:
