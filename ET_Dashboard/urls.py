@@ -29,6 +29,7 @@ urlpatterns = [
     path('data/', views.handle_raw_samples_list, name='view_data'),
     path('edit/', views.handle_campaign_editor, name='campaign-editor'),
     path('notifications/', views.handle_notifications_list, name='notifications'),
+    path('researchers/', views.handle_researchers_list, name='manage-researchers'),
 
     # API (e.g., download file)
     path('dataset-info/', views.handle_dataset_info, name='dataset-info'),
@@ -36,7 +37,6 @@ urlpatterns = [
     path('announce/', views.make_announcement, name='announce'),
     path('delete/', views.handle_delete_campaign_api, name='delete-campaign'),
     path('download-data/', views.handle_download_data_api, name='download-data'),
-    path('dbmgmt/', views.handle_db_mgmt_api, name='db-mgmt'),
 
     # visuals (e.g., DQ)
     path('et-monitor/', views.handle_easytrack_monitor, name='easytrack-monitor'),

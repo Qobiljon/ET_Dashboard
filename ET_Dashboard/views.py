@@ -66,6 +66,15 @@ def handle_campaigns_list(request):
                 'id': db_campaign.id,
                 'name': db_campaign.name,
                 'notes': db_campaign.notes,
+                'created_by_me': True,
+                'participants': db.get_campaign_participants_count(db_campaign=db_campaign)
+            }]
+        for db_campaign in db.get_researcher_campaigns(db_researcher_user=db_user):
+            my_campaigns += [{
+                'id': db_campaign.id,
+                'name': db_campaign.name,
+                'notes': db_campaign.notes,
+                'created_by_me': False,
                 'participants': db.get_campaign_participants_count(db_campaign=db_campaign)
             }]
         print('%s opened the main page' % request.user.email)
@@ -89,7 +98,7 @@ def handle_participants_list(request):
     db_user = db.get_user(email=request.user.email)
     if db_user is not None:
         if 'id' in request.GET and str(request.GET['id']).isdigit():
-            db_campaign = db.get_campaign(campaign_id=int(request.GET['id']), db_creator_user=db_user)
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['id']), db_researcher_user=db_user)
             if db_campaign is not None:
                 # campaign dashboard page
                 participants = []
@@ -124,11 +133,57 @@ def handle_participants_list(request):
 
 @login_required
 @require_http_methods(['GET'])
+def handle_researchers_list(request):
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'id' in request.GET and str(request.GET['id']).isdigit():
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['id']), db_researcher_user=db_user)
+            if db_campaign is not None:
+                if 'targetEmail' in request.GET and 'action' in request.GET and request.GET['action'] in ['add', 'remove']:
+                    db_researcher_user = db.get_user(email=request.GET['targetEmail'])
+                    if db_researcher_user is not None:
+                        if request.POST['action'] == 'add':
+                            db.add_researcher_to_campaign(db_campaign=db_campaign, db_researcher_user=db_researcher_user)
+                        elif request.POST['action'] == 'remove':
+                            db.remove_researcher_from_campaign(db_campaign=db_campaign, db_researcher_user=db_researcher_user)
+                        else:
+                            return redirect(to='campaigns-list')
+                    else:
+                        return redirect(to='campaigns-list')
+
+                # list of researchers
+                researchers = []
+                for db_researcher_user in db.get_campaign_researchers(db_campaign=db_campaign):
+                    researchers += [{
+                        'name': db_researcher_user.name,
+                        'email': db_researcher_user.email
+                    }]
+                researchers.sort(key=lambda x: x['id'])
+                return render(
+                    request=request,
+                    template_name='page_campaign_researchers.html',
+                    context={
+                        'title': "%s's researchers" % db_campaign.name,
+                        'campaign': db_campaign,
+                        'researchers': researchers
+                    }
+                )
+            else:
+                return redirect(to='campaigns-list')
+        else:
+            return redirect(to='campaigns-list')
+    else:
+        dj_logout(request=request)
+        return redirect(to='login')
+
+
+@login_required
+@require_http_methods(['GET'])
 def handle_participants_data_list(request):
     db_user = db.get_user(email=request.user.email)
     if db_user is not None:
         if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit():
-            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']), db_creator_user=db_user)
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']), db_researcher_user=db_user)
             if db_campaign is not None:
                 campaign_data_source_configs = {}
                 for data_source in json.loads(s=db_campaign.configJson):
@@ -176,7 +231,7 @@ def handle_raw_samples_list(request):
     db_user = db.get_user(email=request.user.email)
     if db_user is not None:
         if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit():
-            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']), db_creator_user=db_user)
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']), db_researcher_user=db_user)
             if db_campaign is not None:
                 if 'email' in request.GET:
                     db_participant_user = db.get_user(email=request.GET['email'])
@@ -237,7 +292,7 @@ def handle_campaign_editor(request):
             db_data_sources = db.get_all_data_sources()
             if 'edit' in request.GET and 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit():
                 # edit an existing campaign
-                db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']), db_creator_user=db_user)
+                db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']), db_researcher_user=db_user)
                 if db_campaign is not None:
                     campaign_db_data_sources = []
                     campaign_data_source_configs = {}
@@ -641,112 +696,6 @@ def handle_download_data_api(request):
     else:
         dj_logout(request=request)
         return redirect(to='login')
-
-
-@csrf_exempt
-@require_http_methods(['POST'])
-def handle_db_mgmt_api(request):
-    # for db_campaign in db.get_campaigns():
-    #     max_count = db.get_campaign_participants_count(db_campaign=db_campaign)
-    #     count = 1
-    #     for db_participant in db.get_campaign_participants(db_campaign=db_campaign):
-    #         print(f'{db_campaign.id}-{db_participant["id"]} ({count} / {max_count})')
-    #         db.rescue_data_table(db_campaign=db_campaign, db_participant=db_participant)
-    # import psycopg2
-    # from psycopg2 import extras as psycopg2_extras
-    # conn = psycopg2.connect(
-    #     host='127.0.0.1',
-    #     database='easytrack_db',
-    #     user='postgres',
-    #     password='postgres'
-    # )
-    # cur = conn.cursor(cursor_factory=psycopg2_extras.DictCursor)
-    # session = db.get_cassandra_session()
-    #
-    # # 0. copy users
-    # cur.execute('select * from "et"."user"')
-    # cs_creator_user = None
-    # for pg_user in cur.fetchall():
-    #     session.execute('insert into "et"."user"("id", "email", "sessionKey", "name") values (%s,%s,%s,%s);', (
-    #         pg_user['id'],
-    #         pg_user['email'],
-    #         utils.md5(value=f'{pg_user["email"]}{utils.now_us()}'),
-    #         pg_user['name']
-    #     ))
-    #     if pg_user['email'] == 'nsl.stdd@gmail.com':
-    #         cs_creator_user = session.execute('select * from "et"."user" where "id"=%s;', (pg_user['id'],)).one()
-    # print('0. users copied')
-    #
-    # # 1. copy campaign
-    # cur.execute('select * from "et"."campaign" where "id"=4;')
-    # pg_campaign = cur.fetchone()
-    # next_id = db.get_next_id(session=session, table_name='et.campaign')
-    # session.execute('insert into "et"."campaign"("id", "creatorId", "name", "notes", "configJson", "startTimestamp", "endTimestamp") values (%s,%s,%s,%s,%s,%s,%s);', (
-    #     next_id,
-    #     cs_creator_user.id,
-    #     pg_campaign['name'],
-    #     pg_campaign['notes'],
-    #     pg_campaign['config_json'],
-    #     pg_campaign['start_timestamp'],
-    #     pg_campaign['end_timestamp']
-    # ))
-    # cs_campaign = db.get_campaign(campaign_id=next_id, db_creator_user=cs_creator_user)
-    # print('1. campaign copied')
-    #
-    # # 2. copy data sources
-    # cur.execute('select * from "et"."data_source";')
-    # for pg_data_source in cur.fetchall():
-    #     session.execute('insert into "et"."dataSource"("id", "creatorId", "name", "iconName") values (%s,%s,%s,%s);', (
-    #         pg_data_source['id'],
-    #         cs_creator_user.id,
-    #         pg_data_source['name'],
-    #         pg_data_source['icon_name']
-    #     ))
-    # print('2. data sources copied')
-    #
-    # # 3. copy participants and data
-    # cur.execute('select * from "stats"."campaign_participant_stats" where "campaign_id"=4;')
-    # pg_stats = cur.fetchall()
-    # cs_data_sources = {}
-    # max_count = len(pg_stats)
-    # count = 1
-    # for pg_stat in pg_stats:
-    #     # 3.1. copy participant
-    #     cs_participant = db.get_user(pg_stat['user_id'])
-    #     print(f'   ({count}/{max_count}) participant copied (name = {cs_participant.name})')
-    #     # 3.2. copy data
-    #     db.bind_participant_to_campaign(db_user=cs_participant, db_campaign=cs_campaign)
-    #     cur.execute(f'select * from "data"."{pg_campaign["id"]}-{cs_participant.id}" limit 1000;')
-    #     for pg_value in cur.fetchall():
-    #         if pg_value['data_source_id'] not in cs_data_sources:
-    #             cs_data_sources[pg_value['data_source_id']] = db.get_data_source(data_source_id=pg_value['data_source_id'])
-    #         db.store_data_record(db_user=cs_participant, db_campaign=cs_campaign, db_data_source=cs_data_sources[pg_value['data_source_id']], timestamp=pg_value['timestamp'], value=bytes(pg_value['value']))
-    #     print(f'   ({count}/{max_count}) user data copied (name = {cs_participant.name})')
-    #     count += 1
-    #
-    # print('3. all done')
-    # cur.close()
-    # conn.close()
-
-    import psycopg2
-    from psycopg2 import extras as psycopg2_extras
-    conn = psycopg2.connect(
-        host='127.0.0.1',
-        database='easytrack_db',
-        user='postgres',
-        password='postgres'
-    )
-    cur = conn.cursor(cursor_factory=psycopg2_extras.DictCursor)
-    db_campaign = db.get_campaign(campaign_id=0)
-    db_data_source = db.get_data_source(data_source_id=11)
-    for db_participant in db.get_campaign_participants(db_campaign=db_campaign):
-        cur.execute(f'select * from "data"."4-{db_participant.id}" where "data_source_id"=11;')
-        for data in cur.fetchall():
-            db.store_data_record(db_user=db_participant, db_campaign=db_campaign, db_data_source=db_data_source, timestamp=data['timestamp'], value=data['value'])
-    cur.close()
-    conn.close()
-
-    return JsonResponse(data={'rescued': True})
 
 
 @login_required

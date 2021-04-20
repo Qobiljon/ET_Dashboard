@@ -86,6 +86,43 @@ def bind_participant_to_campaign(db_user, db_campaign):
     return False  # old binding
 
 
+def get_campaign_participants(db_campaign):
+    session = get_cassandra_session()
+    db_participants = []
+    for row in session.execute('select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all():
+        db_participants += [get_user(user_id=row.userId)]
+    return db_participants
+
+
+def get_campaign_researchers(db_campaign):
+    session = get_cassandra_session()
+    db_researchers = []
+    for row in session.execute('select "researcherId" from "et"."campaignResearchers" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all():
+        db_researchers += [get_user(user_id=row.userId)]
+    return db_researchers
+
+
+def get_campaign_participants_count(db_campaign):
+    session = get_cassandra_session()
+    return len(session.execute('select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all())
+
+
+def add_researcher_to_campaign(db_campaign, db_researcher_user):
+    session = get_cassandra_session()
+    session.execute('insert into "et"."campaignResearchers"("campaignId", "researcherId") values(%s,%s);', (
+        db_campaign.id,
+        db_researcher_user.id
+    ))
+
+
+def remove_researcher_from_campaign(db_campaign, db_researcher_user):
+    session = get_cassandra_session()
+    session.execute('delete from "et"."campaignResearchers" where "campaignId"=%s and "researcherId"=%s;', (
+        db_campaign.id,
+        db_researcher_user.id
+    ))
+
+
 # endregion
 
 
@@ -103,7 +140,7 @@ def create_or_update_campaign(db_creator_user, name, notes, configurations, star
             start_timestamp,
             end_timestamp,
         ))
-        return get_campaign(campaign_id=next_id, db_creator_user=db_creator_user)
+        return get_campaign(campaign_id=next_id, db_researcher_user=db_creator_user)
     elif db_campaign.creatorId == db_creator_user.id:
         session.execute('update "et"."campaign" set "name" = %s, "notes" = %s, "configJson" = %s, "startTimestamp" = %s, "endTimestamp" = %s where "creatorId"=%s and "id"=%s;', (
             name,
@@ -117,15 +154,22 @@ def create_or_update_campaign(db_creator_user, name, notes, configurations, star
         return db_campaign
 
 
-def get_campaign(campaign_id, db_creator_user=None):
+def get_campaign(campaign_id, db_researcher_user=None):
     session = get_cassandra_session()
-    if db_creator_user is None:
+    if db_researcher_user is None:
         db_campaign = session.execute('select * from "et"."campaign" where "id"=%s allow filtering;', (campaign_id,)).one()
     else:
         db_campaign = session.execute('select * from "et"."campaign" where "id"=%s and "creatorId"=%s allow filtering;', (
             campaign_id,
-            db_creator_user.id
+            db_researcher_user.id
         )).one()
+        if db_campaign is None:
+            is_researcher = session.execute('select count(*) from "et"."campaignResearchers" where "campaignId"=%s and "researcherId"=%s;', (
+                campaign_id,
+                db_researcher_user.id
+            )).one()[0] > 0
+            if is_researcher:
+                db_campaign = get_campaign(campaign_id=campaign_id)
     return db_campaign
 
 
@@ -143,17 +187,12 @@ def get_campaigns(db_creator_user=None):
     return db_campaigns
 
 
-def get_campaign_participants(db_campaign):
+def get_researcher_campaigns(db_researcher_user):
     session = get_cassandra_session()
-    db_participants = []
-    for row in session.execute('select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all():
-        db_participants += [get_user(user_id=row.userId)]
-    return db_participants
-
-
-def get_campaign_participants_count(db_campaign):
-    session = get_cassandra_session()
-    return len(session.execute('select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all())
+    db_campaigns = []
+    for row in session.execute('select "campaignId" from "et"."campaignResearchers" where "researcherId"=%s allow filtering;', (db_researcher_user.id,)).all():
+        db_campaigns += [get_campaign(campaign_id=row.campaignId)]
+    return db_campaigns
 
 
 # endregion
