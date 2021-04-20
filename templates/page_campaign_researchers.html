@@ -21,7 +21,7 @@
                 <td class="name_column" title="{{ researcher.name }}">{{ researcher.name }}</td>
                 <td class="email_column" title="{{ researcher.email }}">{{ researcher.email }}</td>
                 <td class="action_column">
-                    <a class="action_button" href="{% url 'manage-researchers' %}?campaign_id={{ request.GET.id }}&targetEmail={{ researcher.email }}&action=remove">
+                    <a class="action_button" href="{% url 'manage-researchers' %}?campaign_id={{ campaign.id }}&targetEmail={{ researcher.email }}&action=remove">
                         <img title="Remove researcher from campaign" class="action_button_red" src="{% static 'remove_icon.png' %}" alt="remove">
                     </a>
                 </td>
