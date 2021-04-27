@@ -1,21 +1,9 @@
-from et_grpcs import et_service_pb2_grpc
-from utils import settings
+from tools import settings
 import datetime
+import hashlib
 import time
-import grpc
 import os
 import re
-
-
-def get_grpc_channel_stub():
-    MAX_MESSAGE_LENGTH = 2147483647
-
-    channel = grpc.insecure_channel('127.0.0.1:50051', options=[
-        ('grpc.max_send_message_length', MAX_MESSAGE_LENGTH),
-        ('grpc.max_receive_message_length', MAX_MESSAGE_LENGTH),
-    ])
-    stub = et_service_pb2_grpc.ETServiceStub(channel=channel)
-    return channel, stub
 
 
 def datetime_to_timestamp_ms(value: datetime):
@@ -26,7 +14,7 @@ def get_timestamp_hour(timestamp_ms):
     return datetime.datetime.fromtimestamp(timestamp_ms / 1000).hour
 
 
-def timestamp_now_ms():
+def get_timestamp_ms():
     return int(round(time.time() * 1000))
 
 
@@ -41,7 +29,7 @@ def calculate_day_number(join_timestamp):
 
 
 def timestamp_to_readable_string(timestamp_ms):
-    if timestamp_ms == 0:
+    if timestamp_ms is None or timestamp_ms == 0:
         return "N/A"
     else:
         return datetime.datetime.fromtimestamp(float(timestamp_ms) / 1000).strftime('%m/%d (%a), %I:%M %p')
@@ -73,3 +61,18 @@ def is_numeric(string, floating=False):
         return re.search(pattern=r'^[+-]?\d+\.\d+$', string=string) is not None
     else:
         return re.search(pattern=r'^[+-]?\d+$', string=string) is not None
+
+
+def param_check(request_body, params):
+    for param in params:
+        if param not in request_body:
+            return False
+    return True
+
+
+def now_us():
+    return int(time.time() * 1000 * 1000)
+
+
+def md5(value):
+    return hashlib.md5(value.encode()).hexdigest()

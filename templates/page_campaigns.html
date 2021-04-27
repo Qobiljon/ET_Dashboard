@@ -22,15 +22,25 @@
                     <a title="View dataset's technical configurations" href="{% url 'dataset-info' %}?campaign_id={{ campaign.id }}">
                         <img class="action_button_green" src="{% static 'info_icon.png' %}" alt="download">
                     </a>
+                    <a title="Make an notification/announcement to this campaign's participants" href="{% url 'announce' %}?campaign_id={{ campaign.id }}">
+                        <img class="action_button_green" src="{% static 'announcement_icon.png' %}" alt="notification / announcement">
+                    </a>
+                    {% if campaign.created_by_me %}
+                        <a title="Manage researchers (i.e., add / remove)" href="{% url 'manage-researchers' %}?campaign_id={{ campaign.id }}">
+                            <img class="action_button_green" src="{% static 'researcher_icon.png' %}" alt="manage">
+                        </a>
+                    {% endif %}
                     <a title="Download your complete dataset at this state" href="{% url 'download-dataset' %}?campaign_id={{ campaign.id }}">
                         <img class="action_button_green" src="{% static 'download_icon.png' %}" alt="download">
                     </a>
                     <a title="Monitor the campaign {{ campaign.id }}" href="{% url 'easytrack-monitor' %}?campaign_id={{ campaign.id }}&data_source_name=all">
                         <img class="action_button_green" src="{% static 'monitor_icon.png' %}" alt="EasyTracker">
                     </a>
-                    <a title="!!! Delete the campaign (including the data)" id="delete_campaign_{{ campaign.id }}_button" href="#" onclick="deleteCampaignClick(this.id);" data-href="{% url 'delete-campaign' %}?campaign_id={{ campaign.id }}">
-                        <img class="action_button_red" src="{% static 'delete_icon.png' %}" alt="download">
-                    </a>
+                    {% if campaign.created_by_me %}
+                        <a title="!!! Delete the campaign (including the data)" id="delete_campaign_{{ campaign.id }}_button" href="#" onclick="deleteCampaignClick(this.id);" data-href="{% url 'delete-campaign' %}?campaign_id={{ campaign.id }}">
+                            <img class="action_button_red" src="{% static 'delete_icon.png' %}" alt="download">
+                        </a>
+                    {% endif %}
                     {# TODO: finish this notification part #}
                     {# {% with campaign_id=campaign.id %} #}
                     {# <a class="action_button_green" href="{% url 'notifications' %}?campaign_id={{ campaign.id }}">{{ notifications.campaign_id|length }}</a> #}
@@ -70,15 +80,19 @@
         .id_column {
             width: 10%;
         }
+
         .title_column {
             width: 30%;
         }
+
         .notes_column {
             width: 30%
         }
+
         .participants_column {
             width: 10%
         }
+
         .actions_column {
             width: 20%
         }
@@ -140,7 +154,7 @@
             color: #FFF;
         }
 
-        a{
+        a {
             text-decoration: none;
         }
 

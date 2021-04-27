@@ -117,7 +117,7 @@
         });
 
         function removeInactiveUsersClicked() {
-            if(removeInactiveUsersCheckbox.checked){
+            if (removeInactiveUsersCheckbox.checked) {
                 removeInactiveUsersNumberInput.min = "1";
                 removeInactiveUsersNumberInput.max = "100";
                 removeInactiveUsersNumberInput.value = {% if campaign.remove_inactive_users_timeout > 0 %}{{ campaign.remove_inactive_users_timeout }}{% else %}1{% endif %};
