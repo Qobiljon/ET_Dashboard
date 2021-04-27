@@ -1,6 +1,9 @@
+from wsgiref.util import FileWrapper
+
 import plotly.graph_objects as go
 from json import JSONDecodeError
 from tools import settings
+import mimetypes
 import datetime
 import zipfile
 import plotly
@@ -13,6 +16,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as dj_logout
 from django.views.decorators.csrf import csrf_exempt
+from django.http import StreamingHttpResponse
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -619,6 +623,7 @@ def handle_dataset_info(request):
                     request=request,
                     template_name='page_dataset_configs.html',
                     context={
+                        'campaign': db_campaign,
                         'data_sources': campaign_data_sources,
                         'participants': db_participants
                     }
@@ -700,6 +705,47 @@ def handle_download_data_api(request):
 
 @login_required
 @require_http_methods(['GET'])
+def handle_download_csv_api(request):
+    db_user = db.get_user(email=request.user.email)
+    if db_user is not None:
+        if 'campaign_id' in request.GET and utils.is_numeric(request.GET['campaign_id']):
+            db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']))
+            if db_campaign is not None:
+                if 'user_id' in request.GET and utils.is_numeric(request.GET['user_id']):
+                    db_participant_user = db.get_user(user_id=int(request.GET['user_id']))
+                    if db_participant_user is not None:
+                        dump_file_path = db.dump_csv_data(db_campaign=db_campaign, db_user=db_participant_user)
+                    else:
+                        return redirect(to='campaigns-list')
+                elif 'data_source_id' in request.GET and utils.is_numeric(request.GET['data_source_id']):
+                    db_data_source = db.get_data_source(data_source_id=int(request.GET['data_source_id']))
+                    if db_data_source is not None:
+                        dump_file_path = db.dump_csv_data(db_campaign=db_campaign, db_data_source=db_data_source)
+                    else:
+                        return redirect(to='campaigns-list')
+                else:
+                    dump_file_path = db.dump_csv_data(db_campaign=db_campaign)
+
+                filename = os.path.basename(dump_file_path)
+                chunk_size = 8192
+                res = StreamingHttpResponse(
+                    streaming_content=FileWrapper(open(dump_file_path, 'rb'), chunk_size),
+                    content_type=mimetypes.guess_type(dump_file_path)[0],
+                )
+                res['Content-Length'] = os.path.getsize(dump_file_path)
+                res['Content-Disposition'] = f'attachment; filename={filename}'
+                return res
+            else:
+                return redirect(to='campaigns-list')
+        else:
+            return redirect(to='campaigns-list')
+    else:
+        dj_logout(request=request)
+        return redirect(to='login')
+
+
+@login_required
+@require_http_methods(['GET'])
 def handle_download_dataset_api(request):
     db_user = db.get_user(email=request.user.email)
     if db_user is not None:
@@ -738,6 +784,11 @@ def handle_download_dataset_api(request):
     else:
         dj_logout(request=request)
         return redirect(to='login')
+
+
+@require_http_methods(['POST'])
+def handle_db_mgmt_api(request):
+    return JsonResponse(data={'result': 'success'})
 
 
 @login_required
