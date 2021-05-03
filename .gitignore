@@ -4,3 +4,4 @@ venv/**
 .idea/**
 tmp
 !.DS_Store
+**/__pycache__
