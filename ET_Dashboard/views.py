@@ -842,7 +842,7 @@ def huno_json_total_ema_score(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
-    db_participant = db.get_user(email=int(request.POST['email']))
+    db_participant = db.get_user(email=request.POST['email'])
     db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
     from_ts = int(request.POST['from_timestamp'])
     till_ts = int(request.POST['till_timestamp'])
@@ -865,7 +865,7 @@ def huno_json_hr(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
-    db_participant = db.get_user(email=int(request.POST['email']))
+    db_participant = db.get_user(email=request.POST['email'])
     db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
     from_ts = int(request.POST['from_timestamp'])
     till_ts = int(request.POST['till_timestamp'])
@@ -889,7 +889,7 @@ def huno_json_sleep(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
-    db_participant = db.get_user(email=int(request.POST['email']))
+    db_participant = db.get_user(email=request.POST['email'])
     db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
     from_ts = int(request.POST['from_timestamp'])
     till_ts = int(request.POST['till_timestamp'])
@@ -912,7 +912,7 @@ def huno_json_user_info(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
-    db_participant = db.get_user(email=int(request.POST['email']))
+    db_participant = db.get_user(email=request.POST['email'])
     db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
 
     if None in [db_campaign, db_participant, db_data_source]:
@@ -933,7 +933,7 @@ def huno_json_steps(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
-    db_participant = db.get_user(email=int(request.POST['email']))
+    db_participant = db.get_user(email=request.POST['email'])
     db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
     from_ts = int(request.POST['from_timestamp'])
     till_ts = int(request.POST['till_timestamp'])
@@ -952,7 +952,7 @@ def huno_json_total_reward(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
-    db_participant = db.get_user(email=int(request.POST['email']))
+    db_participant = db.get_user(email=request.POST['email'])
     db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
 
     if None in [db_campaign, db_participant, db_data_source]:
@@ -974,7 +974,7 @@ def huno_json_ema_resp_rate(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
-    db_participant = db.get_user(email=int(request.POST['email']))
+    db_participant = db.get_user(email=request.POST['email'])
     db_data_source_1 = db.get_data_source(data_source_id=int(request.POST['data_source_id_1']))
     db_data_source_2 = db.get_data_source(data_source_id=int(request.POST['data_source_id_2']))
     from_ts = int(request.POST['from_timestamp'])
@@ -1004,7 +1004,7 @@ def huno_json_participant_stats(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
-    db_participant = db.get_user(email=int(request.POST['email']))
+    db_participant = db.get_user(email=request.POST['email'])
 
     if None in [db_campaign, db_participant]:
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
@@ -1033,7 +1033,7 @@ def huno_json_lottery_winners(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
-    db_participant = db.get_user(email=int(request.POST['email']))
+    db_participant = db.get_user(email=request.POST['email'])
     db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
     from_ts = int(request.POST['from_timestamp'])
     till_ts = int(request.POST['till_timestamp'])
