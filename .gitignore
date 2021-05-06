@@ -3,5 +3,5 @@ venv/**
 .idea
 .idea/**
 tmp
-!.DS_Store
+**/.DS_Store
 **/__pycache__
