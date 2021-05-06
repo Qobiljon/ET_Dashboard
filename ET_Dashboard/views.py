@@ -1005,7 +1005,7 @@ def huno_json_total_reward(request):
     reward_records = db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
                                                   db_data_source=db_data_source)
     if len(reward_records) > 0:
-        cells = str(reward_records.value[-1], encoding='utf8').split(' ')
+        cells = str(reward_records[-1].value, encoding='utf8').split(' ')
         reward_sum = int(cells[1])
     else:
         reward_sum = 0
