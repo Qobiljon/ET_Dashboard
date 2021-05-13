@@ -1038,7 +1038,7 @@ def huno_json_ema_resp_rate(request):
     data = db.get_filtered_data_records(db_user=db_participant, db_campaign=db_campaign,
                                         db_data_source=db_data_source_2, from_timestamp=from_ts, till_timestamp=till_ts)
     if data and len(data) > 0:
-        cells = str(data[0]['value']).split(' ')
+        cells = str(data[0].value).split(' ')
         if len(cells) == 2:
             amount_2 = cells[1]
 
@@ -1064,8 +1064,8 @@ def huno_json_participant_stats(request):
     amount_of_samples = {}
     sync_timestamps = {}
     for _db_data_source, _amount_of_samples, _sync_timestamp in stats:
-        amount_of_samples[_db_data_source['name']] = _amount_of_samples
-        sync_timestamps[_db_data_source['name']] = _sync_timestamp
+        amount_of_samples[_db_data_source.name] = _amount_of_samples
+        sync_timestamps[_db_data_source.name] = _sync_timestamp
 
     return JsonResponse(data={
         'success': True,
