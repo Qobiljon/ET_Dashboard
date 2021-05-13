@@ -1040,7 +1040,7 @@ def huno_json_ema_resp_rate(request):
     if data and len(data) > 0:
         cells = str(data[0].value).split(' ')
         if len(cells) == 2:
-            amount_2 = cells[1]
+            amount_2 = int(cells[1])
 
     return JsonResponse(data={
         'success': True,
