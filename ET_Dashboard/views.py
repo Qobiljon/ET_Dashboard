@@ -884,7 +884,7 @@ def huno_json_total_ema_score(request):
     for ema in db.get_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts,
                                             db_user=db_participant, db_data_source=db_data_source):
         cells = str(bytes(ema.value), encoding='utf8').split(' ')
-        res['EMA']['timestamp'] = [int(cells[0])]
+        res['EMA']['timestamp'] = [int(cells[0][0])]
         res['EMA']['ANSWER'] = {'ema1': int(cells[2]), 'ema2': int(cells[3]), 'ema3': int(cells[4]),
                                      'ema4': int(cells[5]), 'ema5': int(cells[6]), 'ema6': int(cells[7]),
                                      'ema7': int(cells[8]), 'ema8': int(cells[9]), 'ema9': int(cells[10]),
