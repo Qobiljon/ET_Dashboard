@@ -891,7 +891,7 @@ def huno_json_total_ema_score(request):
                              'ema7': int(cells[8]), 'ema8': int(cells[9]), 'ema9': int(cells[10]),
                              'ema10': int(cells[11]), 'ema11': int(cells[12]), 'ema12': int(cells[13]),
                              'ema13': int(cells[14])}
-        res[int(cells[0])] = sub_res
+        res['EMA'][int(cells[0])] = sub_res
     return JsonResponse(data=res)
 
 
