@@ -37,6 +37,8 @@ ALLOWED_HOSTS = [
     '165.246.21.202',
     'etdb.myvnc.com',
     'easytrack.inha.ac.kr'
+    
+    '165.246.42.248',
 ]
 
 # Application definition

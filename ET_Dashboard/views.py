@@ -1,29 +1,28 @@
-from wsgiref.util import FileWrapper
-
-import plotly.graph_objects as go
-from json import JSONDecodeError
-from tools import settings
-import mimetypes
 import datetime
-import zipfile
-import plotly
 import json
+import mimetypes
 import os
 import re
+import zipfile
+from json import JSONDecodeError
+from wsgiref.util import FileWrapper
 
-# Django
-from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import login_required
+import plotly
+import plotly.graph_objects as go
 from django.contrib.auth import logout as dj_logout
-from django.views.decorators.csrf import csrf_exempt
-from django.http import StreamingHttpResponse
-from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.http import StreamingHttpResponse
+from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
+# Django
+from django.views.decorators.http import require_http_methods
 
 # EasyTrack
 from ET_Dashboard.models import EnhancedDataSource
 from tools import db_mgr as db
+from tools import settings
 from tools import utils
 
 
@@ -38,7 +37,8 @@ def handle_login_api(request):
         if db_user is None:
             print('new user : ', end='')
             session_key = utils.md5(value=f'{request.user.email}{utils.now_us()}')
-            db_user = db.create_user(name=request.user.get_full_name(), email=request.user.email, session_key=session_key)
+            db_user = db.create_user(name=request.user.get_full_name(), email=request.user.email,
+                                     session_key=session_key)
             if db_user is None:
                 dj_logout(request=request)
             else:
@@ -111,10 +111,17 @@ def handle_participants_list(request):
                         'id': participant.id,
                         'name': participant.name,
                         'email': participant.email,
-                        'day_no': utils.calculate_day_number(join_timestamp=db.get_participant_join_timestamp(db_user=participant, db_campaign=db_campaign)),
-                        'amount_of_data': db.get_participants_amount_of_data(db_user=participant, db_campaign=db_campaign),
-                        'last_heartbeat_time': utils.timestamp_to_readable_string(timestamp_ms=db.get_participant_heartbeat_timestamp(db_user=participant, db_campaign=db_campaign)),
-                        'last_sync_time': utils.timestamp_to_readable_string(timestamp_ms=db.get_participant_last_sync_timestamp(db_user=participant, db_campaign=db_campaign)),
+                        'day_no': utils.calculate_day_number(
+                            join_timestamp=db.get_participant_join_timestamp(db_user=participant,
+                                                                             db_campaign=db_campaign)),
+                        'amount_of_data': db.get_participants_amount_of_data(db_user=participant,
+                                                                             db_campaign=db_campaign),
+                        'last_heartbeat_time': utils.timestamp_to_readable_string(
+                            timestamp_ms=db.get_participant_heartbeat_timestamp(db_user=participant,
+                                                                                db_campaign=db_campaign)),
+                        'last_sync_time': utils.timestamp_to_readable_string(
+                            timestamp_ms=db.get_participant_last_sync_timestamp(db_user=participant,
+                                                                                db_campaign=db_campaign)),
                     }]
                 participants.sort(key=lambda x: x['id'])
                 return render(
@@ -143,13 +150,16 @@ def handle_researchers_list(request):
         if 'campaign_id' in request.GET and str(request.GET['campaign_id']).isdigit():
             db_campaign = db.get_campaign(campaign_id=int(request.GET['campaign_id']), db_researcher_user=db_user)
             if db_campaign is not None:
-                if 'targetEmail' in request.GET and 'action' in request.GET and request.GET['action'] in ['add', 'remove']:
+                if 'targetEmail' in request.GET and 'action' in request.GET and request.GET['action'] in ['add',
+                                                                                                          'remove']:
                     db_researcher_user = db.get_user(email=request.GET['targetEmail'])
                     if db_researcher_user is not None:
                         if request.GET['action'] == 'add':
-                            db.add_researcher_to_campaign(db_campaign=db_campaign, db_researcher_user=db_researcher_user)
+                            db.add_researcher_to_campaign(db_campaign=db_campaign,
+                                                          db_researcher_user=db_researcher_user)
                         elif request.GET['action'] == 'remove':
-                            db.remove_researcher_from_campaign(db_campaign=db_campaign, db_researcher_user=db_researcher_user)
+                            db.remove_researcher_from_campaign(db_campaign=db_campaign,
+                                                               db_researcher_user=db_researcher_user)
                         else:
                             return redirect(to='campaigns-list')
                     else:
@@ -194,9 +204,11 @@ def handle_participants_data_list(request):
                     campaign_data_source_configs[data_source['data_source_id']] = data_source['config_json']
                 if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
                     db_participant_user = db.get_user(user_id=int(request.GET['participant_id']))
-                    if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
+                    if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user,
+                                                                                        db_campaign=db_campaign):
                         data_sources = []
-                        for db_data_source, amount_of_data, last_sync_time in db.get_participants_per_data_source_stats(db_user=db_participant_user, db_campaign=db_campaign):
+                        for db_data_source, amount_of_data, last_sync_time in db.get_participants_per_data_source_stats(
+                                db_user=db_participant_user, db_campaign=db_campaign):
                             data_sources += [{
                                 'id': db_data_source.id,
                                 'name': db_data_source.name,
@@ -239,13 +251,18 @@ def handle_raw_samples_list(request):
             if db_campaign is not None:
                 if 'email' in request.GET:
                     db_participant_user = db.get_user(email=request.GET['email'])
-                    if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
-                        if 'from_timestamp' in request.GET and 'data_source_id' in request.GET and utils.is_numeric(request.GET['from_timestamp']) and utils.is_numeric(request.GET['data_source_id']):
+                    if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user,
+                                                                                        db_campaign=db_campaign):
+                        if 'from_timestamp' in request.GET and 'data_source_id' in request.GET and utils.is_numeric(
+                                request.GET['from_timestamp']) and utils.is_numeric(request.GET['data_source_id']):
                             from_timestamp = int(request.GET['from_timestamp'])
                             db_data_source = db.get_data_source(data_source_id=int(request.GET['data_source_id']))
                             if db_data_source is not None:
                                 records = []
-                                for row, record in enumerate(db.get_filtered_data_records(db_user=db_participant_user, db_campaign=db_campaign, db_data_source=db_data_source, from_timestamp=from_timestamp)):
+                                for row, record in enumerate(db.get_filtered_data_records(db_user=db_participant_user,
+                                                                                          db_campaign=db_campaign,
+                                                                                          db_data_source=db_data_source,
+                                                                                          from_timestamp=from_timestamp)):
                                     value_len = len(record.value)
                                     if value_len > 5 * 1024:  # 5KB (e.g., binary files)
                                         value = f'[ {value_len:,} byte data record ]'
@@ -321,7 +338,8 @@ def handle_campaign_editor(request):
                             'edit_mode': True,
                             'title': '"%s" Campaign Editor' % db_campaign.name,
                             'campaign': db_campaign,
-                            'campaign_start_time': utils.timestamp_to_web_string(timestamp_ms=db_campaign.startTimestamp),
+                            'campaign_start_time': utils.timestamp_to_web_string(
+                                timestamp_ms=db_campaign.startTimestamp),
                             'campaign_end_time': utils.timestamp_to_web_string(timestamp_ms=db_campaign.endTimestamp),
                             'data_sources': campaign_data_sources
                         }
@@ -360,7 +378,8 @@ def handle_campaign_editor(request):
                                 _data_source_icon_name = request.POST['icon_name_%s' % _data_source_name]
                                 if len(_data_source_icon_name) > 0:
                                     try:  # validate JSON format
-                                        _data_source_config_json = json.loads(s=request.POST['config_json_%s' % _data_source_name])
+                                        _data_source_config_json = json.loads(
+                                            s=request.POST['config_json_%s' % _data_source_name])
                                         _campaign_data_sources += [{
                                             'name': _data_source_name,
                                             'icon_name': _data_source_icon_name,
@@ -373,20 +392,25 @@ def handle_campaign_editor(request):
                     for _index, _data_source in enumerate(_campaign_data_sources):
                         _db_data_source = db.get_data_source(data_source_name=_data_source['name'])
                         if _db_data_source is None:  # create a new data source
-                            _db_data_source = db.create_data_source(db_creator_user=db_user, name=_data_source['name'], icon_name=_data_source['icon_name'])
+                            _db_data_source = db.create_data_source(db_creator_user=db_user, name=_data_source['name'],
+                                                                    icon_name=_data_source['icon_name'])
                         _campaign_data_sources[_index]['data_source_id'] = _db_data_source.id
                     return _campaign_data_sources
 
                 if 'name' in request.POST and 'notes' in request.POST and 'startTime' in request.POST and 'endTime' and 'remove_inactive_users_timeout' in request.POST:
                     _campaign_name = str(request.POST['name'])
-                    if utils.is_numeric(request.POST['remove_inactive_users_timeout']) and is_date_time(request.POST['startTime']) and is_date_time(request.POST['endTime']):
+                    if utils.is_numeric(request.POST['remove_inactive_users_timeout']) and is_date_time(
+                            request.POST['startTime']) and is_date_time(request.POST['endTime']):
                         return {
                             'name': _campaign_name,
                             'notes': str(request.POST['notes']),
                             'configurations': json.dumps(get_campaign_data_sources_as_list()),
-                            'start_timestamp': utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['startTime'], "%Y-%m-%dT%H:%M")),
-                            'end_timestamp': utils.datetime_to_timestamp_ms(value=datetime.datetime.strptime(request.POST['endTime'], "%Y-%m-%dT%H:%M")),
-                            'remove_inactive_users_timeout': int(request.POST['remove_inactive_users_timeout']) if int(request.POST['remove_inactive_users_timeout']) > 0 else -1
+                            'start_timestamp': utils.datetime_to_timestamp_ms(
+                                value=datetime.datetime.strptime(request.POST['startTime'], "%Y-%m-%dT%H:%M")),
+                            'end_timestamp': utils.datetime_to_timestamp_ms(
+                                value=datetime.datetime.strptime(request.POST['endTime'], "%Y-%m-%dT%H:%M")),
+                            'remove_inactive_users_timeout': int(request.POST['remove_inactive_users_timeout']) if int(
+                                request.POST['remove_inactive_users_timeout']) > 0 else -1
                         }
                     else:
                         return None
@@ -454,7 +478,8 @@ def handle_easytrack_monitor(request):
                     plot_date_str = str(request.GET['plot_date'])
                     if re.search(r'\d{4}-\d{1,2}-\d{1,2}', plot_date_str) is not None:
                         year, month, day = plot_date_str.split('-')
-                        from_datetime = datetime.datetime(year=int(year), month=int(month), day=int(day), hour=0, minute=0, second=0, microsecond=0)
+                        from_datetime = datetime.datetime(year=int(year), month=int(month), day=int(day), hour=0,
+                                                          minute=0, second=0, microsecond=0)
                         till_datetime = from_datetime + datetime.timedelta(hours=24)
 
                 till_timestamp = utils.datetime_to_timestamp_ms(till_datetime)
@@ -463,7 +488,8 @@ def handle_easytrack_monitor(request):
 
                 if 'participant_id' in request.GET and utils.is_numeric(request.GET['participant_id']):
                     db_participant_user = db.get_user(user_id=int(request.GET['participant_id']))
-                    if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user, db_campaign=db_campaign):
+                    if db_participant_user is not None and db.user_is_bound_to_campaign(db_user=db_participant_user,
+                                                                                        db_campaign=db_campaign):
                         plot_participant = db_participant_user
                     else:
                         plot_participant = None
@@ -476,7 +502,8 @@ def handle_easytrack_monitor(request):
                     if data_source_name == 'all':
                         hourly_stats = {}
                         # region compute hourly stats
-                        for db_participant_user in (db_campaign_participant_users if plot_participant is None else [plot_participant]):
+                        for db_participant_user in (
+                                db_campaign_participant_users if plot_participant is None else [plot_participant]):
                             for db_data_source in db_campaign_data_sources:
                                 _from_timestamp = from_timestamp
                                 _till_timestamp = _from_timestamp + window
@@ -537,7 +564,8 @@ def handle_easytrack_monitor(request):
                     elif db_data_source is not None:
                         hourly_stats = {}
                         # region compute hourly stats
-                        for db_participant_user in (db_campaign_participant_users if plot_participant.id == 'all' else [plot_participant]):
+                        for db_participant_user in (
+                                db_campaign_participant_users if plot_participant.id == 'all' else [plot_participant]):
                             _from_timestamp = from_timestamp
                             _till_timestamp = _from_timestamp + window
                             while _from_timestamp < till_timestamp:
@@ -816,7 +844,8 @@ def make_announcement(request):
             if 'campaign_id' in request.POST and utils.is_numeric(request.POST['campaign_id']):
                 db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
                 if db_campaign is not None:
-                    db.create_notification(db_campaign=db_campaign, timestamp=utils.get_timestamp_ms(), subject=request.POST['subject'], content=request.POST['content'])
+                    db.create_notification(db_campaign=db_campaign, timestamp=utils.get_timestamp_ms(),
+                                           subject=request.POST['subject'], content=request.POST['content'])
                     return redirect(to='campaigns-list')
                 else:
                     return redirect(to='campaigns-list')
@@ -838,7 +867,8 @@ def handle_notifications_list(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_total_ema_score(request):
-    if not utils.param_check(request.POST, ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
+    if not utils.param_check(request.POST,
+                             ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
@@ -851,17 +881,26 @@ def huno_json_total_ema_score(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
     res = {'success': True, 'EMA': {}}
-    for ema in db.get_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source):
+    for ema in db.get_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts,
+                                            db_user=db_participant, db_data_source=db_data_source):
+        sub_res = {}
         cells = str(bytes(ema.value), encoding='utf8').split(' ')
-        res['EMA'][int(cells[0])] = {'sum': sum(int(x) for x in cells[2:-1])}
-
+        key = 'timestamp' + cells[0]
+        sub_res['timestamp'] = int(cells[0])
+        sub_res['ANSWER'] = {'ema1': int(cells[2]), 'ema2': int(cells[3]), 'ema3': int(cells[4]),
+                             'ema4': int(cells[5]), 'ema5': int(cells[6]), 'ema6': int(cells[7]),
+                             'ema7': int(cells[8]), 'ema8': int(cells[9]), 'ema9': int(cells[10]),
+                             'ema10': int(cells[11]), 'ema11': int(cells[12]), 'ema12': int(cells[13]),
+                             'ema13': int(cells[14])}
+        res['EMA'][key] = sub_res
     return JsonResponse(data=res)
 
 
 @csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_hr(request):
-    if not utils.param_check(request.POST, ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
+    if not utils.param_check(request.POST,
+                             ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
@@ -874,7 +913,8 @@ def huno_json_hr(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
     hrs = []
-    for hr in db.get_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source):
+    for hr in db.get_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts,
+                                           db_user=db_participant, db_data_source=db_data_source):
         cells = str(bytes(hr.value), encoding='utf8').split(' ')
         hrs += [int(cells[1])]
     res = {'success': True, 'hr': 'n/a' if len(hrs) == 0 else sum(hrs) / len(hrs)}
@@ -885,7 +925,8 @@ def huno_json_hr(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_sleep(request):
-    if not utils.param_check(request.POST, ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
+    if not utils.param_check(request.POST,
+                             ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
@@ -898,7 +939,9 @@ def huno_json_sleep(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
     res = {'success': True, 'sleep': {}}
-    for sleep_record in db.get_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source):
+    for sleep_record in db.get_filtered_data_records(db_campaign=db_campaign, from_timestamp=from_ts,
+                                                     till_timestamp=till_ts, db_user=db_participant,
+                                                     db_data_source=db_data_source):
         cells = str(bytes(sleep_record.value), encoding='utf8').split(' ')
         res['sleep'][int(cells[1])] = int(cells[2])
 
@@ -919,7 +962,8 @@ def huno_json_user_info(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
     res = {'success': True, 'user_info': {}}
-    for user_info_record in db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant, db_data_source=db_data_source):
+    for user_info_record in db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
+                                                         db_data_source=db_data_source):
         cells = str(bytes(user_info_record.value), encoding='utf8').split(' ')
         res['user_info'][cells[2]] = cells[1]
 
@@ -929,7 +973,8 @@ def huno_json_user_info(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_steps(request):
-    if not utils.param_check(request.POST, ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
+    if not utils.param_check(request.POST,
+                             ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
@@ -941,7 +986,9 @@ def huno_json_steps(request):
     if None in [db_campaign, db_participant, db_data_source, from_ts, till_ts]:
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
-    res = {'success': True, 'amount': db.get_filtered_amount_of_data(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source)}
+    res = {'success': True, 'amount': db.get_filtered_amount_of_data(db_campaign=db_campaign, from_timestamp=from_ts,
+                                                                     till_timestamp=till_ts, db_user=db_participant,
+                                                                     db_data_source=db_data_source)}
     return JsonResponse(data=res)
 
 
@@ -958,10 +1005,13 @@ def huno_json_total_reward(request):
     if None in [db_campaign, db_participant, db_data_source]:
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
-    reward_sum = 0
-    for reward_record in db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant, db_data_source=db_data_source):
-        cells = str(reward_record.value, encoding='utf8').split(' ')
-        reward_sum += int(cells[1])
+    reward_records = db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
+                                                  db_data_source=db_data_source)
+    if len(reward_records) > 0:
+        cells = str(reward_records[-1].value, encoding='utf8').split(' ')
+        reward_sum = int(cells[1])
+    else:
+        reward_sum = 0
 
     res = {'success': True, 'reward': reward_sum}
     return JsonResponse(data=res)
@@ -970,7 +1020,9 @@ def huno_json_total_reward(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_ema_resp_rate(request):
-    if not utils.param_check(request.POST, ['campaign_id', 'email', 'data_source_id_1', 'data_source_id_2', 'from_timestamp', 'till_timestamp']):
+    if not utils.param_check(request.POST,
+                             ['campaign_id', 'email', 'data_source_id_1', 'data_source_id_2', 'from_timestamp',
+                              'till_timestamp']):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
@@ -983,13 +1035,15 @@ def huno_json_ema_resp_rate(request):
     if None in [db_campaign, db_participant, db_data_source_1, db_data_source_2, from_ts, till_ts]:
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
-    amount_1 = db.get_filtered_amount_of_data(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts, db_user=db_participant, db_data_source=db_data_source_1)
+    amount_1 = db.get_filtered_amount_of_data(db_campaign=db_campaign, from_timestamp=from_ts, till_timestamp=till_ts,
+                                              db_user=db_participant, db_data_source=db_data_source_1)
     amount_2 = 0
-    data = db.get_filtered_data_records(db_user=db_participant, db_campaign=db_campaign, db_data_source=db_data_source_2, from_timestamp=from_ts, till_timestamp=till_ts)
+    data = db.get_filtered_data_records(db_user=db_participant, db_campaign=db_campaign,
+                                        db_data_source=db_data_source_2, from_timestamp=from_ts, till_timestamp=till_ts)
     if data and len(data) > 0:
-        cells = str(data[0]['value']).split(' ')
+        cells = str(data[0].value).split(' ')
         if len(cells) == 2:
-            amount_2 = cells[1]
+            amount_2 = int(cells[1].split("'")[0])
 
     return JsonResponse(data={
         'success': True,
@@ -1013,12 +1067,13 @@ def huno_json_participant_stats(request):
     amount_of_samples = {}
     sync_timestamps = {}
     for _db_data_source, _amount_of_samples, _sync_timestamp in stats:
-        amount_of_samples[_db_data_source['name']] = _amount_of_samples
-        sync_timestamps[_db_data_source['name']] = _sync_timestamp
+        amount_of_samples[_db_data_source.name] = _amount_of_samples
+        sync_timestamps[_db_data_source.name] = _sync_timestamp
 
     return JsonResponse(data={
         'success': True,
-        'participation_days': utils.calculate_day_number(join_timestamp=db.get_participant_join_timestamp(db_user=db_participant, db_campaign=db_campaign)),
+        'participation_days': utils.calculate_day_number(
+            join_timestamp=db.get_participant_join_timestamp(db_user=db_participant, db_campaign=db_campaign)),
         'total_amount': sum([amount_of_samples[x] for x in amount_of_samples]),
         'last_sync_ts': max([sync_timestamps[x] for x in sync_timestamps]),
         'per_data_source_amount': {x: amount_of_samples[x] for x in amount_of_samples},
@@ -1029,7 +1084,8 @@ def huno_json_participant_stats(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_lottery_winners(request):
-    if not utils.param_check(request.POST, ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
+    if not utils.param_check(request.POST,
+                             ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
@@ -1042,8 +1098,11 @@ def huno_json_lottery_winners(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
     res = {'success': True, 'winners': {}}
-    for winner_records in db.get_filtered_data_records(db_user=db_participant, db_campaign=db_campaign, db_data_source=db_data_source, from_timestamp=from_ts, till_timestamp=till_ts):
+    for winner_records in db.get_filtered_data_records(db_user=db_participant, db_campaign=db_campaign,
+                                                       db_data_source=db_data_source, from_timestamp=from_ts,
+                                                       till_timestamp=till_ts):
         cells = str(winner_records.value, encoding='utf8').split(' ')
-        res['winners'][int(cells[0])] = {'id': int(cells[1]), 'name': cells[2], 'phone_number': cells[3], 'email': cells[4]}
+        res['winners'][int(cells[0])] = {'id': int(cells[1]), 'name': cells[2], 'phone_number': cells[3],
+                                         'email': cells[4]}
 
     return JsonResponse(data=res)
