@@ -943,7 +943,7 @@ def huno_json_sleep(request):
                                                      till_timestamp=till_ts, db_user=db_participant,
                                                      db_data_source=db_data_source):
         cells = str(bytes(sleep_record.value), encoding='utf8').split(' ')
-        res['sleep'][int(cells[1])] = int(cells[2])
+        res['sleep'][sleep_record.timestamp] = int(cells[2])
 
     return JsonResponse(data=res)
 
