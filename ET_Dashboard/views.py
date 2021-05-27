@@ -1110,7 +1110,7 @@ def huno_json_lottery_winners(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_phone_numbers(request):
-    phone_number = str(request.POST['phoneNumber'])
+    phone_number = str(request.POST['phone_number'])
     if os.path.exists("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt"):
         with open("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt", 'r') as f:
             if phone_number in f.read():
