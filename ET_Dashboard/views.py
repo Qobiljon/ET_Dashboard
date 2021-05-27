@@ -1106,3 +1106,19 @@ def huno_json_lottery_winners(request):
                                          'email': cells[4]}
 
     return JsonResponse(data=res)
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def huno_json_phone_numbers(request):
+    phone_number = str(request.POST['phoneNumber'])
+    if os.path.exists("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt"):
+        with open("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt", 'r') as f:
+            if phone_number in f.read():
+                f.seek(0)  # return to the beginning of the file
+                email = [line for line in f if phone_number in line][0].split(" ")[0]
+                res = {'success': True, 'email': email}
+                return JsonResponse(data=res)
+            else:
+                return JsonResponse(data={'success': False, 'err_msg': 'please, check the phone number'})
+    else:
+        return JsonResponse(data={'success': False, 'err_msg': 'phone numbers file does not exist'})
