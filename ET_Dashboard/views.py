@@ -1122,3 +1122,20 @@ def huno_json_phone_numbers(request):
                 return JsonResponse(data={'success': False, 'err_msg': 'please, check the phone number'})
     else:
         return JsonResponse(data={'success': False, 'err_msg': 'phone numbers file does not exist'})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def huno_json_emails(request):
+    email = str(request.POST['email'])
+    if os.path.exists("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt"):
+        with open("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt", 'r') as f:
+            if email in f.read():
+                f.seek(0)  # return to the beginning of the file
+                phone_number = [line for line in f if email in line][0].split(" ")[1]
+                res = {'success': True, 'phone_number': phone_number}
+                return JsonResponse(data=res)
+            else:
+                return JsonResponse(data={'success': False, 'err_msg': 'please, check the email'})
+    else:
+        return JsonResponse(data={'success': False, 'err_msg': 'phone numbers file does not exist'})
