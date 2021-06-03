@@ -1132,7 +1132,7 @@ def huno_json_emails(request):
         with open("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt", 'r') as f:
             if email in f.read():
                 f.seek(0)  # return to the beginning of the file
-                phone_number = [line for line in f if email in line][0].split(" ")[1]
+                phone_number = [line for line in f if email in line][0].split(" ")[1].split(",")[0]
                 res = {'success': True, 'phone_number': phone_number}
                 return JsonResponse(data=res)
             else:
