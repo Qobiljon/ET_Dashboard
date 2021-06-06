@@ -1040,10 +1040,8 @@ def huno_json_ema_resp_rate(request):
     amount_2 = 0
     data = db.get_filtered_data_records(db_user=db_participant, db_campaign=db_campaign,
                                         db_data_source=db_data_source_2, from_timestamp=from_ts, till_timestamp=till_ts)
-    print(data)
     if data and len(data) > 0:
         cells = str(data[0].value).split(' ')
-        print(cells)
         if len(cells) == 2:
             amount_2 = int(cells[1].split("'")[0])
 
