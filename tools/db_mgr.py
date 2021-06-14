@@ -1,6 +1,7 @@
 from cassandra.cluster import Cluster
 from tools import settings
 from tools import utils
+import subprocess
 import json
 
 
@@ -305,12 +306,9 @@ def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timesta
 
 
 def dump_data(db_campaign, db_user):
-    session = get_cassandra_session()
-
-    file_path = utils.get_download_file_path(f'cmp{db_campaign.id}_usr{db_user.id}.bin.tmp')
-    session.execute(f'copy (select "id", "timestamp", "value", "dataSourceId" from "data"."cmp{db_campaign.id}_usr{db_user.id}" allow filtering) to %s with binary;', (file_path,))
-
-    session.close()
+    file_path = utils.get_download_file_path(f'cmp{db_campaign.id}_usr{db_user.id}.bin.csv')
+    # session.execute(f'copy "data"."cmp{db_campaign.id}_usr{db_user.id}" to %s with header = true;', (file_path,))
+    subprocess.run(['cqlsh', '-e', f"copy data.cmp{db_campaign.id}_usr{db_user.id} to \'{file_path}\' with header = true;"], capture_output=False)
     return file_path
 
 
