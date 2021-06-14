@@ -785,6 +785,7 @@ def handle_download_dataset_api(request):
         return redirect(to='login')
 
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def handle_db_mgmt_api(request):
     import psycopg2
