@@ -831,11 +831,11 @@ def handle_db_mgmt_api(request):
         # 2.1. copy participant
         cur.execute('select * from "et"."user" where "id"=%s;', (pg_stat['user_id'],))
         pg_participant = cur.fetchone()
-        cs_participant = db.create_user(name=pg_participant['name'], email=pg_participant['email'], session_key=utils.md5(value=f'{pg_participant["email"]}{utils.now_us()}'))
+        cs_participant = db.get_user(email=pg_participant['email'])  # db.create_user(name=pg_participant['name'], email=pg_participant['email'], session_key=utils.md5(value=f'{pg_participant["email"]}{utils.now_us()}'))
         print(f'   participant copied (name = {cs_participant.name})')
         # 2.2. copy data
-        db.bind_participant_to_campaign(db_user=cs_participant, db_campaign=cs_campaign)
-        cur.execute(f'select * from "data"."{pg_campaign["id"]}-{pg_participant["id"]}" limit 1000;')
+        # db.bind_participant_to_campaign(db_user=cs_participant, db_campaign=cs_campaign)
+        cur.execute(f'select * from "data"."{pg_campaign["id"]}-{pg_participant["id"]}";')
         for pg_value in cur.fetchall():
             cs_data_source_id = data_source_id_map[pg_value['data_source_id']]
             if cs_data_source_id not in cs_data_sources:
