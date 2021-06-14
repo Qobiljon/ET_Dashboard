@@ -759,7 +759,6 @@ def handle_download_dataset_api(request):
                 fp = zipfile.ZipFile(file_path, 'w', zipfile.ZIP_STORED)
                 with open(os.path.join(settings.STATIC_DIR, 'restoring_cassandra_data.txt'), 'r') as r:
                     fp.writestr('!README.txt', r.read())
-                fp.writestr('!info.txt', f'campaign_id : {db_campaign.id}')
 
                 for db_participant_user in db.get_campaign_participants(db_campaign=db_campaign):
                     # dump db data
@@ -768,7 +767,7 @@ def handle_download_dataset_api(request):
                         dump_content = bytes(r.read())
                     os.remove(dump_file_path)
                     # archive the dump content
-                    fp.writestr(f'{db_participant_user.email}.bin', dump_content)
+                    fp.writestr(f'{db_participant_user.email}.csv', dump_content)
                 fp.close()
                 with open(file_path, 'rb') as r:
                     content = r.read()
