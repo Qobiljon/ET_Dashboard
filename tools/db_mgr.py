@@ -308,7 +308,7 @@ def dump_data(db_campaign, db_user):
     session = get_cassandra_session()
 
     file_path = utils.get_download_file_path(f'cmp{db_campaign.id}_usr{db_user.id}.bin.tmp')
-    session.execute(f'copy (select "id", "timestamp", "value", "dataSourceId" from "data"."cmp{db_campaign.id}_usr{db_user.id}" allow filtering) to %s with binary;', (file_path,))
+    session.execute(f'copy "data"."cmp{db_campaign.id}_usr{db_user.id}" to %s with header = true;', (file_path,))
 
     session.close()
     return file_path
