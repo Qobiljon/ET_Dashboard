@@ -1017,6 +1017,31 @@ def huno_json_total_reward(request):
 
 @csrf_exempt
 @require_http_methods(['POST'])
+def huno_json_ema_rate(request):
+    if not utils.param_check(request.POST, ['campaign_id', 'email', 'data_source_id']):
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
+
+    db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
+    db_participant = db.get_user(email=request.POST['email'])
+    db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
+
+    if None in [db_campaign, db_participant, db_data_source]:
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
+
+    ema_rate_records = db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
+                                                  db_data_source=db_data_source)
+    if len(ema_rate_records) > 0:
+        cells = str(ema_rate_records[-1].value, encoding='utf8').split(' ')
+        ema_rate = int(cells[1])
+    else:
+        ema_rate = "N/A"
+
+    res = {'success': True, 'ema_rate': ema_rate}
+    return JsonResponse(data=res)
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
 def huno_json_ema_resp_rate(request):
     if not utils.param_check(request.POST,
                              ['campaign_id', 'email', 'data_source_id_1', 'data_source_id_2', 'from_timestamp',

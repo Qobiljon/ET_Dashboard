@@ -56,6 +56,7 @@ urlpatterns = [
     path('huno_json_steps/', views.huno_json_steps),
     path('huno_json_total_reward/', views.huno_json_total_reward),
     path('huno_json_ema_resp_rate/', views.huno_json_ema_resp_rate),
+    path('huno_json_ema_rate/', views.huno_json_ema_rate),
     path('huno_json_participant_stats/', views.huno_json_participant_stats),
     path('huno_json_lottery_winners/', views.huno_json_lottery_winners),
     path('huno_json_phone_numbers/', views.huno_json_phone_numbers),
