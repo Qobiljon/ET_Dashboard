@@ -800,8 +800,8 @@ def handle_db_mgmt_api(request):
     session = db.get_cassandra_session()
 
     # 1. copy campaign
-    # cur.execute('select * from "et"."campaign" where "id"=4;')
-    # pg_campaign = cur.fetchone()
+    cur.execute('select * from "et"."campaign" where "id"=4;')
+    pg_campaign = cur.fetchone()
     # cs_creator_user = db.get_user(user_id=2)
     # cs_campaign = db.create_or_update_campaign(
     #     db_creator_user=cs_creator_user,
