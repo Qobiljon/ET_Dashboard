@@ -678,9 +678,8 @@ def handle_download_data_api(request):
                         file_name = f'et data {db_participant_user.email} {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.zip'
                         file_path = utils.get_download_file_path(file_name=file_name)
                         fp = zipfile.ZipFile(file_path, 'w', zipfile.ZIP_STORED)
-                        with open(os.path.join(settings.STATIC_DIR, 'restoring_postgres_data.txt'), 'r') as r:
+                        with open(os.path.join(settings.STATIC_DIR, 'restoring_cassandra_data.txt'), 'r') as r:
                             fp.writestr('!README.txt', r.read())
-                        fp.writestr('!info.txt', f'campaign_id : {db_campaign.id}')
                         fp.writestr(f'{db_participant_user.email}.bin', dump_content)
                         fp.close()
                         with open(file_path, 'rb') as r:
@@ -757,7 +756,7 @@ def handle_download_dataset_api(request):
                 file_name = f'et data campaign {db_campaign.id} {now.month}-{now.day}-{now.year} {now.hour}-{now.minute}.zip'
                 file_path = utils.get_download_file_path(file_name=file_name)
                 fp = zipfile.ZipFile(file_path, 'w', zipfile.ZIP_STORED)
-                with open(os.path.join(settings.STATIC_DIR, 'restoring_postgres_data.txt'), 'r') as r:
+                with open(os.path.join(settings.STATIC_DIR, 'restoring_cassandra_data.txt'), 'r') as r:
                     fp.writestr('!README.txt', r.read())
                 fp.writestr('!info.txt', f'campaign_id : {db_campaign.id}')
 
