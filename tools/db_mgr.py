@@ -1,4 +1,5 @@
 from cassandra.cluster import Cluster
+from subprocess import PIPE
 from tools import settings
 from tools import utils
 import subprocess
@@ -308,7 +309,7 @@ def get_filtered_data_records(db_user, db_campaign, db_data_source, from_timesta
 def dump_data(db_campaign, db_user):
     file_path = utils.get_download_file_path(f'cmp{db_campaign.id}_usr{db_user.id}.bin.csv')
     # session.execute(f'copy "data"."cmp{db_campaign.id}_usr{db_user.id}" to %s with header = true;', (file_path,))
-    subprocess.run(['cqlsh', '-e', f"copy data.cmp{db_campaign.id}_usr{db_user.id} to \'{file_path}\' with header = true;"], capture_output=False)
+    subprocess.run(['cqlsh', '-e', f"copy data.cmp{db_campaign.id}_usr{db_user.id} to \'{file_path}\' with header = true;"], stdout=PIPE, stderr=PIPE)
     return file_path
 
 
