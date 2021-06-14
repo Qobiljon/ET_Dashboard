@@ -2,6 +2,7 @@ from cassandra.cluster import Cluster
 from tools import settings
 from tools import utils
 import json
+import os
 
 
 # region common part
@@ -308,7 +309,8 @@ def dump_data(db_campaign, db_user):
     session = get_cassandra_session()
 
     file_path = utils.get_download_file_path(f'cmp{db_campaign.id}_usr{db_user.id}.bin.tmp')
-    session.execute(f'copy "data"."cmp{db_campaign.id}_usr{db_user.id}" to %s with header = true;', (file_path,))
+    # session.execute(f'copy "data"."cmp{db_campaign.id}_usr{db_user.id}" to %s with header = true;', (file_path,))
+    os.system(f'cqlsh -e "copy data.cmp{db_campaign.id}_usr{db_user.id} to \'{file_path}\' with header = true;"')
 
     session.close()
     return file_path
