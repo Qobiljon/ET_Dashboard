@@ -56,6 +56,14 @@ def get_user(user_id=None, email=None):
     return db_user
 
 
+def get_user_id(email=None):
+    session = get_cassandra_session()
+    user_id = "N/A"
+    if email is not None:
+        user_id = session.execute('select "id" from "et"."user" where "email"=%s allow filtering;', (email,)).one()
+    return user_id
+
+
 def update_session_key(db_user, session_key):
     session = get_cassandra_session()
     session.execute('update "et"."user" set "sessionKey" = %s where "id" = %s and "email" = %s;', (

@@ -1163,3 +1163,13 @@ def huno_json_emails(request):
                 return JsonResponse(data={'success': False, 'err_msg': 'please, check the email'})
     else:
         return JsonResponse(data={'success': False, 'err_msg': 'phone numbers file does not exist'})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def huno_json_ids(request):
+    try:
+        user_id = db.get_user_id(email=request.POST['email'])
+        return JsonResponse(data={'success': True, 'id': user_id})
+    except:
+        return JsonResponse(data={'success': False, 'err_msg': 'please, check the email'})
