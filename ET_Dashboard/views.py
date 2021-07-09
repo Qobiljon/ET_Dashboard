@@ -915,7 +915,7 @@ def huno_json_hr(request):
                                            db_user=db_participant, db_data_source=db_data_source):
         cells = str(bytes(hr.value), encoding='utf8').split(' ')
         hrs += [int(cells[1])]
-    hr = {till_ts: 'n/a' if len(hrs) == 0 else sum(hrs) / len(hrs)}
+    hr = {from_ts: 'n/a' if len(hrs) == 0 else sum(hrs) / len(hrs)}
     res = {'success': True, 'hr': hr}
 
     return JsonResponse(data=res)
@@ -985,7 +985,7 @@ def huno_json_steps(request):
     if None in [db_campaign, db_participant, db_data_source, from_ts, till_ts]:
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
-    steps = {till_ts: db.get_filtered_amount_of_data(db_campaign=db_campaign, from_timestamp=from_ts,
+    steps = {from_ts: db.get_filtered_amount_of_data(db_campaign=db_campaign, from_timestamp=from_ts,
                                                      till_timestamp=till_ts, db_user=db_participant,
                                                      db_data_source=db_data_source)}
     res = {'success': True, 'amount': steps}
