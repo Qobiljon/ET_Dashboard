@@ -915,9 +915,7 @@ def huno_json_hr(request):
                                            db_user=db_participant, db_data_source=db_data_source):
         cells = str(bytes(hr.value), encoding='utf8').split(' ')
         hrs += [int(cells[1])]
-
     hr = {till_ts: 'n/a' if len(hrs) == 0 else sum(hrs) / len(hrs)}
-
     res = {'success': True, 'hr': hr}
 
     return JsonResponse(data=res)
@@ -986,10 +984,10 @@ def huno_json_steps(request):
 
     if None in [db_campaign, db_participant, db_data_source, from_ts, till_ts]:
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
+
     steps = {till_ts: db.get_filtered_amount_of_data(db_campaign=db_campaign, from_timestamp=from_ts,
                                                      till_timestamp=till_ts, db_user=db_participant,
                                                      db_data_source=db_data_source)}
-
     res = {'success': True, 'amount': steps}
     return JsonResponse(data=res)
 
@@ -1035,7 +1033,7 @@ def huno_json_ema_rate(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
     ema_rate_records = db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
-                                                    db_data_source=db_data_source, from_timestamp=from_ts, till_timestamp=till_ts)
+                                                  db_data_source=db_data_source, from_timestamp=from_ts, till_timestamp=till_ts)
 
     if len(ema_rate_records) > 0:
         cells = str(ema_rate_records[-1].value, encoding='utf8').split(' ')
@@ -1152,17 +1150,11 @@ def huno_json_phone_numbers(request):
             else:
                 return JsonResponse(data={'success': False, 'err_msg': 'please, check the phone number'})
     else:
-        rs
-    file
-    does
-    not exist
-    '})
-
-    return JsonResponse(data={'success': False, 'err_msg': 'phone numbe
-                                                           @ csrf_exempt
-                                                           @ require_http_methods(['POST'])
+        return JsonResponse(data={'success': False, 'err_msg': 'phone numbers file does not exist'})
 
 
+@csrf_exempt
+@require_http_methods(['POST'])
 def huno_json_emails(request):
     email = str(request.POST['email'])
     if os.path.exists("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt"):
