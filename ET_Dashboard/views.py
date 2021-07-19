@@ -245,7 +245,7 @@ def handle_raw_samples_list(request):
                             db_data_source = db.get_data_source(data_source_id=int(request.GET['data_source_id']))
                             if db_data_source is not None:
                                 records = []
-                                for row, record in enumerate(db.get_filtered_data_records(db_user=db_participant_user, db_campaign=db_campaign, db_data_source=db_data_source, from_timestamp=from_timestamp)):
+                                for row, record in enumerate(db.get_next_k_data_records(db_user=db_participant_user, db_campaign=db_campaign, db_data_source=db_data_source, from_timestamp=from_timestamp, k=500)):
                                     value_len = len(record.value)
                                     if value_len > 5 * 1024:  # 5KB (e.g., binary files)
                                         value = f'[ {value_len:,} byte data record ]'
