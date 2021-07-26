@@ -14,15 +14,17 @@ Table of contents
       * [2.5. Data processing pipeline](#Data-processing-pipeline)
    * [3. Third-Party App integration](#Third-Party-App-integration)
       * [3.1. Authenticator assistant application](#Authenticator-assistant-application)
-      * [3.2. Local-DB management library](#Local-DB-management-library)
-      * [3.3. Data submission management library](#Data-submission-management-library)
-      * [3.4. Notification management library](#Notification-management-library)
-      * [3.5. Direct message management library](#Direct-message-management-library)
-      * [3.6. Useful tips (i.e., power consumption, etc.)](#Useful-tips-(i.e.,-power-consumption,-etc.))
+      * [3.2. Easy Track Library](#Easy-Track-Library)
+      * [3.3. Local-DB management library](#Local-DB-management-library)
+      * [3.4. Data submission management library](#Data-submission-management-library)
+      * [3.5. Notification management library](#Notification-management-library)
+      * [3.6. Direct message management library](#Direct-message-management-library)
+      * [3.7. Useful tips (i.e., power consumption, etc.)](#Useful-tips-(i.e.,-power-consumption,-etc.))
    * [4. ET Web Dashboard manual](#ET-Web-Dashboard-manual)
      * [4.1. Authentication](#Authentication)
-     * [4.2. Campaign creation / deletion](#Campaign-creation-/-deletion)
+     * [4.2. Campaign creation / deletion](#Campaign-creation,-editing,-and-deletion)
         * [4.2.1. Data source creation](#Data-source-creation)
+        * [4.2.2. Finalizing the campaign creation](#Finalizing-the-campaign-creation)
      * [4.3. Campaign editing](#Campaign-editing)
      * [4.4. Campaign monitoring](#Campaign-monitoring)
      * [4.5. Viewing / downloading data](#Viewing-/-downloading-data)
@@ -187,10 +189,86 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 ### EasyTrack Library
 
 After authenticating a user, you can integrate with the platform easily by adding the Easytrack-Library as a dependency to your application. There are two steps to do this, as in the following figure:
+<p align="center">
+  <img width="600" height="450" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Easy_Track_library.png"/600/450>
+</p>
+<p align="center">
+   Fig 3. Adding the EasyTrack-Library as a dependency
+</p>
+
+### Local-DB management library
+
+Using Local-DB management that comes in the library, you can store and retrieve data (i.e., sensor recordings, EMAs, notifications, direct messages, logs, etc.) in a device.
+
+### Data submission management library
+
+[Empty]
+
+### Notification management library
+
+[ Content ]
+
+### Direct message management library
+
+[ Content ]
+
+## ET Web Dashboard manual
+
+The EasyTrack Web Dashboard is a tool for researchers to manage their data collection campaigns from any device, and keep track of the data collection with simple, yet informative statistics about their campaigns progress. It is accessible via [this link.](http://etdb1.myvnc.com/) The following sections provide instructions and details on how to use our Web Dashboard step-by-step.
+
+### Authentication
+
+In order to start using the web dashboard, you will need to sign in using a Google account by clicking the ‘Login with Google’ button as in the following figure. Your Google account is used only for retrieving an email address and a full name.
+
+<p align="center">
+  <img width="600" height="200" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_4_Authentication.png"/600/200>
+</p>
+<p align="center">
+   Fig 4. Authenticating on a Web Dashboard
+</p>
 
 
+<p align="center">
+  <img width="600" height="400" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_5_Google_account.png"/600/400>
+</p>
+<p align="center">
+   Fig 5. Picking a Google account
+</p>
+
+### Campaign creation, editing, and deletion
+
+<p align="center">
+  <img width="600" height="180" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_6_Campaign_list.png"/600/180>
+</p>
+<p align="center">
+   Fig 6. Campaign’s list (empty)
+</p>
+
+Once you have authenticated, you will be on the main page that contains the list of your campaigns. In the Fig. 5 you can see an empty list of campaigns that you should also see when you open the dashboard for the first time.
+
+<p align="center">
+  <img width="600" height="390" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_7_Campaign.png"/600/390>
+</p>
+<p align="center">
+   Fig 7. Campaign creator page
+</p>
+
+When you click the ‘Create a new campaign’ button, you will be moved to the campaign creator page (as in the Fig. 6). In the campaign creator page, you can specify the name, start and end times, and the data sources with their configurations (i.e., sampling rate, days of week, etc). Configurations of data sources must be written in a valid json format (key → value), and optionally contain the “delay_ms” field if your data source has a sampling rate (accelerometer, light,  scheduled EMA, etc.). The “delay_ms” is used by the gRPC Server to calculate the DQ:Completeness for your campaign.
+
+#### Data source creation
+
+If you cannot find a data source that you wish to pick, you can create a new data source by clicking the ‘Create a new data source’ button.
 
 
+<p align="center">
+  <img width="550" height="150" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_8_New_data_source.png"/550/150>
+</p>
+<p align="center">
+   Fig 8. New data source creation
+</p>
+By clicking the button, you will see a new row being attached at the top of the list of data sources. Now you can rename the data source, and write a configuration to it as any other data source.
 
+#### Finalizing the campaign creation
 
+The campaign is finally created by filling out the details (i.e., name, start and end times, etc.) and clicking the ‘Create’ button at the bottom of the campaign creator page.
 
