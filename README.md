@@ -1,5 +1,4 @@
 # Easy Track Platform
-### Kobiljon Toshnazarov
 
 Table of contents
 =================
