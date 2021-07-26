@@ -272,3 +272,70 @@ By clicking the button, you will see a new row being attached at the top of the 
 
 The campaign is finally created by filling out the details (i.e., name, start and end times, etc.) and clicking the ‘Create’ button at the bottom of the campaign creator page.
 
+<p align="center">
+  <img width="500" height="450" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_9_Data_source_selection.png"/500/450>
+</p>
+<p align="center">
+   Fig 9. Data source selection
+</p>
+
+<p align="center">
+  <img width="500" height="450" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_10_Campaign_creation.png"/500/450>
+</p>
+<p align="center">
+   Fig 10. Campaign creation (by clicking ‘Create’ button)
+</p>
+
+### Campaign editing
+
+Once you have created a campaign, you can click the ‘Edit’ button on your campaign from the list, and go to a campaign editing page.
+<p align="center">
+  <img width="500" height="200" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_11_Edit_button.png"/500/200>
+</p>
+<p align="center">
+   Fig 11. Clicking ‘Edit’ button on a campaign from campaigns list
+</p>
+
+<p align="center">
+  <img width="500" height="300" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_12_Editing.png"/500/300>
+</p>
+<p align="center">
+   Fig 12. Editing an existing campaign
+</p>
+
+### Campaign monitoring
+
+[ TBD ]
+
+### Viewing / downloading data
+
+<p align="center">
+  <img width="500" height="120" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_13.png"/500/120>
+</p>
+<p align="center">
+   Fig 13. Picking a participant to view/download their data
+</p>
+
+From the list of your campaign’s participants, click any participant to view or download their data as in the Fig. 12.
+
+<p align="center">
+  <img width="500" height="250" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_14.png"/500/250>
+</p>
+<p align="center">
+   Fig 14. Clicking ‘View’ button on a specific data source to view the data
+</p>
+
+<p align="center">
+  <img width="500" height="300" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_15.png"/500/300>
+</p>
+<p align="center">
+   Fig 15. Viewing raw data (100 samples at a time)
+</p>
+
+<p align="center">
+  <img width="500" height="100" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_16.png"/500/100>
+</p>
+<p align="center">
+   Fig 16. Clicking ‘Download’ button to download the complete data (of a specific data source)
+</p>
+
