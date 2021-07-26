@@ -121,6 +121,7 @@ Third-Party applications can make remote procedure calls to the EasyTrack gRPC s
        4. etc.
 
 ### Authenticator assistant application
+![alt text]()
 
 
 
