@@ -31,8 +31,15 @@ Table of contents
 ## Brief platform overview
 ![alt text](https://raw.githubusercontent.com/Qobiljon/ET_Dashboard/master/et-building-blocks.png)
 
+<p align="center">
+   * Fig 1. EasyTrack Platform Design *
+</p>
+ 
+EasyTrack is a data collection platform for researchers to collect sensing data from mobile / wearable devices and monitor data collection statistics (i.e., missing data, etc). EasyTrack platform consists of four parts, which are: gRPC Server, Web Dashboard, EasyTrack Library for Third-Party apps, and a Third-Party App itself.
 
+EasyTrack gRPC Server is the core part of the platform. It is responsible for storing, and processing data coming from third-party applications, and for providing charts to the web dashboard for monitoring purposes. EasyTrack Web dashboard is a simple (django) web application that retrieves data from gRPC server and visualizes in a browser. The major functionalities of the EasyTrack Library for third-party apps are: Local DB management, Data submission management, Notifications management, and Direct message management. The library helps researchers easily integrate their Third-Party Applications with our platform.
 
+The following sections will guide you through the details about the EasyTrack gRPC server’s functionalities, Third-Party App integration tutorial, and the EasyTrack dashboard manual.
 
 
 
