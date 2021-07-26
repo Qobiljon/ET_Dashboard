@@ -29,7 +29,7 @@ Table of contents
 <!--te-->
 
 ## Brief platform overview
-
+![alt text](https://raw.githubusercontent.com/Qobiljon/ET_Dashboard/master/et-building-blocks.png/200/200)
 
 
 
