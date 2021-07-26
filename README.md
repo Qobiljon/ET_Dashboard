@@ -273,14 +273,14 @@ By clicking the button, you will see a new row being attached at the top of the 
 The campaign is finally created by filling out the details (i.e., name, start and end times, etc.) and clicking the ‘Create’ button at the bottom of the campaign creator page.
 
 <p align="center">
-  <img width="500" height="450" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_9_Data_source_selection.png"/500/450>
+  <img width="500" height="400" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_9_Data_source_selection.png"/500/400>
 </p>
 <p align="center">
    Fig 9. Data source selection
 </p>
 
 <p align="center">
-  <img width="500" height="150" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_10_Campaign_creation.png"/500/150>
+  <img width="450" height="100" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_10_Campaign_creation.png"/450/100>
 </p>
 <p align="center">
    Fig 10. Campaign creation (by clicking ‘Create’ button)
