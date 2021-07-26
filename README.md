@@ -6,8 +6,8 @@ Table of contents
 <!--ts-->
    * [1. Brief platform overview](#Brief-platform-overview)
    
-   * [2. ET gRPC Server functionalities](#2.-ET-gRPC-Server-functionalities)
-      * [2.1. User management module](#2.1.-User-management-module)
+   * [2. ET gRPC Server functionalities](#ET-gRPC-Server-functionalities)
+      * [2.1. User management module](#User-management-module)
       * [2.2. Campaign management module](#2.2.-Campaign-management-module)
       * [2.3. Data management module](#2.3.-Data-management-module)
       * [2.4. Communication management module](#2.4.-Communication-management-module)
@@ -29,6 +29,7 @@ Table of contents
 <!--te-->
 
 ## Brief platform overview
+
 
 
 
