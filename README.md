@@ -121,7 +121,69 @@ Third-Party applications can make remote procedure calls to the EasyTrack gRPC s
        4. etc.
 
 ### Authenticator assistant application
-![alt text]()
+
+
+<p align="center">
+  <img src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Authenticator_assistant_application.png">
+</p>
+<p align="center">
+   Fig 2. Authenticating a user from a Third-Party Application
+</p>
+
+The EasyTrack authenticator is an assistant application that must be available in target users’ devices. It provides a launchable intent, that you will need to start from your application’s activity. In order to authenticate a user in your application, you must perform the following three simple steps in your source code, following the specified order.
+
+_step 1:_ Ask users to install our assistant application if it doesn’t exist in the user’s device
+```java 
+override fun onCreate(savedInstanceState: Bundle?) {
+   super.onCreate(savedInstanceState);
+   setContentView(R.layout.YOUR_ACTIVITY_RES);
+   
+   val authAppIsNotInstalled = try {
+      packageManager.getPackageInfo("inha.nsl.easytrack", 0)
+      false
+   } catch (e: PackageManager.NameNotFoundException) {
+      true
+   }
+   if (authAppIsNotInstalled) {
+      Toast.makeText(this, "Please install this app!", Toast.LENGTH_SHORT).show()
+      val intent = Intent(Intent.ACTION_VIEW)
+      val appUrl = "https://play.google.com/store/apps/details?id=inha.nsl.easytrack"
+      intent.data = Uri.parse(appUrl)
+      intent.setPackage("com.android.vending")
+      startActivityForResult(intent, RC_OPEN_APP_STORE)
+  }
+}
+```
+
+_Step 2:_ Once the app is installed, starting an intent from the app to authenticate the user
+```java
+val launchIntent = packageManager.getLaunchIntentForPackage("inha.nsl.easytrack")
+if (launchIntent != null) {
+   launchIntent.flags = 0
+   startActivityForResult(launchIntent, RC_OPEN_ET_AUTHENTICATOR)
+}
+```
+_Step 3:_ Get the result from the assistant application (success / failure, email address, etc.)
+```java
+override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+   if (requestCode == RC_OPEN_ET_AUTHENTICATOR) {
+      if (resultCode == Activity.RESULT_OK) {
+         if (data != null) {
+            // Successful authentication
+            val fullName = data.getStringExtra("fullName")
+            val email = data.getStringExtra("email")
+            val userId = data.getIntExtra("userId", -1)
+            // YOUR CODE HERE
+         }
+      } else if(resultCode == Activity.RESULT_FIRST_USER) {
+        // User has canceled the authentication process
+      } else if(resultCode == Activity.RESULT_CANCELED) {
+        // Failure (i.e., network unavailable, etc.)
+      }
+   }
+   super.onActivityResult(requestCode, resultCode, data)
+}
+```
 
 
 
