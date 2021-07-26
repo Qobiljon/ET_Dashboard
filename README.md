@@ -22,7 +22,7 @@ Table of contents
       * [3.7. Useful tips (i.e., power consumption, etc.)](#Useful-tips-(i.e.,-power-consumption,-etc.))
    * [4. ET Web Dashboard manual](#ET-Web-Dashboard-manual)
      * [4.1. Authentication](#Authentication)
-     * [4.2. Campaign creation, editing, and deletion](#Campaign-creation,-editing,-and-deletion)
+     * [4.2. Campaign creation, editing and deletion](#Campaign-creation,-editing-and-deletion)
         * [4.2.1. Data source creation](#Data-source-creation)
         * [4.2.2. Finalizing the campaign creation](#Finalizing-the-campaign-creation)
      * [4.3. Campaign editing](#Campaign-editing)
