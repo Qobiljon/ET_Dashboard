@@ -29,7 +29,7 @@ Table of contents
 <!--te-->
 
 ## Brief platform overview
-![alt text](https://raw.githubusercontent.com/Qobiljon/ET_Dashboard/master/et-building-blocks.png)
+![alt text](https://github.com/Qobiljon/ET_Dashboard/blob/master/images/et-building-blocks.png)
 
 <p align="center">
     Fig 1. EasyTrack Platform Design 
