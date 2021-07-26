@@ -280,7 +280,7 @@ The campaign is finally created by filling out the details (i.e., name, start an
 </p>
 
 <p align="center">
-  <img width="500" height="450" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_10_Campaign_creation.png"/500/450>
+  <img width="500" height="150" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_10_Campaign_creation.png"/500/150>
 </p>
 <p align="center">
    Fig 10. Campaign creation (by clicking ‘Create’ button)
