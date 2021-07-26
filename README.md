@@ -184,6 +184,9 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
    super.onActivityResult(requestCode, resultCode, data)
 }
 ```
+### EasyTrack Library
+
+After authenticating a user, you can integrate with the platform easily by adding the Easytrack-Library as a dependency to your application. There are two steps to do this, as in the following figure:
 
 
 
