@@ -134,7 +134,7 @@ Third-Party applications can make remote procedure calls to the EasyTrack gRPC s
 The EasyTrack authenticator is an assistant application that must be available in target users’ devices. It provides a launchable intent, that you will need to start from your application’s activity. In order to authenticate a user in your application, you must perform the following three simple steps in your source code, following the specified order.
 
 _step 1:_ Ask users to install our assistant application if it doesn’t exist in the user’s device
-```java 
+```kotlin 
 override fun onCreate(savedInstanceState: Bundle?) {
    super.onCreate(savedInstanceState);
    setContentView(R.layout.YOUR_ACTIVITY_RES);
@@ -157,7 +157,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
 ```
 
 _Step 2:_ Once the app is installed, starting an intent from the app to authenticate the user
-```java
+```kotlin
 val launchIntent = packageManager.getLaunchIntentForPackage("inha.nsl.easytrack")
 if (launchIntent != null) {
    launchIntent.flags = 0
@@ -165,7 +165,7 @@ if (launchIntent != null) {
 }
 ```
 _Step 3:_ Get the result from the assistant application (success / failure, email address, etc.)
-```java
+```kotlin
 override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
    if (requestCode == RC_OPEN_ET_AUTHENTICATOR) {
       if (resultCode == Activity.RESULT_OK) {
