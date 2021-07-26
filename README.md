@@ -235,7 +235,7 @@ In order to start using the web dashboard, you will need to sign in using a Goog
    Fig 5. Picking a Google account
 </p>
 
-### Campaign creation, editing, and deletion
+### Campaign creation, editing and deletion
 
 <p align="center">
   <img width="600" height="180" src="https://github.com/Qobiljon/ET_Dashboard/blob/master/images/Fig_6_Campaign_list.png"/600/180>
