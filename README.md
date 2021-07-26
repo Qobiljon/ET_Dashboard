@@ -58,5 +58,73 @@ The user management module provides registration, authentication, and campaign j
 
 ### Campaign management module
 
+The campaign management module provides such functionalities as campaign creation, editing, deletion, and the management of data sources associated with campaigns. This module serves our Web Dashboard, which does not play a role during Third-Party Application integration. The Web Dashboard makes a use of this module to serve campaigners.
+
+* Campaign creation
+   * This functionality creates campaign in the server database with the provided details about a campaign (i.e., title, data sources, data source configurations, campaign start and end times, etc.)
+* Campaign editing
+   * This functionality provides a service to Web Dashboard of modifying details / configurations of already existing campaign details (i.e., adding a data source, changing a sensor’s sampling rate, changing start and end times, etc.)
+* Campaign deletion
+   * Using this functionality, the Web Dashboard can delete an existing campaign. Note: a campaign can be deleted only from the profile of the campaign’s creator.
+* Retrieving all data sources
+   * This functionality provides the Web Dashboard all available data sources (i.e., available sensors, surveys, etc.)
+* Data source binding / creaton
+   * Using this functionality, the Web Dashboard can attach data sources to their campaign. In other words, campaign’s data sources (and their configurations, such as sampling rates) become available for the Third-Party applications. Also, the data source binding functionality will automatically create a new data source and attach it to the campaign if one has not been registered in the server’s database before.
+
+### Data management module
+
+This module is responsible for storing data (i.e., sensor readings, EMAs, etc.), calculating statistics (i.e., DQ:Completeness, LOF, etc.), and providing the data at a request (i.e., for viewing/downloading data on Web Dashboard).
+* Data storage (i.e., sensor, EMA, etc.)
+   * This functionality is for storing the data when a Third-Party application submits one.
+* Retrieving / extracting data (for filtering / downloading)
+* Data processing (DQ: completeness, LOF: unexpected abnormal behavior)
+   * The data processing pipeline is an always running process that calculates DQ:Completeness, LOF, and other statistics (i.e., participation duration, etc.) for presenting them on the Web Dashboard.
+
+### Communication management module
+
+This module simply provides four functionalities, two of which are for sending/receiving direct messages, and the other two for sending/receiving notifications. The messages and notifications are stored on the server’s database, and it is up to the Third-Party application’s designer to decide how to present the messages and notifications within their applications.
+* Storing message (for sending direct message)
+   * By using this functionality stores a new direct message record that will be labeled as an ‘unread message’ for the destination user. 
+* Retrieving unread messages (for receiving unread direct messages)
+   * When this functionality is used, the calling user can retrieve the unread messages directly sent to him/her, if ones are available in the server database.
+* Storing a notification
+   * This functionality is for a Web Dashboard, that broadcasts a message to all participants that are bound (have joined) to a particular campaign.
+* Retrieving an unread notification
+   * This functionality is for Third-Party applications to retrieve all unread notifications targeted to their bound (joined) campaign.
+
+### Data processing pipeline
+
+Data processing pipeline is an always running process that calculates statistics related to each campaign, data source, and each participant.
+* DQ:Completeness calculation
+   * Completeness is calculated using a simple formula:
+      * Real amount of samples / Expected amount of samples → (%)
+* LOF Calculation (for abnormal behavior detection)
+   * Using [LOF](https://dl.acm.org/doi/10.1145/342009.335388), and [LoOP](https://pypi.org/project/PyNomaly/) algorithms
+* Other statistics
+   * Participation duration
+      * Difference between the current day and participant’s day of participation
+   * Last sync time
+      * The timestamp taken from the last sample that was submitted by a participant
+   * Last heartbeat time
+      * The last time a participant’s device was online (accessible)
+
+
+## Third-Party App integration
+
+Third-Party applications can make remote procedure calls to the EasyTrack gRPC server in order to do various actions (i.e., submit sensor data, send a direct message to a campaigner, retrieve EMA, etc.). We provided a library for Third-Party application developers to make the integration much easier, which are explained in detail in this section. Also, a sample app is available for testing via [this link.](https://github.com/Qobiljon/EasyTrack_AndroidAgent) Simply, the steps need to be taken to integrate a third-party app with EasyTrack platform are as follows :
+   1. Use our assistant application to authenticate users
+   2. Bind the authenticated user to your campaign
+   3. Actions of data / communication management modules in any order, i.e.:
+       1. Submitting data
+       2. Retrieving unread notifications / direct messages
+       3. Retrieving data
+       4. etc.
+
+### Authenticator assistant application
+
+
+
+
+
 
 
