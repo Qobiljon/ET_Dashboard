@@ -1059,7 +1059,7 @@ def huno_json_device_os(request):
 
     device_os_records = db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
                                                   db_data_source=db_data_source)
-
+    print(device_os_records)
     if len(device_os_records) > 0:
         print(device_os_records[-2].value)
         cells = str(device_os_records[-2].value, encoding='utf8').split(' ')
