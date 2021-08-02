@@ -1044,6 +1044,7 @@ def huno_json_ema_rate(request):
     res = {'success': True, 'ema_rate': ema_rate}
     return JsonResponse(data=res)
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def huno_json_device_os(request):
     if not utils.param_check(request.POST, ['campaign_id', 'email', 'data_source_id']):
@@ -1059,13 +1060,10 @@ def huno_json_device_os(request):
 
     device_os_records = db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
                                                   db_data_source=db_data_source)
-    print(device_os_records)
     if len(device_os_records) > 0:
-        print(device_os_records[-2].value)
         cells = str(device_os_records[-2].value, encoding='utf8').split(' ')
-        print(cells)
         device_os = int(cells[2])
-        if device_os=='API':
+        if device_os == 'API':
             cells = str(device_os_records[-1].value, encoding='utf8').split(' ')
             device_os = int(cells[2])
     else:
