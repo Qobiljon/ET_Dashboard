@@ -1062,6 +1062,7 @@ def huno_json_device_os(request):
 
     if len(device_os_records) > 0:
         cells = str(device_os_records[-2].value, encoding='utf8').split(' ')
+        print(cells)
         device_os = int(cells[2])
         if device_os=='API':
             cells = str(device_os_records[-1].value, encoding='utf8').split(' ')
