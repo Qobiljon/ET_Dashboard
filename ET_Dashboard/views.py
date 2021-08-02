@@ -1044,6 +1044,33 @@ def huno_json_ema_rate(request):
     res = {'success': True, 'ema_rate': ema_rate}
     return JsonResponse(data=res)
 
+@require_http_methods(['POST'])
+def huno_json_device_os(request):
+    if not utils.param_check(request.POST, ['campaign_id', 'email', 'data_source_id']):
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
+
+    db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
+    db_participant = db.get_user(email=request.POST['email'])
+    db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
+
+
+    if None in [db_campaign, db_participant, db_data_source]:
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
+
+    device_os_records = db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
+                                                  db_data_source=db_data_source)
+
+    if len(device_os_records) > 0:
+        cells = str(reward_records[-2].value, encoding='utf8').split(' ')
+        device_os = int(cells[2])
+        if device_os='API':
+            cells = str(reward_records[-1].value, encoding='utf8').split(' ')
+            device_os = int(cells[2])
+    else:
+        device_os = "N/A"
+
+    res = {'success': True, 'device_os': device_os}
+    return JsonResponse(data=res)
 
 @csrf_exempt
 @require_http_methods(['POST'])

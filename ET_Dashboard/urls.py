@@ -62,4 +62,5 @@ urlpatterns = [
     path('huno_json_phone_numbers/', views.huno_json_phone_numbers),
     path('huno_json_emails/', views.huno_json_emails),
     path('huno_json_ids/', views.huno_json_ids),
+    path('huno_json_device_os/', views.huno_json_device_os)
 ]
