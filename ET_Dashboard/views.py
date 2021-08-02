@@ -1062,10 +1062,10 @@ def huno_json_device_os(request):
                                                   db_data_source=db_data_source)
     if len(device_os_records) > 0:
         cells = str(device_os_records[-2].value, encoding='utf8').split(' ')
-        device_os = int(cells[2])
+        device_os = cells[2]
         if device_os == 'API':
             cells = str(device_os_records[-1].value, encoding='utf8').split(' ')
-            device_os = int(cells[2])
+            device_os = cells[2]
     else:
         device_os = "N/A"
 
