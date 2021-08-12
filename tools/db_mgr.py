@@ -96,7 +96,7 @@ def get_campaign_participants(db_campaign):
         if user:
             db_participants += [get_user(user_id=row.userId)]
         else:
-            session.execute('delete from "stats"."campaignParticipantStats" where "userId" = %s allow filtering;', (row.userId,))
+            session.execute('delete from "stats"."campaignParticipantStats" where "userId" = %s and "campaignId" = %s;', (row.userId, db_campaign.id,))
     return db_participants
 
 
