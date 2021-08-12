@@ -316,7 +316,7 @@ def dump_data(db_campaign, db_user, db_data_source=None):
     if db_data_source:
         subprocess.run(['cqlsh', '-e', f"copy data.cmp{db_campaign.id}_usr{db_user.id} to \'{file_path}\' with header = true;"], stdout=PIPE, stderr=PIPE)
     else:
-        subprocess.run(['cqlsh', '-e', f"copy data.cmp{db_campaign.id}_usr{db_user.id} to \'{file_path}\' with header = true;"], stdout=PIPE, stderr=PIPE)
+        subprocess.run(['cqlsh', '-e', f"copy data.cmp{db_campaign.id}_usr{db_user.id} to \'{file_path}\' with header = true;"], stdout=PIPE, stderr=PIPE, shell=True)
     return file_path
 
 
