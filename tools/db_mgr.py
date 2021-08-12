@@ -92,7 +92,11 @@ def get_campaign_participants(db_campaign):
     session = get_cassandra_session()
     db_participants = []
     for row in session.execute('select "userId" from "stats"."campaignParticipantStats" where "campaignId"=%s allow filtering;', (db_campaign.id,)).all():
-        db_participants += [get_user(user_id=row.userId)]
+        user = get_user(user_id=row.userId)
+        if user:
+            db_participants += [get_user(user_id=row.userId)]
+        else:
+            session.execute('delete from "stats"."campaignParticipantStats" where "userId" = %s and "campaignId" = %s;', (row.userId, db_campaign.id,))
     return db_participants
 
 
