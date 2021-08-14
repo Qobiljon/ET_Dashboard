@@ -15,6 +15,9 @@ import re
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as dj_logout
+from django.contrib.auth import login as dj_login
+from django.contrib.auth import authenticate as dj_authenticate
+from django.contrib.auth.models import User as dj_User
 from django.views.decorators.csrf import csrf_exempt
 from django.http import StreamingHttpResponse
 from django.shortcuts import render, redirect
@@ -50,6 +53,42 @@ def handle_login_api(request):
         template_name='page_authentication.html',
         context={'title': 'Authentication'}
     )
+
+
+@require_http_methods(['GET'])
+def handle_development_login_api(request):
+    dev_email = 'dev@easytrack.com'
+    db_user = db.get_user(email=request.user.email if request.user.is_authenticated else dev_email)
+    if db_user is None:
+        print('new user : ', end='')
+        session_key = utils.md5(value=f'{dev_email}{utils.now_us()}')
+        db_user = db.create_user(name=dev_email, email=dev_email, session_key=session_key)
+        if db_user is None:
+            dj_logout(request=request)
+        else:
+            if dj_User.objects.filter(email=dev_email).exists():
+                dj_user = dj_User.objects.get(email=dev_email)
+            else:
+                dj_user = dj_User.objects.create_user(username=dev_email, email=dev_email, password=dev_email)
+            if dj_authenticate(username=dev_email, password=dev_email):
+                dj_login(request=request, user=dj_user, backend='django.contrib.auth.backends.ModelBackend')
+                return redirect(to='campaigns-list')
+            else:
+                return redirect(to='login')
+    else:
+        if dj_User.objects.filter(email=dev_email).exists():
+            dj_user = dj_User.objects.get(email=dev_email)
+        else:
+            dj_User.objects.create_user()
+            dj_user = dj_User.objects.create_user(username=dev_email, email=dev_email, password=dev_email)
+            dj_user.first_name = 'ET'
+            dj_user.last_name = 'Development'
+            dj_user.save()
+        if dj_authenticate(username=dev_email, password=dev_email):
+            dj_login(request=request, user=dj_user, backend='django.contrib.auth.backends.ModelBackend')
+            return redirect(to='campaigns-list')
+        else:
+            return redirect(to='login')
 
 
 @login_required

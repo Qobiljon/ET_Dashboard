@@ -9,7 +9,7 @@ import json
 # region common part
 def get_cassandra_session():
     if settings.cassandra_cluster is None:
-        settings.cassandra_cluster = Cluster(contact_points=['127.0.0.1'])
+        settings.cassandra_cluster = Cluster(contact_points=['165.246.42.173'])
         settings.cassandra_session = settings.cassandra_cluster.connect()
         print('cassandra session initialized', settings.cassandra_session)
     return settings.cassandra_session
