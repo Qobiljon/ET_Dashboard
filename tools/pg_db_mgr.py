@@ -1,6 +1,6 @@
 from psycopg2 import extras as psycopg2_extras
 from utils import settings
-from utils import utils
+from tools import utils
 import psycopg2
 import json
 import os
