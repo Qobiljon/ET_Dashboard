@@ -127,8 +127,8 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
 )
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "79296265957-khvficocpqmhajv3c5obiljo2k95jqt3.apps.googleusercontent.com"
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "u4SAx6SzM7vBwXYAYCW0OGLe"
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "79296265957-rf0k35k9988uvck0aj0tva2fc3u5crg4.apps.googleusercontent.com"
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "1RDmIwssNXMvG_PKq_HjgTEr"
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'login'
