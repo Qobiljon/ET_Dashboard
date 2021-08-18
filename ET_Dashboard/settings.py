@@ -37,7 +37,7 @@ ALLOWED_HOSTS = [
     '165.246.21.202',
     'etdb.myvnc.com',
     'easytrack.inha.ac.kr'
-    
+
     '165.246.42.248',
 ]
 
@@ -112,10 +112,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+# CSRF_COOKIE_DOMAIN = 'etdb1.myvnc.com' # todo enable when deploying
+# CSRF_TRUSTED_ORIGINS = ['etdb1.myvnc.com'] # todo enable when deploying
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
