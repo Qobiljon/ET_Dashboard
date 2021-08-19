@@ -260,9 +260,9 @@ def handle_raw_samples_list(request):
                             if db_data_source is not None:
                                 records = []
                                 for row, record in enumerate(db.get_next_k_data_records(db_user=db_participant_user,
-                                                                                          db_campaign=db_campaign,
-                                                                                          db_data_source=db_data_source,
-                                                                                          from_timestamp=from_timestamp, k=500)):
+                                                                                        db_campaign=db_campaign,
+                                                                                        db_data_source=db_data_source,
+                                                                                        from_timestamp=from_timestamp, k=500)):
                                     value_len = len(record.value)
                                     if value_len > 5 * 1024:  # 5KB (e.g., binary files)
                                         value = f'[ {value_len:,} byte data record ]'
@@ -1033,7 +1033,7 @@ def huno_json_ema_rate(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
     ema_rate_records = db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
-                                                  db_data_source=db_data_source, from_timestamp=from_ts, till_timestamp=till_ts)
+                                                    db_data_source=db_data_source, from_timestamp=from_ts, till_timestamp=till_ts)
 
     if len(ema_rate_records) > 0:
         cells = str(ema_rate_records[-1].value, encoding='utf8').split(' ')
@@ -1043,6 +1043,7 @@ def huno_json_ema_rate(request):
 
     res = {'success': True, 'ema_rate': ema_rate}
     return JsonResponse(data=res)
+
 
 @csrf_exempt
 @require_http_methods(['POST'])
@@ -1054,12 +1055,11 @@ def huno_json_device_os(request):
     db_participant = db.get_user(email=request.POST['email'])
     db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
 
-
     if None in [db_campaign, db_participant, db_data_source]:
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
     device_os_records = db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
-                                                  db_data_source=db_data_source)
+                                                     db_data_source=db_data_source)
     if len(device_os_records) > 0:
         cells = str(device_os_records[-2].value, encoding='utf8').split(' ')
         device_os = cells[2]
@@ -1071,6 +1071,7 @@ def huno_json_device_os(request):
 
     res = {'success': True, 'device_os': device_os}
     return JsonResponse(data=res)
+
 
 @csrf_exempt
 @require_http_methods(['POST'])
@@ -1167,8 +1168,8 @@ def huno_json_lottery_winners(request):
 @require_http_methods(['POST'])
 def huno_json_phone_numbers(request):
     phone_number = str(request.POST['phone_number'])
-    if os.path.exists("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt"):
-        with open("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt", 'r') as f:
+    if os.path.exists("/root/ET_Dashboard/phone_numbers.txt"):
+        with open("/root/ET_Dashboard/phone_numbers.txt", 'r') as f:
             if phone_number in f.read():
                 f.seek(0)  # return to the beginning of the file
                 email = [line for line in f if phone_number in line][0].split(" ")[0]
@@ -1184,8 +1185,8 @@ def huno_json_phone_numbers(request):
 @require_http_methods(['POST'])
 def huno_json_emails(request):
     email = str(request.POST['email'])
-    if os.path.exists("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt"):
-        with open("/media/EasyTrack_Storage/Kevin/ET_gRPC_Server/phone_numbers.txt", 'r') as f:
+    if os.path.exists("/root/ET_Dashboard/phone_numbers.txt"):
+        with open("/root/ET_Dashboard/phone_numbers.txt", 'r') as f:
             if email in f.read():
                 f.seek(0)  # return to the beginning of the file
                 phone_number = [line for line in f if email in line][0].split(" ")[1].split(",")[0]
