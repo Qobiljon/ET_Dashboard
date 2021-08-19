@@ -1168,8 +1168,8 @@ def huno_json_lottery_winners(request):
 @require_http_methods(['POST'])
 def huno_json_phone_numbers(request):
     phone_number = str(request.POST['phone_number'])
-    if os.path.exists("/root/ET_Dashboard/phone_numbers.txt"):
-        with open("/root/ET_Dashboard/phone_numbers.txt", 'r') as f:
+    if os.path.exists("/root/ET_gRPC_Server/phone_numbers.txt"):
+        with open("/root/ET_gRPC_Server/phone_numbers.txt", 'r') as f:
             if phone_number in f.read():
                 f.seek(0)  # return to the beginning of the file
                 email = [line for line in f if phone_number in line][0].split(" ")[0]
@@ -1185,8 +1185,8 @@ def huno_json_phone_numbers(request):
 @require_http_methods(['POST'])
 def huno_json_emails(request):
     email = str(request.POST['email'])
-    if os.path.exists("/root/ET_Dashboard/phone_numbers.txt"):
-        with open("/root/ET_Dashboard/phone_numbers.txt", 'r') as f:
+    if os.path.exists("/root/ET_gRPC_Server/phone_numbers.txt"):
+        with open("/root/ET_gRPC_Server/phone_numbers.txt", 'r') as f:
             if email in f.read():
                 f.seek(0)  # return to the beginning of the file
                 phone_number = [line for line in f if email in line][0].split(" ")[1].split(",")[0]
