@@ -262,7 +262,8 @@ def handle_raw_samples_list(request):
                                 for row, record in enumerate(db.get_next_k_data_records(db_user=db_participant_user,
                                                                                         db_campaign=db_campaign,
                                                                                         db_data_source=db_data_source,
-                                                                                        from_timestamp=from_timestamp, k=500)):
+                                                                                        from_timestamp=from_timestamp,
+                                                                                        k=500)):
                                     value_len = len(record.value)
                                     if value_len > 5 * 1024:  # 5KB (e.g., binary files)
                                         value = f'[ {value_len:,} byte data record ]'
@@ -1019,8 +1020,38 @@ def huno_json_total_reward(request):
 
 @csrf_exempt
 @require_http_methods(['POST'])
+def huno_json_participation_days(request):
+    if not utils.param_check(request.POST,
+                             ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
+
+    db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
+    db_participant = db.get_user(email=request.POST['email'])
+    db_data_source = db.get_data_source(data_source_id=int(request.POST['data_source_id']))
+    from_ts = int(request.POST['from_timestamp'])
+    till_ts = int(request.POST['till_timestamp'])
+
+    if None in [db_campaign, db_participant, db_data_source]:
+        return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
+
+    participation_days_records = db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
+                                                              db_data_source=db_data_source, from_timestamp=from_ts,
+                                                              till_timestamp=till_ts)
+    if len(participation_days_records) > 0:
+        cells = str(participation_days_records[-1].value, encoding='utf8').split(' ')
+        participation_days = int(cells[1])
+    else:
+        participation_days = 'N/A'
+
+    res = {'success': True, 'days': participation_days}
+    return JsonResponse(data=res)
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
 def huno_json_ema_rate(request):
-    if not utils.param_check(request.POST, ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
+    if not utils.param_check(request.POST,
+                             ['campaign_id', 'email', 'data_source_id', 'from_timestamp', 'till_timestamp']):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, check your param types'})
 
     db_campaign = db.get_campaign(campaign_id=int(request.POST['campaign_id']))
@@ -1033,7 +1064,8 @@ def huno_json_ema_rate(request):
         return JsonResponse(data={'success': False, 'err_msg': 'huno, values for some params are invalid, pls recheck'})
 
     ema_rate_records = db.get_filtered_data_records(db_campaign=db_campaign, db_user=db_participant,
-                                                    db_data_source=db_data_source, from_timestamp=from_ts, till_timestamp=till_ts)
+                                                    db_data_source=db_data_source, from_timestamp=from_ts,
+                                                    till_timestamp=till_ts)
 
     if len(ema_rate_records) > 0:
         cells = str(ema_rate_records[-1].value, encoding='utf8').split(' ')
