@@ -1043,7 +1043,7 @@ def huno_json_participation_days(request):
     else:
         participation_days = 'N/A'
 
-    res = {'success': True, 'days': participation_days}
+    res = {'success': True, 'participation_days': participation_days}
     return JsonResponse(data=res)
 
 
@@ -1160,8 +1160,6 @@ def huno_json_participant_stats(request):
 
     return JsonResponse(data={
         'success': True,
-        'participation_days': utils.calculate_day_number(
-            join_timestamp=db.get_participant_join_timestamp(db_user=db_participant, db_campaign=db_campaign)),
         'total_amount': sum([amount_of_samples[x] for x in amount_of_samples]),
         'last_sync_ts': max([sync_timestamps[x] for x in sync_timestamps]),
         'per_data_source_amount': {x: amount_of_samples[x] for x in amount_of_samples},
